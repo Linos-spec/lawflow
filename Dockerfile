@@ -18,6 +18,12 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+# Auth.js v5 requires AUTH_SECRET at build time for route compilation
+ARG AUTH_SECRET
+ENV AUTH_SECRET=${AUTH_SECRET:-build-time-placeholder}
+ARG NEXTAUTH_SECRET
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-build-time-placeholder}
+
 RUN npx prisma generate
 RUN npm run build
 
