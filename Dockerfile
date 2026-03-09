@@ -33,16 +33,15 @@ RUN adduser --system --uid 1001 nextjs
 
 RUN apk add --no-cache openssl bash
 
+# Copy Next.js standalone build
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps /app/node_modules/effect ./node_modules/effect
-COPY --from=deps /app/node_modules/fast-check ./node_modules/fast-check
-COPY --from=deps /app/node_modules/pure-rand ./node_modules/pure-rand
+
+# Copy full node_modules from deps for prisma CLI at runtime
+COPY --from=deps /app/node_modules ./node_modules
+
 COPY --from=builder /app/start.sh ./start.sh
 
 RUN chmod +x start.sh
