@@ -18,7 +18,7 @@ services:
         value: "${db-lawflow.DATABASE_URL}"
       - key: NEXTAUTH_URL
         scope: RUN_TIME
-        value: "${APP_URL}"
+        value: "https://lawflow-b8pcz.ondigitalocean.app"
       - key: NEXTAUTH_SECRET
         scope: RUN_TIME
         type: SECRET
@@ -30,6 +30,3 @@ databases:
   - name: db-lawflow
     engine: PG
     production: false
-    cluster_name: db-lawflow
-    db_name: lawflow
-    db_user: lawflow
