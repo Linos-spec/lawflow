@@ -23,6 +23,10 @@ services:
         scope: RUN_TIME
         type: SECRET
         value: "rG7cSv3H+CvPN2l6Gwk5if0Kuo73CzwKrKLYUpPtOXo="
+      - key: AUTH_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: "rG7cSv3H+CvPN2l6Gwk5if0Kuo73CzwKrKLYUpPtOXo="
       - key: NODE_ENV
         scope: RUN_AND_BUILD_TIME
         value: "production"

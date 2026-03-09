@@ -170,16 +170,21 @@ export function AppSidebar() {
             <Settings style={{ width: 18, height: 18 }} />
             Settings
           </Link>
-          <a
-            href="#"
+          <Link
+            href="/help"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150"
-            style={{ color: "rgba(255,255,255,0.6)" }}
+            style={{
+              color: pathname === "/help" ? "var(--gold-light)" : "rgba(255,255,255,0.6)",
+              background: pathname === "/help" ? "rgba(196,154,46,0.15)" : "transparent",
+            }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = pathname === "/help" ? "rgba(196,154,46,0.15)" : "transparent";
+            }}
           >
             <HelpCircle style={{ width: 18, height: 18 }} />
             Help &amp; Support
-          </a>
+          </Link>
         </div>
       </div>
 

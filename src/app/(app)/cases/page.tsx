@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Search,
@@ -94,6 +95,7 @@ const sampleCases: CaseRow[] = [
 ];
 
 export default function CasesPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState<string>("All");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -219,7 +221,11 @@ export default function CasesPage() {
               {filtered.map((c) => {
                 const sc = statusColors[c.status] || statusColors.Active;
                 return (
-                  <tr key={c.id}>
+                  <tr
+                    key={c.id}
+                    onClick={() => router.push(`/cases/${c.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
                     <td>
                       <div>
                         <p className="font-semibold" style={{ color: "var(--navy)" }}>
@@ -267,7 +273,7 @@ export default function CasesPage() {
                     <td>
                       <div className="relative">
                         <button
-                          onClick={() => setOpenMenuId(openMenuId === c.id ? null : c.id)}
+                          onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === c.id ? null : c.id); }}
                           className="flex h-8 w-8 items-center justify-center rounded-md transition-colors"
                           style={{ color: "var(--text-muted)" }}
                           onMouseEnter={(e) => {

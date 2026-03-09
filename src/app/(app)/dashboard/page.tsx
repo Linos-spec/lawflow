@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -20,22 +21,6 @@ import {
   AlertCircle,
   PauseCircle,
 } from "lucide-react";
-
-function getGreeting() {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
-
-function formatDate() {
-  return new Date().toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 const statCards = [
   {
@@ -140,6 +125,24 @@ const urgencyStyles: Record<string, { bg: string; text: string; label: string }>
 export default function DashboardPage() {
   const { data: session } = useSession();
   const firstName = session?.user?.name?.split(" ")[0] || "Counselor";
+  const [greeting, setGreeting] = useState("Welcome");
+  const [dateStr, setDateStr] = useState("");
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
+    setDateStr(
+      new Date().toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    );
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -148,10 +151,10 @@ export default function DashboardPage() {
         <div className="flex items-end justify-between">
           <div>
             <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>
-              {getGreeting()}, {firstName}
+              {greeting}, {firstName}
             </h1>
             <p className="mt-0.5 text-sm" style={{ color: "var(--text-secondary)" }}>
-              {formatDate()}
+              {dateStr}
             </p>
           </div>
           <Link href="/cases/new" className="lf-btn lf-btn-gold">
