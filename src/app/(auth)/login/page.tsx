@@ -1,13 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Scale, Loader2 } from "lucide-react";
+import { Scale, Loader2, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get("registered") === "true";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -34,28 +45,103 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
-            <Scale className="h-8 w-8 text-primary-foreground" />
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "linear-gradient(135deg, var(--bg-base) 0%, #EDE9E0 100%)",
+        padding: "1.5rem",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 420 }}>
+        {/* Logo */}
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <div
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: "50%",
+              background: "var(--navy)",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Scale style={{ width: 28, height: 28, color: "#fff" }} />
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight">LawFlow</h1>
-          <p className="mt-2 text-muted-foreground">
+          <h1
+            style={{
+              fontFamily: "var(--font-heading)",
+              fontSize: "1.75rem",
+              fontWeight: 700,
+              color: "var(--navy)",
+              marginTop: "1rem",
+            }}
+          >
+            LawFlow
+          </h1>
+          <p
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "0.9375rem",
+              color: "var(--text-secondary)",
+              marginTop: "0.25rem",
+            }}
+          >
             Sign in to your account
           </p>
         </div>
 
-        <div className="rounded-xl border bg-card p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Card */}
+        <div
+          className="lf-card"
+          style={{ padding: "2rem" }}
+        >
+          {/* Registration success */}
+          {registered && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                background: "var(--success-bg)",
+                color: "var(--success)",
+                padding: "0.75rem 1rem",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "0.875rem",
+                fontFamily: "var(--font-body)",
+                fontWeight: 500,
+                marginBottom: "1.25rem",
+              }}
+            >
+              <CheckCircle2 style={{ width: 18, height: 18, flexShrink: 0 }} />
+              Account created! Please sign in.
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {/* Error */}
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div
+                style={{
+                  background: "var(--danger-bg)",
+                  color: "var(--danger)",
+                  padding: "0.75rem 1rem",
+                  borderRadius: "var(--radius-sm)",
+                  fontSize: "0.875rem",
+                  fontFamily: "var(--font-body)",
+                  fontWeight: 500,
+                }}
+              >
                 {error}
               </div>
             )}
 
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+            {/* Email */}
+            <div>
+              <label htmlFor="email" className="lf-label">
                 Email
               </label>
               <input
@@ -63,14 +149,15 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="lf-input"
                 placeholder="you@lawfirm.com"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+            {/* Password */}
+            <div>
+              <label htmlFor="password" className="lf-label">
                 Password
               </label>
               <input
@@ -78,31 +165,73 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="lf-input"
                 placeholder="Enter your password"
                 required
               />
             </div>
 
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+              className="lf-btn lf-btn-gold"
+              style={{
+                width: "100%",
+                padding: "0.75rem 1rem",
+                fontSize: "0.9375rem",
+                opacity: loading ? 0.6 : 1,
+                pointerEvents: loading ? "none" : "auto",
+              }}
             >
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              {loading && <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} />}
               Sign In
             </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          {/* Register link */}
+          <p
+            style={{
+              textAlign: "center",
+              fontFamily: "var(--font-body)",
+              fontSize: "0.875rem",
+              color: "var(--text-secondary)",
+              marginTop: "1.5rem",
+            }}
+          >
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              Create one
+            <Link
+              href="/register"
+              style={{
+                color: "var(--gold)",
+                fontWeight: 600,
+                textDecoration: "none",
+              }}
+            >
+              Start free trial
             </Link>
-          </div>
+          </p>
         </div>
+
+        {/* Back link */}
+        <p
+          style={{
+            textAlign: "center",
+            marginTop: "1.5rem",
+          }}
+        >
+          <Link
+            href="/"
+            style={{
+              fontFamily: "var(--font-body)",
+              fontSize: "0.8125rem",
+              color: "var(--text-muted)",
+              textDecoration: "none",
+            }}
+          >
+            &larr; Back to LawFlow.app
+          </Link>
+        </p>
       </div>
     </div>
   );

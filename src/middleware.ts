@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/login", "/register", "/pricing", "/features"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -16,12 +16,20 @@ export default auth((req) => {
     return NextResponse.next();
   }
 
+  // Root "/" is the landing page for unauthenticated, dashboard for authenticated
+  if (pathname === "/") {
+    if (req.auth) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    return NextResponse.next();
+  }
+
   if (!req.auth && !isPublicRoute) {
     const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (req.auth && isPublicRoute) {
+  if (req.auth && (pathname === "/login" || pathname === "/register")) {
     const dashboardUrl = new URL("/dashboard", req.url);
     return NextResponse.redirect(dashboardUrl);
   }
