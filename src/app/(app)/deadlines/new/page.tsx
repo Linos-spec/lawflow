@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
@@ -21,16 +21,43 @@ const priorityLabels: Record<string, string> = {
   LOW: "Low", MEDIUM: "Medium", HIGH: "High", URGENT: "Urgent",
 };
 
+interface CaseOption {
+  id: string;
+  title: string;
+  caseNumber: string;
+}
+
 export default function NewDeadlinePage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [loadingCases, setLoadingCases] = useState(true);
   const [form, setForm] = useState({
     title: "",
-    deadlineType: "FILING",
+    caseId: "",
     dueDate: "",
+    deadlineType: "FILING",
     priority: "MEDIUM",
     description: "",
   });
+
+  useEffect(() => {
+    fetch("/api/v1/cases?limit=200")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setCases(
+            json.data.map((c: CaseOption) => ({
+              id: c.id,
+              title: c.title,
+              caseNumber: c.caseNumber,
+            }))
+          );
+        }
+      })
+      .catch(() => toast.error("Failed to load cases"))
+      .finally(() => setLoadingCases(false));
+  }, []);
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -39,6 +66,10 @@ export default function NewDeadlinePage() {
     e.preventDefault();
     if (!form.title.trim()) {
       toast.error("Deadline title is required");
+      return;
+    }
+    if (!form.caseId) {
+      toast.error("Please select a related case");
       return;
     }
     if (!form.dueDate) {
@@ -52,17 +83,21 @@ export default function NewDeadlinePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title,
-          deadlineType: form.deadlineType,
+          caseId: form.caseId,
           dueDate: new Date(form.dueDate).toISOString(),
+          deadlineType: form.deadlineType,
           priority: form.priority,
           description: form.description || undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create deadline");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Failed to create deadline");
+      }
       toast.success("Deadline created successfully");
       router.push("/deadlines");
-    } catch {
-      toast.error("Failed to create deadline. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create deadline.");
     } finally {
       setSaving(false);
     }
@@ -99,6 +134,44 @@ export default function NewDeadlinePage() {
           />
         </div>
 
+        <div>
+          <label className="lf-label">Related Case *</label>
+          <select
+            className="lf-input"
+            value={form.caseId}
+            onChange={(e) => update("caseId", e.target.value)}
+            required
+          >
+            <option value="">
+              {loadingCases ? "Loading cases..." : "Select a case"}
+            </option>
+            {cases.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.caseNumber ? `${c.caseNumber} — ${c.title}` : c.title}
+              </option>
+            ))}
+          </select>
+          {!loadingCases && cases.length === 0 && (
+            <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
+              No cases found.{" "}
+              <Link href="/cases/new" className="underline" style={{ color: "var(--gold)" }}>
+                Create a case first
+              </Link>
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label className="lf-label">Due Date *</label>
+          <input
+            type="date"
+            className="lf-input"
+            value={form.dueDate}
+            onChange={(e) => update("dueDate", e.target.value)}
+            required
+          />
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="lf-label">Deadline Type</label>
@@ -127,18 +200,7 @@ export default function NewDeadlinePage() {
         </div>
 
         <div>
-          <label className="lf-label">Due Date *</label>
-          <input
-            type="date"
-            className="lf-input"
-            value={form.dueDate}
-            onChange={(e) => update("dueDate", e.target.value)}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="lf-label">Description</label>
+          <label className="lf-label">Notes</label>
           <textarea
             className="lf-input"
             rows={3}

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import {
-  HelpCircle,
   ChevronDown,
   Mail,
   Send,
@@ -11,6 +10,7 @@ import {
   Briefcase,
   CalendarClock,
   DollarSign,
+  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -86,6 +86,24 @@ const faqSections = [
       {
         q: "How do I invite team members?",
         a: "Admins can invite team members from Settings > Firm Details. Enter the team member's email and select their role. They'll receive an invitation to join.",
+      },
+    ],
+  },
+  {
+    title: "Account",
+    icon: Shield,
+    questions: [
+      {
+        q: "How do I change my password?",
+        a: "Go to Settings > Security to update your password. You'll need to enter your current password and then your new password twice.",
+      },
+      {
+        q: "How do I update my profile?",
+        a: "Navigate to Settings > Profile to update your name, email, and other personal details.",
+      },
+      {
+        q: "Can I delete my account?",
+        a: "Contact support to request account deletion. Note that this action is permanent and all data will be removed.",
       },
     ],
   },

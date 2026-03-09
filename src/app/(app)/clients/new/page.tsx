@@ -13,7 +13,7 @@ export default function NewClientPage() {
     name: "",
     email: "",
     phone: "",
-    address: "",
+    company: "",
     clientType: "INDIVIDUAL",
     notes: "",
   });
@@ -36,16 +36,19 @@ export default function NewClientPage() {
           name: form.name,
           email: form.email || undefined,
           phone: form.phone || undefined,
-          address: form.address || undefined,
+          company: form.company || undefined,
           clientType: form.clientType,
           notes: form.notes || undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create client");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Failed to create client");
+      }
       toast.success("Client added successfully");
       router.push("/clients");
-    } catch {
-      toast.error("Failed to add client. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to add client.");
     } finally {
       setSaving(false);
     }
@@ -104,28 +107,29 @@ export default function NewClientPage() {
           </div>
         </div>
 
-        <div>
-          <label className="lf-label">Client Type</label>
-          <select
-            className="lf-input"
-            value={form.clientType}
-            onChange={(e) => update("clientType", e.target.value)}
-          >
-            <option value="INDIVIDUAL">Individual</option>
-            <option value="BUSINESS_ENTITY">Business Entity</option>
-            <option value="GOVERNMENT">Government</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="lf-label">Address</label>
-          <input
-            type="text"
-            className="lf-input"
-            placeholder="123 Main St, City, State, ZIP"
-            value={form.address}
-            onChange={(e) => update("address", e.target.value)}
-          />
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="lf-label">Client Type</label>
+            <select
+              className="lf-input"
+              value={form.clientType}
+              onChange={(e) => update("clientType", e.target.value)}
+            >
+              <option value="INDIVIDUAL">Individual</option>
+              <option value="BUSINESS_ENTITY">Business Entity</option>
+              <option value="GOVERNMENT">Government</option>
+            </select>
+          </div>
+          <div>
+            <label className="lf-label">Company</label>
+            <input
+              type="text"
+              className="lf-input"
+              placeholder="Company name (if applicable)"
+              value={form.company}
+              onChange={(e) => update("company", e.target.value)}
+            />
+          </div>
         </div>
 
         <div>

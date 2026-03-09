@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
@@ -23,17 +23,35 @@ const statusLabels: Record<string, string> = {
   OPEN: "Open", ACTIVE: "Active", ON_HOLD: "On Hold", PENDING: "Pending",
 };
 
+interface ClientOption {
+  id: string;
+  name: string;
+}
+
 export default function NewCasePage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
   const [form, setForm] = useState({
     title: "",
     clientId: "",
     caseType: "CIVIL",
     status: "OPEN",
-    value: "",
     description: "",
   });
+
+  useEffect(() => {
+    fetch("/api/v1/clients?limit=200")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setClients(json.data.map((c: ClientOption) => ({ id: c.id, name: c.name })));
+        }
+      })
+      .catch(() => toast.error("Failed to load clients"))
+      .finally(() => setLoadingClients(false));
+  }, []);
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -44,6 +62,10 @@ export default function NewCasePage() {
       toast.error("Case title is required");
       return;
     }
+    if (!form.clientId) {
+      toast.error("Please select a client");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/v1/cases", {
@@ -51,16 +73,20 @@ export default function NewCasePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: form.title,
+          clientId: form.clientId,
           caseType: form.caseType,
           status: form.status,
           description: form.description || undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create case");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Failed to create case");
+      }
       toast.success("Case created successfully");
       router.push("/cases");
-    } catch {
-      toast.error("Failed to create case. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create case.");
     } finally {
       setSaving(false);
     }
@@ -97,6 +123,31 @@ export default function NewCasePage() {
           />
         </div>
 
+        <div>
+          <label className="lf-label">Client *</label>
+          <select
+            className="lf-input"
+            value={form.clientId}
+            onChange={(e) => update("clientId", e.target.value)}
+            required
+          >
+            <option value="">
+              {loadingClients ? "Loading clients..." : "Select a client"}
+            </option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          {!loadingClients && clients.length === 0 && (
+            <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
+              No clients found.{" "}
+              <Link href="/clients/new" className="underline" style={{ color: "var(--gold)" }}>
+                Add a client first
+              </Link>
+            </p>
+          )}
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="lf-label">Case Type</label>
@@ -122,19 +173,6 @@ export default function NewCasePage() {
               ))}
             </select>
           </div>
-        </div>
-
-        <div>
-          <label className="lf-label">Estimated Value ($)</label>
-          <input
-            type="number"
-            className="lf-input"
-            placeholder="0.00"
-            value={form.value}
-            onChange={(e) => update("value", e.target.value)}
-            min="0"
-            step="0.01"
-          />
         </div>
 
         <div>

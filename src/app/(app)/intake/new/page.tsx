@@ -40,7 +40,7 @@ export default function NewIntakePage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.prospectName.trim()) {
-      toast.error("Client name is required");
+      toast.error("Prospective client name is required");
       return;
     }
     setSaving(true);
@@ -54,14 +54,19 @@ export default function NewIntakePage() {
           prospectPhone: form.prospectPhone || undefined,
           caseType: form.caseType,
           description: form.description || undefined,
-          notes: form.referralSource ? `Referral: ${form.referralSource}` : undefined,
+          notes: form.referralSource
+            ? `Referral source: ${form.referralSource}`
+            : undefined,
         }),
       });
-      if (!res.ok) throw new Error("Failed to submit intake");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Failed to submit intake");
+      }
       toast.success("Intake form submitted successfully");
       router.push("/intake");
-    } catch {
-      toast.error("Failed to submit intake. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to submit intake.");
     } finally {
       setSaving(false);
     }
@@ -87,7 +92,7 @@ export default function NewIntakePage() {
 
       <form onSubmit={handleSubmit} className="lf-card max-w-2xl space-y-5">
         <div>
-          <label className="lf-label">Client Name *</label>
+          <label className="lf-label">Prospective Client Name *</label>
           <input
             type="text"
             className="lf-input"
@@ -135,7 +140,7 @@ export default function NewIntakePage() {
         </div>
 
         <div>
-          <label className="lf-label">Description of Matter</label>
+          <label className="lf-label">Brief Description</label>
           <textarea
             className="lf-input"
             rows={4}

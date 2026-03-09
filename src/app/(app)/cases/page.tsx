@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,107 +12,84 @@ import {
   Eye,
   Edit3,
   Trash2,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import {
+  CASE_STATUS_LABELS,
+  CASE_TYPE_LABELS,
+} from "@/lib/constants";
 
-interface CaseRow {
+interface CaseRecord {
   id: string;
   caseNumber: string;
   title: string;
-  client: string;
-  clientInitials: string;
-  type: string;
   status: string;
-  nextDeadline: string;
-  value: number;
+  caseType: string;
+  client: { id: string; name: string };
+  _count: { deadlines: number; billingRecords: number };
 }
 
-const statusOptions = ["All", "Active", "Discovery", "Pending Trial", "Closed", "On Hold"] as const;
+const statusFilters = ["All", "OPEN", "ACTIVE", "ON_HOLD", "PENDING", "CLOSED"] as const;
 
-const statusColors: Record<string, { bg: string; text: string }> = {
-  Active:        { bg: "var(--success-bg)", text: "var(--success)" },
-  Discovery:     { bg: "var(--warning-bg)", text: "var(--warning)" },
-  "Pending Trial": { bg: "var(--info-bg)", text: "var(--info)" },
-  Closed:        { bg: "#F3F4F6", text: "var(--text-secondary)" },
-  "On Hold":     { bg: "rgba(15,27,51,0.06)", text: "var(--navy)" },
+const statusBadgeStyles: Record<string, { bg: string; text: string }> = {
+  OPEN: { bg: "var(--info-bg)", text: "var(--info)" },
+  ACTIVE: { bg: "var(--success-bg)", text: "var(--success)" },
+  ON_HOLD: { bg: "rgba(15,27,51,0.06)", text: "var(--navy)" },
+  PENDING: { bg: "var(--warning-bg)", text: "var(--warning)" },
+  CLOSED: { bg: "#F3F4F6", text: "var(--text-secondary)" },
+  ARCHIVED: { bg: "#F3F4F6", text: "var(--text-muted)" },
 };
 
-const sampleCases: CaseRow[] = [
-  {
-    id: "1",
-    caseNumber: "LF-2024-001",
-    title: "Martinez v. Acme Corp",
-    client: "Carlos Martinez",
-    clientInitials: "CM",
-    type: "Civil Litigation",
-    status: "Active",
-    nextDeadline: "Mar 15, 2026",
-    value: 45000,
-  },
-  {
-    id: "2",
-    caseNumber: "LF-2024-002",
-    title: "Johnson Estate Planning",
-    client: "Margaret Johnson",
-    clientInitials: "MJ",
-    type: "Estate Planning",
-    status: "Discovery",
-    nextDeadline: "Mar 18, 2026",
-    value: 12000,
-  },
-  {
-    id: "3",
-    caseNumber: "LF-2024-003",
-    title: "Thompson Divorce",
-    client: "Sarah Thompson",
-    clientInitials: "ST",
-    type: "Family Law",
-    status: "Active",
-    nextDeadline: "Mar 22, 2026",
-    value: 8500,
-  },
-  {
-    id: "4",
-    caseNumber: "LF-2024-004",
-    title: "Roberts LLC Formation",
-    client: "David Roberts",
-    clientInitials: "DR",
-    type: "Business Law",
-    status: "Pending Trial",
-    nextDeadline: "Apr 5, 2026",
-    value: 5200,
-  },
-  {
-    id: "5",
-    caseNumber: "LF-2024-005",
-    title: "Williams Personal Injury",
-    client: "James Williams",
-    clientInitials: "JW",
-    type: "Personal Injury",
-    status: "Closed",
-    nextDeadline: "—",
-    value: 92000,
-  },
-];
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export default function CasesPage() {
   const router = useRouter();
+  const [cases, setCases] = useState<CaseRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState<string>("All");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
+  useEffect(() => {
+    async function fetchCases() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/v1/cases?limit=50");
+        if (!res.ok) throw new Error("Failed to fetch cases");
+        const json = await res.json();
+        if (json.success) {
+          setCases(json.data);
+        } else {
+          throw new Error(json.error || "Failed to fetch cases");
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to load cases");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchCases();
+  }, []);
+
   const filtered = useMemo(() => {
-    return sampleCases.filter((c) => {
+    return cases.filter((c) => {
       const matchSearch =
         !search ||
         c.title.toLowerCase().includes(search.toLowerCase()) ||
-        c.client.toLowerCase().includes(search.toLowerCase()) ||
+        c.client.name.toLowerCase().includes(search.toLowerCase()) ||
         c.caseNumber.toLowerCase().includes(search.toLowerCase());
       const matchStatus = activeStatus === "All" || c.status === activeStatus;
       return matchSearch && matchStatus;
     });
-  }, [search, activeStatus]);
-
-  const totalValue = filtered.reduce((sum, c) => sum + c.value, 0);
+  }, [cases, search, activeStatus]);
 
   return (
     <div className="space-y-6">
@@ -149,13 +126,13 @@ export default function CasesPage() {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {statusOptions.map((s) => (
+          {statusFilters.map((s) => (
             <button
               key={s}
               onClick={() => setActiveStatus(s)}
               className={`lf-pill ${activeStatus === s ? "lf-pill-active" : ""}`}
             >
-              {s}
+              {s === "All" ? "All" : CASE_STATUS_LABELS[s] || s}
             </button>
           ))}
         </div>
@@ -170,17 +147,20 @@ export default function CasesPage() {
           <strong style={{ color: "var(--navy)" }}>{filtered.length}</strong>{" "}
           {filtered.length === 1 ? "case" : "cases"}
         </span>
-        <span style={{ color: "var(--border-default)" }}>|</span>
-        <span>
-          Total value:{" "}
-          <strong style={{ color: "var(--navy)" }}>
-            ${totalValue.toLocaleString()}
-          </strong>
-        </span>
       </div>
 
-      {/* Table or empty state */}
-      {filtered.length === 0 ? (
+      {/* Loading state */}
+      {loading ? (
+        <div className="lf-card">
+          <div className="lf-empty">
+            <Loader2
+              className="lf-empty-icon animate-spin"
+              style={{ width: 36, height: 36, color: "var(--navy)" }}
+            />
+            <p className="lf-empty-title">Loading cases...</p>
+          </div>
+        </div>
+      ) : filtered.length === 0 ? (
         <div className="lf-card">
           <div className="lf-empty">
             <Briefcase className="lf-empty-icon" />
@@ -212,14 +192,13 @@ export default function CasesPage() {
                 <th>Client</th>
                 <th>Type</th>
                 <th>Status</th>
-                <th>Next Deadline</th>
-                <th style={{ textAlign: "right" }}>Value</th>
+                <th>Deadlines</th>
                 <th style={{ width: 48 }} />
               </tr>
             </thead>
             <tbody>
               {filtered.map((c) => {
-                const sc = statusColors[c.status] || statusColors.Active;
+                const sc = statusBadgeStyles[c.status] || statusBadgeStyles.ACTIVE;
                 return (
                   <tr
                     key={c.id}
@@ -242,14 +221,14 @@ export default function CasesPage() {
                           className="flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white flex-shrink-0"
                           style={{ background: "var(--navy)" }}
                         >
-                          {c.clientInitials}
+                          {getInitials(c.client.name)}
                         </div>
-                        <span className="text-sm">{c.client}</span>
+                        <span className="text-sm">{c.client.name}</span>
                       </div>
                     </td>
                     <td>
                       <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                        {c.type}
+                        {CASE_TYPE_LABELS[c.caseType] || c.caseType}
                       </span>
                     </td>
                     <td>
@@ -257,23 +236,21 @@ export default function CasesPage() {
                         className="lf-badge"
                         style={{ background: sc.bg, color: sc.text }}
                       >
-                        {c.status}
+                        {CASE_STATUS_LABELS[c.status] || c.status}
                       </span>
                     </td>
                     <td>
                       <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                        {c.nextDeadline}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <span className="text-sm font-semibold" style={{ color: "var(--navy)" }}>
-                        ${c.value.toLocaleString()}
+                        {c._count.deadlines}
                       </span>
                     </td>
                     <td>
                       <div className="relative">
                         <button
-                          onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === c.id ? null : c.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(openMenuId === c.id ? null : c.id);
+                          }}
                           className="flex h-8 w-8 items-center justify-center rounded-md transition-colors"
                           style={{ color: "var(--text-muted)" }}
                           onMouseEnter={(e) => {
@@ -293,16 +270,34 @@ export default function CasesPage() {
                               border: "1px solid var(--border-default)",
                             }}
                           >
-                            <button className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
-                              style={{ color: "var(--text-primary)" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/cases/${c.id}`);
+                              }}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
+                              style={{ color: "var(--text-primary)" }}
+                            >
                               <Eye style={{ width: 14, height: 14 }} /> View
                             </button>
-                            <button className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
-                              style={{ color: "var(--text-primary)" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                router.push(`/cases/${c.id}/edit`);
+                              }}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
+                              style={{ color: "var(--text-primary)" }}
+                            >
                               <Edit3 style={{ width: 14, height: 14 }} /> Edit
                             </button>
-                            <button className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
-                              style={{ color: "var(--danger)" }}>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toast.error("Delete not yet implemented");
+                              }}
+                              className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
+                              style={{ color: "var(--danger)" }}
+                            >
                               <Trash2 style={{ width: 14, height: 14 }} /> Delete
                             </button>
                           </div>

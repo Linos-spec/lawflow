@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Plus, X } from "lucide-react";
 import { toast } from "sonner";
+
+interface ClientOption {
+  id: string;
+  name: string;
+}
+
+interface CaseOption {
+  id: string;
+  title: string;
+  caseNumber: string;
+}
 
 interface LineItem {
   description: string;
@@ -15,7 +26,13 @@ interface LineItem {
 export default function NewInvoicePage() {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
+  const [clients, setClients] = useState<ClientOption[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [cases, setCases] = useState<CaseOption[]>([]);
+  const [loadingCases, setLoadingCases] = useState(true);
   const [form, setForm] = useState({
+    clientId: "",
+    caseId: "",
     billingType: "HOURLY",
     dueDate: "",
     notes: "",
@@ -23,6 +40,34 @@ export default function NewInvoicePage() {
   const [lineItems, setLineItems] = useState<LineItem[]>([
     { description: "", quantity: "1", rate: "" },
   ]);
+
+  useEffect(() => {
+    fetch("/api/v1/clients?limit=200")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setClients(json.data.map((c: ClientOption) => ({ id: c.id, name: c.name })));
+        }
+      })
+      .catch(() => toast.error("Failed to load clients"))
+      .finally(() => setLoadingClients(false));
+
+    fetch("/api/v1/cases?limit=200")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setCases(
+            json.data.map((c: CaseOption) => ({
+              id: c.id,
+              title: c.title,
+              caseNumber: c.caseNumber,
+            }))
+          );
+        }
+      })
+      .catch(() => toast.error("Failed to load cases"))
+      .finally(() => setLoadingCases(false));
+  }, []);
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -45,13 +90,21 @@ export default function NewInvoicePage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const validLines = lineItems.filter((l) => l.description && l.rate);
-    if (validLines.length === 0) {
-      toast.error("Add at least one line item");
+    if (!form.clientId) {
+      toast.error("Please select a client");
+      return;
+    }
+    if (!form.caseId) {
+      toast.error("Please select a related case");
       return;
     }
     if (!form.dueDate) {
       toast.error("Due date is required");
+      return;
+    }
+    const validLines = lineItems.filter((l) => l.description && l.rate);
+    if (validLines.length === 0) {
+      toast.error("Add at least one line item with description and rate");
       return;
     }
     setSaving(true);
@@ -60,10 +113,11 @@ export default function NewInvoicePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          clientId: form.clientId,
+          caseId: form.caseId,
           billingType: form.billingType,
           dueDate: new Date(form.dueDate).toISOString(),
           notes: form.notes || undefined,
-          totalAmount: total,
           lineItems: validLines.map((l) => ({
             description: l.description,
             quantity: parseFloat(l.quantity) || 1,
@@ -72,11 +126,14 @@ export default function NewInvoicePage() {
           })),
         }),
       });
-      if (!res.ok) throw new Error("Failed to create invoice");
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        throw new Error(err?.error || "Failed to create invoice");
+      }
       toast.success("Invoice created successfully");
       router.push("/billing");
-    } catch {
-      toast.error("Failed to create invoice. Please try again.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create invoice.");
     } finally {
       setSaving(false);
     }
@@ -101,6 +158,59 @@ export default function NewInvoicePage() {
       </div>
 
       <form onSubmit={handleSubmit} className="lf-card max-w-3xl space-y-5">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="lf-label">Client *</label>
+            <select
+              className="lf-input"
+              value={form.clientId}
+              onChange={(e) => update("clientId", e.target.value)}
+              required
+            >
+              <option value="">
+                {loadingClients ? "Loading clients..." : "Select a client"}
+              </option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {!loadingClients && clients.length === 0 && (
+              <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
+                No clients found.{" "}
+                <Link href="/clients/new" className="underline" style={{ color: "var(--gold)" }}>
+                  Add a client first
+                </Link>
+              </p>
+            )}
+          </div>
+          <div>
+            <label className="lf-label">Related Case *</label>
+            <select
+              className="lf-input"
+              value={form.caseId}
+              onChange={(e) => update("caseId", e.target.value)}
+              required
+            >
+              <option value="">
+                {loadingCases ? "Loading cases..." : "Select a case"}
+              </option>
+              {cases.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.caseNumber ? `${c.caseNumber} — ${c.title}` : c.title}
+                </option>
+              ))}
+            </select>
+            {!loadingCases && cases.length === 0 && (
+              <p className="text-xs mt-1" style={{ color: "var(--warning)" }}>
+                No cases found.{" "}
+                <Link href="/cases/new" className="underline" style={{ color: "var(--gold)" }}>
+                  Create a case first
+                </Link>
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="lf-label">Billing Type</label>
@@ -169,7 +279,7 @@ export default function NewInvoicePage() {
                     step="0.01"
                   />
                 </div>
-                <div style={{ width: 90, paddingTop: 8 }} className="text-sm font-semibold text-right" >
+                <div style={{ width: 90, paddingTop: 8 }} className="text-sm font-semibold text-right">
                   ${((parseFloat(item.quantity) || 0) * (parseFloat(item.rate) || 0)).toFixed(2)}
                 </div>
                 {lineItems.length > 1 && (
