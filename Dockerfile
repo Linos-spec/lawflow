@@ -37,10 +37,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/package.json ./package.json
-RUN npm install prisma --no-save
+COPY --from=deps /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=deps /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=deps /app/node_modules/prisma ./node_modules/prisma
+COPY --from=deps /app/node_modules/effect ./node_modules/effect
+COPY --from=deps /app/node_modules/fast-check ./node_modules/fast-check
+COPY --from=deps /app/node_modules/pure-rand ./node_modules/pure-rand
 COPY --from=builder /app/start.sh ./start.sh
 
 RUN chmod +x start.sh
