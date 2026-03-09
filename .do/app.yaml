@@ -1,0 +1,35 @@
+name: lawflow
+region: nyc
+services:
+  - name: lawflow-web
+    dockerfile_path: Dockerfile
+    github:
+      repo: fadwachafouk/lawflow
+      branch: main
+      deploy_on_push: true
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: "${db-lawflow.DATABASE_URL}"
+      - key: NEXTAUTH_URL
+        scope: RUN_TIME
+        value: "${APP_URL}"
+      - key: NEXTAUTH_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: "CHANGE_ME_IN_PRODUCTION"
+      - key: NODE_ENV
+        scope: RUN_AND_BUILD_TIME
+        value: "production"
+databases:
+  - name: db-lawflow
+    engine: PG
+    production: false
+    cluster_name: db-lawflow
+    db_name: lawflow
+    db_user: lawflow
