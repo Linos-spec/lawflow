@@ -4,7 +4,7 @@ services:
   - name: lawflow-web
     dockerfile_path: Dockerfile
     github:
-      repo: fadwachafouk/lawflow
+      repo: Linos-spec/lawflow
       branch: main
       deploy_on_push: true
     http_port: 8080
@@ -22,7 +22,7 @@ services:
       - key: NEXTAUTH_SECRET
         scope: RUN_TIME
         type: SECRET
-        value: "CHANGE_ME_IN_PRODUCTION"
+        value: "rG7cSv3H+CvPN2l6Gwk5if0Kuo73CzwKrKLYUpPtOXo="
       - key: NODE_ENV
         scope: RUN_AND_BUILD_TIME
         value: "production"
