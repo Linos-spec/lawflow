@@ -19,6 +19,7 @@ import {
   INTAKE_STATUS_LABELS,
   CASE_TYPE_LABELS,
 } from "@/lib/constants";
+import { IntakeAnalysisButton } from "@/components/ai/intake-analysis";
 
 interface IntakeRecord {
   id: string;
@@ -180,6 +181,7 @@ export default function IntakePage() {
                 <th>Matter Type</th>
                 <th>Status</th>
                 <th>Date</th>
+                <th style={{ width: 40 }}>AI</th>
                 <th style={{ width: 48 }} />
               </tr>
             </thead>
@@ -223,6 +225,9 @@ export default function IntakePage() {
                       <span className="text-sm" style={{ color: "var(--text-secondary)" }}>
                         {formatDate(f.createdAt)}
                       </span>
+                    </td>
+                    <td onClick={(e) => e.stopPropagation()}>
+                      <IntakeAnalysisButton intakeId={f.id} />
                     </td>
                     <td>
                       <div className="relative">

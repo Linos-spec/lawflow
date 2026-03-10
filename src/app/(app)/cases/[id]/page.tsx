@@ -15,9 +15,11 @@ import {
   Phone,
   Building,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { CaseSummary } from "@/components/ai/case-summary";
 
 interface CaseClient {
   id: string;
@@ -624,6 +626,40 @@ export default function CaseDetailPage() {
               </span>
             </div>
           </div>
+
+          {/* AI Draft Document link */}
+          <Link
+            href={`/cases/${id}/draft`}
+            className="lf-card-interactive flex items-center gap-3 w-full"
+            style={{ textDecoration: "none" }}
+          >
+            <div
+              className="flex h-10 w-10 items-center justify-center rounded-lg flex-shrink-0"
+              style={{
+                background: "rgba(196,154,46,0.12)",
+                color: "var(--gold)",
+              }}
+            >
+              <Sparkles style={{ width: 20, height: 20 }} />
+            </div>
+            <div>
+              <p
+                className="font-semibold text-sm"
+                style={{ color: "var(--navy)" }}
+              >
+                Draft Document with AI
+              </p>
+              <p
+                className="text-xs"
+                style={{ color: "var(--text-muted)" }}
+              >
+                Generate letters, memos, and motions
+              </p>
+            </div>
+          </Link>
+
+          {/* AI Case Summary */}
+          <CaseSummary caseId={id} />
         </div>
       </div>
     </div>

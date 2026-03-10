@@ -17,7 +17,7 @@ import {
   LogOut,
   ChevronDown,
   Bell,
-  UserCircle,
+  Sparkles,
 } from "lucide-react";
 
 interface NavItem {
@@ -62,6 +62,12 @@ const navGroups: NavGroup[] = [
     label: "Intake",
     items: [
       { label: "Intake Forms", href: "/intake", icon: FileText },
+    ],
+  },
+  {
+    label: "AI Tools",
+    items: [
+      { label: "AI Assistant", href: "/ai", icon: Sparkles },
     ],
   },
 ];
