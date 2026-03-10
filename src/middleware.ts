@@ -1,20 +1,19 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/login", "/register", "/pricing", "/features"];
+const publicRoutes = ["/login", "/register", "/signup", "/pricing", "/features"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
+  // Redirect /signup → /register (common alias)
+  if (pathname === "/signup") {
+    return NextResponse.redirect(new URL("/register", req.url));
+  }
+
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
   );
-  const isApiAuth = pathname.startsWith("/api/auth");
-  const isApiRegister = pathname.startsWith("/api/v1/auth/register");
-
-  if (isApiAuth || isApiRegister) {
-    return NextResponse.next();
-  }
 
   // Root "/" is the landing page for unauthenticated, dashboard for authenticated
   if (pathname === "/") {
@@ -39,6 +38,13 @@ export default auth((req) => {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    /*
+     * Match all routes EXCEPT:
+     * - /api (API routes handle their own auth with JSON 401 responses)
+     * - /_next/static (static files)
+     * - /_next/image (image optimization)
+     * - /favicon.ico, /sitemap.xml, /robots.txt (metadata files)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
