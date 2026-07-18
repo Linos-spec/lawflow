@@ -151,7 +151,7 @@ export default function AiPage() {
           <div>
             <p className="font-semibold text-sm mb-1">AI-Powered Insights</p>
             <p className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>
-              LawFlow AI features analyze your firm&apos;s data to provide summaries, draft documents,
+              Linoscore Law AI features analyze your firm&apos;s data to provide summaries, draft documents,
               and answer questions. All AI processing is secure and your data never leaves your firm&apos;s context.
               Use the floating chat button (bottom-right) to ask questions from any page.
             </p>

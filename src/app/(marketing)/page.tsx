@@ -90,7 +90,7 @@ const steps = [
 const testimonials = [
   {
     quote:
-      "LawFlow cut our administrative time by 40%. The deadline tracking alone is worth the subscription.",
+      "Linoscore Law cut our administrative time by 40%. The deadline tracking alone is worth the subscription.",
     name: "Sarah M.",
     title: "Managing Partner",
   },
@@ -102,7 +102,7 @@ const testimonials = [
   },
   {
     quote:
-      "We migrated from spreadsheets to LawFlow in a weekend. Our team hasn't looked back.",
+      "We migrated from spreadsheets to Linoscore Law in a weekend. Our team hasn't looked back.",
     name: "Jennifer L.",
     title: "Associate",
   },
@@ -398,7 +398,7 @@ export default function LandingPage() {
                 animationDelay: "100ms",
               }}
             >
-              LawFlow gives your firm the tools to manage cases, deadlines,
+              Linoscore Law gives your firm the tools to manage cases, deadlines,
               billing, and clients — all in one powerful platform built for
               modern law practices.
             </p>
@@ -684,7 +684,7 @@ export default function LandingPage() {
                 lineHeight: 1.7,
               }}
             >
-              See why hundreds of law firms trust LawFlow every day.
+              See why hundreds of law firms trust Linoscore Law every day.
             </p>
           </div>
 
@@ -800,7 +800,7 @@ export default function LandingPage() {
               marginBottom: "2rem",
             }}
           >
-            Join 500+ law firms already using LawFlow to save time and grow
+            Join 500+ law firms already using Linoscore Law to save time and grow
             revenue.
           </p>
           <Link

@@ -71,7 +71,7 @@ ${caseData.billingRecords.map((b) => `  - ${b.invoiceNumber}: $${Number(b.totalA
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: `You are a senior legal assistant AI for a law practice management system called LawFlow. Generate a concise, professional case brief summary. Structure your response with these sections:
+    system: `You are a senior legal assistant AI for a law practice management system called Linoscore Law. Generate a concise, professional case brief summary. Structure your response with these sections:
 
 ## Case Overview
 Brief 2-3 sentence overview of the case.

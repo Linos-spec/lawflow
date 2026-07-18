@@ -77,7 +77,7 @@ export default function RegisterPage() {
               marginTop: "1rem",
             }}
           >
-            LawFlow
+            Linoscore Law
           </h1>
           <p
             style={{
@@ -250,7 +250,7 @@ export default function RegisterPage() {
               textDecoration: "none",
             }}
           >
-            &larr; Back to LawFlow.app
+            &larr; Back to Linoscore Law
           </Link>
         </p>
       </div>

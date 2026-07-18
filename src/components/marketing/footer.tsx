@@ -78,7 +78,7 @@ export function MarketingFooter() {
                       color: "#fff",
                     }}
                   >
-                    LawFlow
+                    Linoscore Law
                   </span>
                 </Link>
 
@@ -97,7 +97,7 @@ export function MarketingFooter() {
                   className="text-xs"
                   style={{ color: "rgba(255, 255, 255, 0.35)" }}
                 >
-                  &copy; {currentYear} LawFlow. All rights reserved.
+                  &copy; {currentYear} Linoscore Law. All rights reserved.
                 </p>
               </div>
 
@@ -187,7 +187,7 @@ export function MarketingFooter() {
                 </h4>
                 <div className="space-y-4">
                   <a
-                    href="mailto:support@lawflow.app"
+                    href="mailto:support@linoscore.com"
                     className="flex items-center gap-2.5 text-sm transition-colors duration-200"
                     style={{
                       color: "rgba(255, 255, 255, 0.6)",
@@ -201,7 +201,7 @@ export function MarketingFooter() {
                     }}
                   >
                     <Mail style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} />
-                    support@lawflow.app
+                    support@linoscore.com
                   </a>
 
                   <p

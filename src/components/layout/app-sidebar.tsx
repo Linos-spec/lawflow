@@ -94,7 +94,7 @@ export function AppSidebar() {
           className="text-lg font-bold text-white"
           style={{ fontFamily: "var(--font-heading)" }}
         >
-          LawFlow
+          Linoscore Law
         </span>
       </div>
 

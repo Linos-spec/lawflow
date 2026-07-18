@@ -80,7 +80,7 @@ function LoginForm() {
               marginTop: "1rem",
             }}
           >
-            LawFlow
+            Linoscore Law
           </h1>
           <p
             style={{
@@ -229,7 +229,7 @@ function LoginForm() {
               textDecoration: "none",
             }}
           >
-            &larr; Back to LawFlow.app
+            &larr; Back to Linoscore Law
           </Link>
         </p>
       </div>

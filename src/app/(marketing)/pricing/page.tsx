@@ -61,7 +61,7 @@ const tiers = [
       "SLA guarantee",
     ],
     cta: "Contact Sales",
-    href: "mailto:sales@lawflow.app",
+    href: "mailto:sales@linoscore.com",
     style: "navy" as const,
     highlighted: false,
   },

@@ -1,5 +1,8 @@
 name: lawflow
 region: nyc
+domains:
+  - domain: law.linoscore.com
+    type: PRIMARY
 services:
   - name: lawflow-web
     dockerfile_path: Dockerfile
@@ -18,19 +21,21 @@ services:
         value: "${db-lawflow.DATABASE_URL}"
       - key: NEXTAUTH_URL
         scope: RUN_TIME
-        value: "https://lawflow-b8pcz.ondigitalocean.app"
+        value: "https://law.linoscore.com"
+      # Secrets are managed in the DigitalOcean dashboard / via `doctl apps update`.
+      # Do NOT commit real secret values here. Set these in the app's env config.
       - key: NEXTAUTH_SECRET
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
-        value: "rG7cSv3H+CvPN2l6Gwk5if0Kuo73CzwKrKLYUpPtOXo="
+        value: "set-in-dashboard"
       - key: AUTH_SECRET
-        scope: RUN_TIME
+        scope: RUN_AND_BUILD_TIME
         type: SECRET
-        value: "rG7cSv3H+CvPN2l6Gwk5if0Kuo73CzwKrKLYUpPtOXo="
+        value: "set-in-dashboard"
       - key: OPENAI_API_KEY
         scope: RUN_TIME
         type: SECRET
-        value: "your-openai-api-key"
+        value: "set-in-dashboard"
       - key: NODE_ENV
         scope: RUN_AND_BUILD_TIME
         value: "production"
