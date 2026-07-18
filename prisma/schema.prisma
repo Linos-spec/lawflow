@@ -90,6 +90,34 @@ enum IntakeStatus {
   COMPLETED
 }
 
+enum LeadSource {
+  PHONE
+  WEBSITE
+  REFERRAL
+  GOOGLE
+  WALK_IN
+  OTHER
+}
+
+enum LeadStage {
+  NEW
+  QUALIFYING
+  QUALIFIED
+  CONSULT_SCHEDULED
+  ENGAGED
+  CONVERTED
+  DISQUALIFIED
+  LOST
+}
+
+enum ConflictStatus {
+  PENDING
+  CLEAR
+  POTENTIAL
+  CONFLICT
+  WAIVED
+}
+
 // ─── MULTI-TENANCY ─────────────────────────────────
 
 model Organization {
@@ -131,6 +159,9 @@ model Firm {
   phone     String?
   email     String?
   website   String?
+  // Public identifier used for the unauthenticated intake link (/intake/[publicId]).
+  // DB-level default so `prisma db push` backfills existing rows (no migration files here).
+  publicId  String   @unique @default(dbgenerated("gen_random_uuid()::text"))
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -144,6 +175,7 @@ model Firm {
   billingRecords BillingRecord[]
   timeEntries    TimeEntry[]
   intakeForms    IntakeForm[]
+  leads          Lead[]
 
   @@index([organizationId])
 }
@@ -320,6 +352,78 @@ model IntakeForm {
   client   Client? @relation(fields: [clientId], references: [id])
 
   @@index([firmId])
+  @@index([status])
+}
+
+// ─── INTAKE PIPELINE (Phase 1: the intake brain) ────
+
+model Lead {
+  id            String     @id @default(cuid())
+  // Contact
+  name          String
+  email         String?
+  phone         String?
+  // Funnel
+  source        LeadSource @default(WEBSITE)
+  stage         LeadStage  @default(NEW)
+  caseType      CaseType   @default(OTHER)
+  description   String?
+  // Opposing / adverse parties captured during intake (for conflict checking)
+  adverseParties String[]  @default([])
+  // Structured answers from the conversational questionnaire
+  answers       Json?
+  // AI qualification output
+  qualified        Boolean?
+  qualificationScore Int?          // 0-100
+  aiPriority       Priority?
+  aiSummary        String?
+  aiRiskFlags      String[]  @default([])
+  aiNextSteps      String[]  @default([])
+  // Conflict check rollup (details in ConflictCheck)
+  conflictStatus ConflictStatus @default(PENDING)
+  // Follow-up
+  nextFollowUpAt DateTime?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  firmId String
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  // Set once the lead is converted into a client/case
+  convertedClientId String?
+  convertedCaseId   String?
+
+  conflictChecks ConflictCheck[]
+
+  @@index([firmId])
+  @@index([stage])
+  @@index([source])
+  @@index([conflictStatus])
+  @@index([createdAt])
+}
+
+model ConflictCheck {
+  id         String         @id @default(cuid())
+  status     ConflictStatus @default(PENDING)
+  // Snapshot of what was searched
+  searchedNames String[]    @default([])
+  // Matches found: [{ type, id, name, matchedOn, score }]
+  matches    Json           @default("[]")
+  matchCount Int            @default(0)
+  // Attorney review
+  reviewed   Boolean        @default(false)
+  reviewedBy String?
+  reviewNote String?
+  createdAt  DateTime       @default(now())
+
+  firmId String
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([firmId])
+  @@index([leadId])
   @@index([status])
 }
 

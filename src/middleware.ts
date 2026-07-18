@@ -1,7 +1,16 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
-const publicRoutes = ["/login", "/register", "/signup", "/pricing", "/features"];
+const publicRoutes = [
+  "/login",
+  "/register",
+  "/signup",
+  "/pricing",
+  "/features",
+  // Prospective-client intake funnel, shared by a firm via its public link.
+  // Distinct from the authenticated internal /intake pages.
+  "/consult",
+];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;

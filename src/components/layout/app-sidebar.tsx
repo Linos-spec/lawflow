@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Bell,
   Sparkles,
+  UserPlus,
 } from "lucide-react";
 
 interface NavItem {
@@ -61,6 +62,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Intake",
     items: [
+      { label: "Leads", href: "/leads", icon: UserPlus },
       { label: "Intake Forms", href: "/intake", icon: FileText },
     ],
   },
