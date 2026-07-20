@@ -65,3 +65,29 @@ export const leadQualificationSchema = z.object({
 });
 
 export type LeadQualification = z.infer<typeof leadQualificationSchema>;
+
+export const documentAnalysisSchema = z.object({
+  documentType: z
+    .enum([
+      "CONTRACT", "PLEADING", "COURT_FILING", "CORRESPONDENCE", "EVIDENCE",
+      "DISCOVERY", "INVOICE", "IDENTIFICATION", "ENGAGEMENT_LETTER", "MEMO", "OTHER",
+    ])
+    .describe("The kind of legal document this is"),
+  suggestedTitle: z
+    .string()
+    .describe("A clear, consistent title for this document (e.g. 'Smith v. Jones — Motion to Dismiss'). Fixes bad file names."),
+  parties: z
+    .array(z.string())
+    .describe("People or organizations named as parties in the document"),
+  tags: z
+    .array(z.string())
+    .describe("3-6 short lowercase tags for search/filtering (e.g. 'motion', 'confidential', 'signed')"),
+  summary: z
+    .string()
+    .describe("1-2 sentence summary of what this document is"),
+  containsSignature: z
+    .boolean()
+    .describe("Whether the document appears to be signed or contains signature blocks"),
+});
+
+export type DocumentAnalysis = z.infer<typeof documentAnalysisSchema>;
