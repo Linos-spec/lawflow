@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
+import { useFirm } from "@/components/providers/firm-provider";
 import {
   User,
   Building2,
@@ -10,11 +12,13 @@ import {
   CreditCard,
   Upload,
   Check,
+  Bot,
 } from "lucide-react";
 
 const tabs = [
   { id: "profile", label: "Profile", icon: User },
   { id: "firm", label: "Firm Details", icon: Building2 },
+  { id: "ai", label: "AI Employee", icon: Bot },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: Shield },
   { id: "billing", label: "Plan & Billing", icon: CreditCard },
@@ -35,7 +39,28 @@ function Toggle({ active, onToggle }: { active: boolean; onToggle: () => void })
 
 export default function SettingsPage() {
   const { data: session } = useSession();
+  const { firm, refresh } = useFirm();
+  const isAdmin = session?.user?.role === "ADMIN";
+  const [savingAi, setSavingAi] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("profile");
+
+  async function toggleAiMode() {
+    if (!isAdmin || savingAi) return;
+    const next = !firm?.aiModeEnabled;
+    setSavingAi(true);
+    try {
+      const res = await fetch("/api/v1/firm", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aiModeEnabled: next }),
+      });
+      if (!res.ok) { toast.error("Couldn't update AI mode"); return; }
+      await refresh();
+      toast.success(next ? "AI Employee mode enabled for your firm" : "AI Employee mode disabled");
+    } finally {
+      setSavingAi(false);
+    }
+  }
 
   // Notification toggles
   const [notifs, setNotifs] = useState({
@@ -367,6 +392,44 @@ export default function SettingsPage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {activeTab === "ai" && (
+          <div className="lf-card" style={{ padding: "1.75rem", maxWidth: 640 }}>
+            <div style={{ display: "flex", gap: "0.9rem", alignItems: "flex-start" }}>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Bot style={{ width: 22, height: 22, color: "#fff" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 className="text-base font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>AI Employee mode</h3>
+                <p className="text-sm" style={{ color: "var(--text-secondary)", marginTop: 4, lineHeight: 1.6 }}>
+                  Turn on the AI Employee workspace — an opt-in pipeline that runs intake, analysis, documents,
+                  tasks, and billing, with an attorney review gate before anything leaves the firm. Practice mode
+                  stays exactly as it is; each lawyer can switch between the two.
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", marginTop: "1.5rem", padding: "1rem 1.15rem", borderRadius: 12, background: "var(--bg-base)", border: "1px solid var(--border-light)" }}>
+              <div>
+                <div style={{ fontWeight: 600, color: "var(--navy)", fontSize: "0.9rem" }}>Enable for this firm</div>
+                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                  {firm?.aiModeEnabled ? "The AI Employee switch is available in the sidebar." : "Off — lawyers see Practice mode only."}
+                </div>
+              </div>
+              {isAdmin ? (
+                <Toggle active={!!firm?.aiModeEnabled} onToggle={toggleAiMode} />
+              ) : (
+                <span className="lf-badge lf-badge-gray">{firm?.aiModeEnabled ? "Enabled" : "Disabled"}</span>
+              )}
+            </div>
+
+            {!isAdmin && (
+              <p className="text-sm" style={{ color: "var(--text-muted)", marginTop: "0.9rem" }}>
+                Only a firm admin can enable or disable AI Employee mode.
+              </p>
+            )}
           </div>
         )}
       </div>

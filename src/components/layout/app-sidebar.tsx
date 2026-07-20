@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
+import { useFirm } from "@/components/providers/firm-provider";
 import {
   Scale,
   LayoutDashboard,
@@ -20,6 +21,9 @@ import {
   Sparkles,
   UserPlus,
   FolderOpen,
+  Bot,
+  KanbanSquare,
+  ClipboardCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -76,10 +80,33 @@ const navGroups: NavGroup[] = [
   },
 ];
 
+// Navigation shown when the firm has switched into AI Employee mode.
+const aiNavGroups: NavGroup[] = [
+  {
+    label: "AI Employee",
+    items: [
+      { label: "Pipeline Board", href: "/ai-employee", icon: KanbanSquare },
+      { label: "Review Queue", href: "/ai-employee/review", icon: ClipboardCheck },
+    ],
+  },
+  {
+    label: "AI Tools",
+    items: [
+      { label: "AI Assistant", href: "/ai", icon: Sparkles },
+    ],
+  },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session } = useSession();
+  const { firm } = useFirm();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  const aiEnabled = !!firm?.aiModeEnabled;
+  const inAiMode = aiEnabled && pathname.startsWith("/ai-employee");
+  const groups = inAiMode ? aiNavGroups : navGroups;
 
   return (
     <aside
@@ -102,6 +129,32 @@ export function AppSidebar() {
         </span>
       </div>
 
+      {/* Workspace switcher — only when the firm has enabled AI Employee mode */}
+      {aiEnabled && (
+        <div className="mx-3 mt-3" style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(255,255,255,0.06)" }}>
+          {[
+            { key: "practice", label: "Practice", icon: Briefcase, active: !inAiMode, href: "/dashboard" },
+            { key: "ai", label: "AI Employee", icon: Bot, active: inAiMode, href: "/ai-employee" },
+          ].map((m) => (
+            <button
+              key={m.key}
+              onClick={() => router.push(m.href)}
+              className="flex-1"
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                padding: "0.4rem 0.5rem", borderRadius: 8, border: "none", cursor: "pointer",
+                fontSize: "0.78rem", fontWeight: 600,
+                background: m.active ? "var(--gold)" : "transparent",
+                color: m.active ? "#fff" : "rgba(255,255,255,0.65)",
+                transition: "all 0.15s ease",
+              }}
+            >
+              <m.icon style={{ width: 14, height: 14 }} /> {m.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Notification banner */}
       <div className="mx-3 mt-4 mb-2">
         <div
@@ -115,7 +168,7 @@ export function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {navGroups.map((group) => (
+        {groups.map((group) => (
           <div key={group.label} className="mb-4">
             <p
               className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest"
