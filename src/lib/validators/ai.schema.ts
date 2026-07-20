@@ -111,3 +111,29 @@ export const matterPlanSchema = z.object({
 });
 
 export type MatterPlan = z.infer<typeof matterPlanSchema>;
+
+export const caseIntelligenceSchema = z.object({
+  summary: z.string().describe("2-4 sentence plain-English summary of the matter and its posture"),
+  strengthScore: z.number().int().min(0).max(100).describe("How strong the client's position looks, 0-100"),
+  strengthRationale: z.string().describe("One or two sentences on what drives the strength score"),
+  riskScore: z.number().int().min(0).max(100).describe("Overall risk/exposure, 0-100 (higher = riskier)"),
+  riskRationale: z.string().describe("One or two sentences on the key risks"),
+  missingEvidence: z.array(z.string()).describe("Evidence or documentation that appears to be missing and should be gathered"),
+  potentialDefenses: z.array(z.string()).describe("Potential defenses or counter-arguments to anticipate (suggestions only)"),
+  nextSteps: z.array(z.string()).describe("Concrete recommended next actions"),
+  recommendedDocuments: z.array(z.object({
+    title: z.string(),
+    why: z.string(),
+  })).describe("Documents worth drafting or filing next, with why"),
+  statutes: z.array(z.object({
+    citation: z.string().describe("Statute citation, e.g. 'Cal. Civ. Code § 1550'"),
+    relevance: z.string(),
+  })).describe("Potentially relevant statutes — STARTING POINTS the attorney must verify, never authoritative"),
+  caseLaw: z.array(z.object({
+    citation: z.string().describe("Case citation, e.g. 'Palsgraf v. Long Island R.R., 248 N.Y. 339 (1928)'"),
+    holding: z.string().describe("What the case is cited for"),
+    relevance: z.string(),
+  })).describe("Potentially relevant case law — UNVERIFIED AI suggestions that MUST be checked in a legal database before any reliance (LLMs invent citations)"),
+});
+
+export type CaseIntelligence = z.infer<typeof caseIntelligenceSchema>;

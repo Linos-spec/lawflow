@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useFirm } from "@/components/providers/firm-provider";
+import { CaseIntelligence } from "@/components/case/case-intelligence";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -124,6 +126,7 @@ function formatStatusLabel(status: string): string {
 export default function CaseDetailPage() {
   const params = useParams();
   const id = params.id as string;
+  const { firm } = useFirm();
 
   const [caseData, setCaseData] = useState<CaseData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -251,6 +254,9 @@ export default function CaseDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* AI Case Intelligence — only when the firm has enabled AI Employee mode */}
+      {firm?.aiModeEnabled && <CaseIntelligence caseId={id} />}
 
       {/* Info grid */}
       <div className="grid lg:grid-cols-3 gap-6">
