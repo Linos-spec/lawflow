@@ -287,7 +287,7 @@ export default function DraftPage() {
                 className="w-full border-none bg-transparent text-sm leading-relaxed focus:outline-none resize-none"
                 style={{
                   color: "var(--text-primary)",
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   minHeight: "500px",
                 }}
               />

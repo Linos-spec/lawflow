@@ -41,7 +41,7 @@ INTAKE FORM DETAILS:
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: intakeAnalysisSchema,
-      system: `You are a senior legal intake specialist AI for Linoscore Law, a law practice management system. Analyze the intake form and provide a structured assessment.
+      system: `You are a senior legal intake specialist AI for Linoscore Legal, a law practice management system. Analyze the intake form and provide a structured assessment.
 
 Be thorough but practical:
 - Suggest the most appropriate case type based on the description (it may differ from what the prospect stated)

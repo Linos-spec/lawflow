@@ -1,7 +1,7 @@
 name: lawflow
 region: nyc
 domains:
-  - domain: law.linoscore.com
+  - domain: legal.linoscore.com
     type: PRIMARY
 services:
   - name: lawflow-web
@@ -21,7 +21,7 @@ services:
         value: "${db-lawflow.DATABASE_URL}"
       - key: NEXTAUTH_URL
         scope: RUN_TIME
-        value: "https://law.linoscore.com"
+        value: "https://legal.linoscore.com"
       # Secrets are managed in the DigitalOcean dashboard / via `doctl apps update`.
       # Do NOT commit real secret values here. Set these in the app's env config.
       - key: NEXTAUTH_SECRET

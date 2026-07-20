@@ -36,7 +36,7 @@ INBOUND LEAD:
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: leadQualificationSchema,
-      system: `You are a senior legal intake specialist for Linoscore Law. Assess an inbound lead for a law firm.
+      system: `You are a senior legal intake specialist for Linoscore Legal. Assess an inbound lead for a law firm.
 
 Be practical and honest:
 - Score higher when the matter is a clear fit, time-sensitive, and the prospect provided enough detail to act.

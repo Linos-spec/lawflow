@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -7,20 +7,24 @@
    Design-system tokens
    ─────────────────────────────────────────────── */
 :root {
-  /* Brand palette */
-  --navy:       #0F1B33;
-  --navy-light: #1A2A4A;
-  --navy-muted: #2A3A5A;
-  --gold:       #C49A2E;
-  --gold-light: #D4AF37;
-  --gold-muted: #E8D48B;
-  --bg-base:    #F8F7F4;
+  /* Brand palette — aligned to the Linoscore suite (blue #1d4ed8 / amber #f59e0b / slate).
+     Var names kept for compatibility; --navy now holds the suite's dark slate,
+     --gold holds the suite amber accent. */
+  --navy:       #1e293b;
+  --navy-light: #334155;
+  --navy-muted: #475569;
+  --gold:       #f59e0b;
+  --gold-light: #fbbf24;
+  --gold-muted: #fcd34d;
+  --brand:      #1d4ed8;
+  --brand-dark: #1e3a8a;
+  --bg-base:    #f8fafc;
   --bg-card:    #FFFFFF;
-  --text-primary:   #1A1A2E;
-  --text-secondary: #6B7280;
-  --text-muted:     #9CA3AF;
-  --border-default: #E5E7EB;
-  --border-light:   #F0EDE8;
+  --text-primary:   #0f172a;
+  --text-secondary: #64748b;
+  --text-muted:     #94a3b8;
+  --border-default: #e2e8f0;
+  --border-light:   #f1f5f9;
 
   /* Semantic */
   --success:     #059669;
@@ -46,40 +50,40 @@
   --shadow-xl:  0 8px 32px rgba(15,27,51,0.10), 0 4px 8px rgba(15,27,51,0.06);
 
   /* Fonts */
-  --font-heading: 'Libre Baskerville', Georgia, serif;
-  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
 
   /* shadcn/ui tokens (mapped to brand) */
-  --background: #F8F7F4;
-  --foreground: #1A1A2E;
+  --background: #f8fafc;
+  --foreground: #0f172a;
   --card: #FFFFFF;
-  --card-foreground: #1A1A2E;
+  --card-foreground: #0f172a;
   --popover: #FFFFFF;
-  --popover-foreground: #1A1A2E;
-  --primary: #0F1B33;
+  --popover-foreground: #0f172a;
+  --primary: #1d4ed8;
   --primary-foreground: #FFFFFF;
-  --secondary: #F0EDE8;
-  --secondary-foreground: #1A1A2E;
-  --muted: #F0EDE8;
-  --muted-foreground: #6B7280;
-  --accent: #F0EDE8;
-  --accent-foreground: #1A1A2E;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
   --destructive: #DC2626;
-  --border: #E5E7EB;
-  --input: #E5E7EB;
-  --ring: #C49A2E;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #1d4ed8;
 
-  --sidebar-background: #0F1B33;
+  --sidebar-background: #1e293b;
   --sidebar-foreground: #CBD5E1;
-  --sidebar-primary: #C49A2E;
+  --sidebar-primary: #f59e0b;
   --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(196,154,46,0.12);
+  --sidebar-accent: rgba(245,158,11,0.14);
   --sidebar-accent-foreground: #FFFFFF;
   --sidebar-border: rgba(255,255,255,0.08);
-  --sidebar-ring: #C49A2E;
+  --sidebar-ring: #f59e0b;
 
-  --chart-1: #0F1B33;
-  --chart-2: #C49A2E;
+  --chart-1: #1d4ed8;
+  --chart-2: #f59e0b;
   --chart-3: #059669;
   --chart-4: #2563EB;
   --chart-5: #DC2626;
@@ -89,7 +93,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-body);
-  --font-mono: 'DM Mono', monospace;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -193,10 +197,10 @@
   box-shadow: 0 0 0 2px var(--bg-base), 0 0 0 4px var(--gold);
 }
 .lf-btn-primary {
-  background: var(--navy);
+  background: var(--brand);
   color: #fff;
 }
-.lf-btn-primary:hover { background: var(--navy-light); }
+.lf-btn-primary:hover { background: var(--brand-dark); }
 .lf-btn-gold {
   background: var(--gold);
   color: #fff;
@@ -227,7 +231,7 @@
   line-height: 1.5;
 }
 .lf-badge-navy    { background: rgba(15,27,51,0.08); color: var(--navy); }
-.lf-badge-gold    { background: rgba(196,154,46,0.12); color: #92710A; }
+.lf-badge-gold    { background: rgba(245,158,11,0.14); color: #92610A; }
 .lf-badge-green   { background: var(--success-bg); color: var(--success); }
 .lf-badge-red     { background: var(--danger-bg); color: var(--danger); }
 .lf-badge-blue    { background: var(--info-bg); color: var(--info); }
