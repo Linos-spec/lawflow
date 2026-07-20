@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Sparkles, Loader2, RefreshCw, ShieldAlert, Gauge, ListChecks, FileSearch,
-  Scale, BookOpen, Clock, FolderClock, AlertTriangle, FileText, ArrowRight,
+  Scale, BookOpen, Clock, FolderClock, AlertTriangle, FileText, ArrowRight, PenLine,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CASE_STATUS_LABELS, CASE_TYPE_LABELS } from "@/lib/constants";
@@ -35,6 +35,30 @@ export function CaseIntelligence({ caseId }: { caseId: string }) {
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [draftingIdx, setDraftingIdx] = useState<number | null>(null);
+
+  const draftDocument = useCallback(async (idx: number, title: string, why: string) => {
+    setDraftingIdx(idx);
+    const t = toast.loading(`Drafting “${title}”…`);
+    try {
+      const res = await fetch(`/api/v1/cases/${caseId}/draft-document`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, guidance: why }),
+      });
+      const json = await res.json();
+      toast.dismiss(t);
+      if (!res.ok || !json.success) { toast.error(json.error || "Draft failed"); return; }
+      toast.success("Draft filed to the matter", {
+        action: { label: "Open", onClick: () => router.push(`/documents/${json.data.id}`) },
+      });
+    } catch {
+      toast.dismiss(t);
+      toast.error("Draft failed");
+    } finally {
+      setDraftingIdx(null);
+    }
+  }, [caseId, router]);
 
   const load = useCallback(async () => {
     try {
@@ -136,9 +160,23 @@ export function CaseIntelligence({ caseId }: { caseId: string }) {
         {ai && (
           <Block icon={FileText} title="Recommended Documents" count={ai.recommendedDocuments.length}>
             {ai.recommendedDocuments.length ? ai.recommendedDocuments.map((d, i) => (
-              <div key={i} style={{ marginBottom: "0.5rem" }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--navy)" }}>{d.title}</div>
-                <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{d.why}</div>
+              <div key={i} style={{ marginBottom: "0.5rem", display: "flex", gap: "0.5rem", alignItems: "flex-start", justifyContent: "space-between" }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--navy)" }}>{d.title}</div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{d.why}</div>
+                </div>
+                <button
+                  onClick={() => draftDocument(i, d.title, d.why)}
+                  disabled={draftingIdx !== null}
+                  className="lf-btn lf-btn-primary"
+                  style={{ padding: "0.3rem 0.65rem", fontSize: "0.75rem", flexShrink: 0, opacity: draftingIdx !== null && draftingIdx !== i ? 0.5 : 1 }}
+                  title="AI-draft this document and file it to the matter"
+                >
+                  {draftingIdx === i
+                    ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} />
+                    : <PenLine style={{ width: 13, height: 13 }} />}
+                  Draft
+                </button>
               </div>
             )) : <Empty>—</Empty>}
           </Block>
