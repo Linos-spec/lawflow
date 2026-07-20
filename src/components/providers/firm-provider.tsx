@@ -10,6 +10,8 @@ export interface Firm {
   website: string | null;
   address: string | null;
   aiModeEnabled: boolean;
+  aiAutoCreateMatter: boolean;
+  aiAutoGenerateTasks: boolean;
 }
 
 interface FirmContextValue {

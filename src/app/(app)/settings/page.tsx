@@ -44,23 +44,24 @@ export default function SettingsPage() {
   const [savingAi, setSavingAi] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>("profile");
 
-  async function toggleAiMode() {
+  async function patchFirm(body: Record<string, boolean>, msg: string) {
     if (!isAdmin || savingAi) return;
-    const next = !firm?.aiModeEnabled;
     setSavingAi(true);
     try {
       const res = await fetch("/api/v1/firm", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ aiModeEnabled: next }),
+        body: JSON.stringify(body),
       });
-      if (!res.ok) { toast.error("Couldn't update AI mode"); return; }
+      if (!res.ok) { toast.error("Couldn't save AI settings"); return; }
       await refresh();
-      toast.success(next ? "AI Employee mode enabled for your firm" : "AI Employee mode disabled");
+      toast.success(msg);
     } finally {
       setSavingAi(false);
     }
   }
+  const toggleAiMode = () =>
+    patchFirm({ aiModeEnabled: !firm?.aiModeEnabled }, !firm?.aiModeEnabled ? "AI Employee mode enabled for your firm" : "AI Employee mode disabled");
 
   // Notification toggles
   const [notifs, setNotifs] = useState({
@@ -429,6 +430,32 @@ export default function SettingsPage() {
               <p className="text-sm" style={{ color: "var(--text-muted)", marginTop: "0.9rem" }}>
                 Only a firm admin can enable or disable AI Employee mode.
               </p>
+            )}
+
+            {firm?.aiModeEnabled && (
+              <div style={{ marginTop: "1.75rem", paddingTop: "1.5rem", borderTop: "1px solid var(--border-light)" }}>
+                <h4 className="text-sm font-bold" style={{ color: "var(--navy)", marginBottom: "0.25rem" }}>Automation setup</h4>
+                <p className="text-sm" style={{ color: "var(--text-muted)", marginBottom: "1rem" }}>
+                  What the AI Employee does on its own. Conflicts always route to the attorney review queue, regardless of these settings.
+                </p>
+
+                {[
+                  { key: "aiAutoCreateMatter" as const, title: "Auto-create matters", desc: "When a qualified lead is converted, open the case automatically with AI-filled details." },
+                  { key: "aiAutoGenerateTasks" as const, title: "Auto-draft deadline plan", desc: "When a matter opens, draft a starter set of deadlines by matter type for the attorney to verify." },
+                ].map((opt) => (
+                  <div key={opt.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "0.85rem 0", borderBottom: "1px solid var(--border-light)" }}>
+                    <div style={{ maxWidth: 420 }}>
+                      <div style={{ fontWeight: 600, color: "var(--navy)", fontSize: "0.9rem" }}>{opt.title}</div>
+                      <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{opt.desc}</div>
+                    </div>
+                    {isAdmin ? (
+                      <Toggle active={!!firm?.[opt.key]} onToggle={() => patchFirm({ [opt.key]: !firm?.[opt.key] }, "AI automation updated")} />
+                    ) : (
+                      <span className="lf-badge lf-badge-gray">{firm?.[opt.key] ? "On" : "Off"}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}

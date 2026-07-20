@@ -91,3 +91,23 @@ export const documentAnalysisSchema = z.object({
 });
 
 export type DocumentAnalysis = z.infer<typeof documentAnalysisSchema>;
+
+export const matterPlanSchema = z.object({
+  deadlines: z
+    .array(
+      z.object({
+        title: z.string().describe("Short, concrete deadline/task, e.g. 'File statute of limitations complaint'"),
+        deadlineType: z.enum([
+          "FILING", "COURT_APPEARANCE", "DISCOVERY", "STATUTE_OF_LIMITATIONS",
+          "CLIENT_MEETING", "INTERNAL", "OTHER",
+        ]),
+        dueInDays: z.number().int().min(1).max(3650).describe("Days from today this is due"),
+        priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]),
+        rationale: z.string().describe("One line on why this matters for this matter type"),
+      })
+    )
+    .max(8)
+    .describe("Initial deadlines/tasks a competent firm would open for this matter. Suggestions only — the attorney verifies."),
+});
+
+export type MatterPlan = z.infer<typeof matterPlanSchema>;

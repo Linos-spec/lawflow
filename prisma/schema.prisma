@@ -184,6 +184,9 @@ model Firm {
   publicId  String   @unique @default(dbgenerated("gen_random_uuid()::text"))
   // Opt-in "AI Employee" mode — a firm admin enables the AI pipeline workspace.
   aiModeEnabled Boolean @default(false)
+  // Orchestrator setup (admin-configured): what the AI Employee does automatically.
+  aiAutoCreateMatter  Boolean @default(true)  // convert a qualified lead → open the matter
+  aiAutoGenerateTasks Boolean @default(true)  // draft the initial deadline/task plan for a new matter
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
