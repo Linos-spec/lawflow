@@ -53,7 +53,7 @@ const faqSections = [
     questions: [
       {
         q: "How do deadline reminders work?",
-        a: "Linoscore Legal sends notifications 24 hours before a deadline is due. You can customize notification preferences in Settings > Notifications.",
+        a: "Linos Legal sends notifications 24 hours before a deadline is due. You can customize notification preferences in Settings > Notifications.",
       },
       {
         q: "Can I set recurring deadlines?",
@@ -67,7 +67,7 @@ const faqSections = [
     questions: [
       {
         q: "What billing types are supported?",
-        a: "Linoscore Legal supports Hourly, Flat Fee, and Contingency billing types. You can set the billing type when creating a new invoice.",
+        a: "Linos Legal supports Hourly, Flat Fee, and Contingency billing types. You can set the billing type when creating a new invoice.",
       },
       {
         q: "How do I track billable hours?",
@@ -81,7 +81,7 @@ const faqSections = [
     questions: [
       {
         q: "What user roles are available?",
-        a: "Linoscore Legal has four roles: Admin (full access), Partner (case and billing management), Associate (case management), and Paralegal (limited access to assigned cases).",
+        a: "Linos Legal has four roles: Admin (full access), Partner (case and billing management), Associate (case management), and Paralegal (limited access to assigned cases).",
       },
       {
         q: "How do I invite team members?",

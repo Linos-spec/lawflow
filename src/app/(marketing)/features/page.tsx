@@ -492,7 +492,7 @@ const featureSections = [
     title: "Case Management",
     subtitle: "Complete case lifecycle management",
     description:
-      "Track every case from intake to resolution. Linoscore Legal provides a centralized hub for all case-related information, ensuring nothing falls through the cracks as your practice grows.",
+      "Track every case from intake to resolution. Linos Legal provides a centralized hub for all case-related information, ensuring nothing falls through the cracks as your practice grows.",
     bullets: [
       "Track case status from open to closed",
       "Associate clients, deadlines, and billing records",
@@ -508,7 +508,7 @@ const featureSections = [
     title: "Deadline & Calendar",
     subtitle: "Never miss a critical date",
     description:
-      "Court dates, filing deadlines, and discovery windows are the lifeblood of legal practice. Linoscore Legal keeps every critical date visible, prioritized, and linked to the right case.",
+      "Court dates, filing deadlines, and discovery windows are the lifeblood of legal practice. Linos Legal keeps every critical date visible, prioritized, and linked to the right case.",
     bullets: [
       "Filing deadlines, court appearances, discovery dates",
       "Priority levels with visual indicators",
@@ -632,7 +632,7 @@ export default function FeaturesPage() {
               margin: "0 auto",
             }}
           >
-            Linoscore Legal combines case management, billing, deadlines, and client
+            Linos Legal combines case management, billing, deadlines, and client
             intake into a single platform designed exclusively for legal
             professionals.
           </p>
@@ -832,7 +832,7 @@ export default function FeaturesPage() {
             }}
           >
             Join hundreds of law firms that have simplified their operations
-            with Linoscore Legal.
+            with Linos Legal.
           </p>
           <Link
             href="/register"

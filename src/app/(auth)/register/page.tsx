@@ -77,7 +77,7 @@ export default function RegisterPage() {
               marginTop: "1rem",
             }}
           >
-            Linoscore Legal
+            Linos Legal
           </h1>
           <p
             style={{
@@ -250,7 +250,7 @@ export default function RegisterPage() {
               textDecoration: "none",
             }}
           >
-            &larr; Back to Linoscore Legal
+            &larr; Back to Linos Legal
           </Link>
         </p>
       </div>

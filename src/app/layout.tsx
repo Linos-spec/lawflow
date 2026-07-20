@@ -3,7 +3,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Linoscore Legal — Practice Management for Law Firms",
+  title: "Linos Legal — Practice Management for Law Firms",
   description: "AI-powered legal practice management — part of the Linoscore suite.",
 };
 

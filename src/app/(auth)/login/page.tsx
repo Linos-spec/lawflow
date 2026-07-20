@@ -80,7 +80,7 @@ function LoginForm() {
               marginTop: "1rem",
             }}
           >
-            Linoscore Legal
+            Linos Legal
           </h1>
           <p
             style={{
@@ -229,7 +229,7 @@ function LoginForm() {
               textDecoration: "none",
             }}
           >
-            &larr; Back to Linoscore Legal
+            &larr; Back to Linos Legal
           </Link>
         </p>
       </div>
