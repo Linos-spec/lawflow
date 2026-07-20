@@ -384,8 +384,9 @@ export default function LandingPage() {
                 marginBottom: "1.25rem",
               }}
             >
-              Legal Practice Management,{" "}
-              <span style={{ color: "var(--gold-light)" }}>Simplified</span>
+              The{" "}
+              <span style={{ color: "var(--gold-light)" }}>AI employee</span>{" "}
+              every lawyer wishes they had
             </h1>
 
             <p
@@ -398,9 +399,9 @@ export default function LandingPage() {
                 animationDelay: "100ms",
               }}
             >
-              Linos Legal gives your firm the tools to manage cases, deadlines,
-              billing, and clients — all in one powerful platform built for
-              modern law practices.
+              Linos Legal handles the work that buries your firm — client
+              intake, conflict checks, document organization, and follow-up —
+              so your team can focus on practicing law.
             </p>
 
             <div

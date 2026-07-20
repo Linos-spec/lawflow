@@ -3,8 +3,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Linos Legal — Practice Management for Law Firms",
-  description: "AI-powered legal practice management — part of the Linoscore suite.",
+  title: "Linos Legal — The AI employee every lawyer wishes they had",
+  description: "Linos Legal handles client intake, conflict checks, document organization, and follow-up so your firm can focus on practicing law. Part of the Linoscore suite.",
 };
 
 export default function RootLayout({
