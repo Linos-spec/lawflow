@@ -19,6 +19,7 @@ import {
   Bell,
   Sparkles,
   UserPlus,
+  FolderOpen,
 } from "lucide-react";
 
 interface NavItem {
@@ -45,6 +46,7 @@ const navGroups: NavGroup[] = [
     items: [
       { label: "Cases", href: "/cases", icon: Briefcase },
       { label: "Clients", href: "/clients", icon: Users },
+      { label: "Documents", href: "/documents", icon: FolderOpen },
     ],
   },
   {

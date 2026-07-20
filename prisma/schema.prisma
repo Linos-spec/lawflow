@@ -118,6 +118,26 @@ enum ConflictStatus {
   WAIVED
 }
 
+enum DocumentType {
+  CONTRACT
+  PLEADING
+  COURT_FILING
+  CORRESPONDENCE
+  EVIDENCE
+  DISCOVERY
+  INVOICE
+  IDENTIFICATION
+  ENGAGEMENT_LETTER
+  MEMO
+  OTHER
+}
+
+enum SignatureStatus {
+  NOT_REQUIRED
+  PENDING
+  SIGNED
+}
+
 // ─── MULTI-TENANCY ─────────────────────────────────
 
 model Organization {
@@ -176,6 +196,7 @@ model Firm {
   timeEntries    TimeEntry[]
   intakeForms    IntakeForm[]
   leads          Lead[]
+  documents      Document[]
 
   @@index([organizationId])
 }
@@ -200,6 +221,7 @@ model Client {
   cases          Case[]
   billingRecords BillingRecord[]
   intakeForms    IntakeForm[]
+  documents      Document[]
 
   @@index([firmId])
 }
@@ -229,6 +251,7 @@ model Case {
   deadlines      Deadline[]
   billingRecords BillingRecord[]
   timeEntries    TimeEntry[]
+  documents      Document[]
 
   @@unique([firmId, caseNumber])
   @@index([firmId])
@@ -425,6 +448,65 @@ model ConflictCheck {
   @@index([firmId])
   @@index([leadId])
   @@index([status])
+}
+
+// ─── DOCUMENT INTELLIGENCE (Phase D) ────────────────
+
+model Document {
+  id           String          @id @default(cuid())
+  title        String
+  originalName String
+  documentType DocumentType    @default(OTHER)
+  tags         String[]        @default([])
+  // OCR / extracted text, used for full-text search.
+  extractedText String?
+  // AI organization output.
+  aiSummary    String?
+  aiParties    String[]        @default([])
+  aiSuggestedTitle String?
+  signatureStatus SignatureStatus @default(NOT_REQUIRED)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  firmId String
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  uploadedBy String?
+
+  versions        DocumentVersion[]
+  currentVersionId String?
+
+  @@index([firmId])
+  @@index([caseId])
+  @@index([clientId])
+  @@index([documentType])
+  @@index([signatureStatus])
+}
+
+model DocumentVersion {
+  id            String   @id @default(cuid())
+  versionNumber Int
+  fileName      String
+  mimeType      String
+  size          Int
+  // Pluggable storage: DB-backed MVP stores bytes in `data`; a Spaces/S3
+  // adapter would instead set `storageKey` and leave `data` null.
+  data          Bytes?
+  storageKey    String?
+  uploadedBy    String?
+  createdAt     DateTime @default(now())
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
 }
 
 model AuditLog {
