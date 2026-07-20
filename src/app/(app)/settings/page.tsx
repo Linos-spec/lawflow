@@ -442,6 +442,7 @@ export default function SettingsPage() {
                 {[
                   { key: "aiAutoCreateMatter" as const, title: "Auto-create matters", desc: "When a qualified lead is converted, open the case automatically with AI-filled details." },
                   { key: "aiAutoGenerateTasks" as const, title: "Auto-draft deadline plan", desc: "When a matter opens, draft a starter set of deadlines by matter type for the attorney to verify." },
+                  { key: "aiAutoEngagementLetter" as const, title: "Auto-draft engagement letters", desc: "When a matter opens, draft a client engagement letter (with the recommended retainer terms) for the attorney to review and send." },
                 ].map((opt) => (
                   <div key={opt.key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "0.85rem 0", borderBottom: "1px solid var(--border-light)" }}>
                     <div style={{ maxWidth: 420 }}>

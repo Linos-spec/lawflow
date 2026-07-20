@@ -185,8 +185,9 @@ model Firm {
   // Opt-in "AI Employee" mode — a firm admin enables the AI pipeline workspace.
   aiModeEnabled Boolean @default(false)
   // Orchestrator setup (admin-configured): what the AI Employee does automatically.
-  aiAutoCreateMatter  Boolean @default(true)  // convert a qualified lead → open the matter
-  aiAutoGenerateTasks Boolean @default(true)  // draft the initial deadline/task plan for a new matter
+  aiAutoCreateMatter     Boolean @default(true)  // convert a qualified lead → open the matter
+  aiAutoGenerateTasks    Boolean @default(true)  // draft the initial deadline/task plan for a new matter
+  aiAutoEngagementLetter Boolean @default(true)  // auto-draft an engagement letter when a matter opens
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -411,6 +412,11 @@ model Lead {
   aiSummary        String?
   aiRiskFlags      String[]  @default([])
   aiNextSteps      String[]  @default([])
+  // AI retainer/fee recommendation (advisory — attorney sets final terms)
+  retainerStructure  BillingType?
+  retainerAmountLow  Int?
+  retainerAmountHigh Int?
+  retainerRationale  String?
   // Conflict check rollup (details in ConflictCheck)
   conflictStatus ConflictStatus @default(PENDING)
   // Follow-up

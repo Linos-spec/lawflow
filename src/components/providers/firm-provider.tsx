@@ -12,6 +12,7 @@ export interface Firm {
   aiModeEnabled: boolean;
   aiAutoCreateMatter: boolean;
   aiAutoGenerateTasks: boolean;
+  aiAutoEngagementLetter: boolean;
 }
 
 interface FirmContextValue {

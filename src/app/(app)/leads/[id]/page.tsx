@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowLeft, Mail, Phone, UserCheck, AlertTriangle, Sparkles } from "lucide-react";
+import { Loader2, ArrowLeft, Mail, Phone, UserCheck, AlertTriangle, Sparkles, DollarSign, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { CASE_TYPE_LABELS, PRIORITY_LABELS } from "@/lib/constants";
+import { CASE_TYPE_LABELS, PRIORITY_LABELS, BILLING_TYPE_LABELS } from "@/lib/constants";
 import { conflictBadge, STAGES, STAGE_LABELS } from "@/lib/lead-badges";
 
 interface ConflictMatch {
@@ -19,6 +19,7 @@ interface LeadDetail {
   caseType: string; description: string | null; adverseParties: string[];
   qualified: boolean | null; qualificationScore: number | null; aiPriority: string | null;
   aiSummary: string | null; aiRiskFlags: string[]; aiNextSteps: string[];
+  retainerStructure: string | null; retainerAmountLow: number | null; retainerAmountHigh: number | null; retainerRationale: string | null;
   conflictStatus: string; convertedClientId: string | null; createdAt: string;
   conflictChecks: ConflictCheck[];
 }
@@ -61,6 +62,19 @@ export default function LeadDetailPage() {
       if (!res.ok) { toast.error(json.error || "Conversion failed"); return; }
       toast.success("Converted to client");
       router.push(`/clients`);
+    } finally { setBusy(false); }
+  };
+
+  const draftEngagementLetter = async () => {
+    setBusy(true);
+    const t = toast.loading("Drafting engagement letter…");
+    try {
+      const res = await fetch(`/api/v1/leads/${id}/engagement-letter`, { method: "POST" });
+      const json = await res.json();
+      toast.dismiss(t);
+      if (!res.ok) { toast.error(json.error || "Failed to draft"); return; }
+      toast.success("Engagement letter drafted");
+      router.push(`/documents/${json.data.documentId}`);
     } finally { setBusy(false); }
   };
 
@@ -156,6 +170,39 @@ export default function LeadDetailPage() {
                   <ul style={{ margin: 0, paddingLeft: "1.1rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>{lead.aiNextSteps.map((f, i) => <li key={i}>{f}</li>)}</ul>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Retainer recommendation + engagement letter */}
+        <div className="lf-card" style={{ padding: "1.5rem" }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--font-heading)", fontSize: "1.05rem", fontWeight: 700, color: "var(--navy)", marginBottom: "1rem" }}>
+            <DollarSign style={{ width: 18, height: 18, color: "var(--gold)" }} /> Retainer &amp; Engagement
+          </h3>
+          {lead.retainerStructure == null ? (
+            <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>
+              No retainer recommendation yet. (Generated with AI qualification when an OpenAI key is configured.)
+            </p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+              <div style={{ display: "flex", gap: "1.5rem" }}>
+                <div>
+                  <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Structure</div>
+                  <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--navy)", marginTop: "0.4rem" }}>{BILLING_TYPE_LABELS[lead.retainerStructure] || lead.retainerStructure}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--text-muted)" }}>Suggested retainer</div>
+                  <div style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--navy)", marginTop: "0.25rem" }}>
+                    {lead.retainerAmountLow != null ? `$${lead.retainerAmountLow.toLocaleString()}` : "—"}
+                    {lead.retainerAmountHigh != null && lead.retainerAmountHigh !== lead.retainerAmountLow ? `–$${lead.retainerAmountHigh.toLocaleString()}` : ""}
+                  </div>
+                </div>
+              </div>
+              {lead.retainerRationale && <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{lead.retainerRationale}</p>}
+              <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontStyle: "italic" }}>Advisory only — the attorney sets final fee terms.</p>
+              <button onClick={draftEngagementLetter} disabled={busy} className="lf-btn lf-btn-outline" style={{ padding: "0.55rem 1rem", alignSelf: "flex-start" }}>
+                <FileText style={{ width: 16, height: 16 }} /> Draft engagement letter
+              </button>
             </div>
           )}
         </div>

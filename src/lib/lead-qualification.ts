@@ -43,6 +43,7 @@ Be practical and honest:
 - Score lower when information is missing, the claim looks weak or out of scope, or expectations seem unrealistic.
 - Set priority from real urgency signals (filing deadlines, statute of limitations, safety).
 - List concrete risk flags and next steps.
+- Recommend a retainer/fee: choose the structure typical for this matter type (e.g. contingency for personal injury, flat fee for simple filings, hourly for litigation) and a realistic dollar range. This is an advisory starting point — the attorney sets final terms.
 - Never provide legal advice to the prospect; this assessment is for internal firm triage only.`,
       prompt: context,
     });

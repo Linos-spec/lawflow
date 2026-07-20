@@ -85,6 +85,10 @@ export async function createLeadFromIntake(input: {
             aiSummary: qualification.summary,
             aiRiskFlags: qualification.riskFlags,
             aiNextSteps: qualification.nextSteps,
+            retainerStructure: qualification.retainer.structure,
+            retainerAmountLow: qualification.retainer.amountLow,
+            retainerAmountHigh: qualification.retainer.amountHigh,
+            retainerRationale: qualification.retainer.rationale,
           }
         : {}),
     },

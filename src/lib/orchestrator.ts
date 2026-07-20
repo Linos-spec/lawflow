@@ -2,6 +2,7 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { prisma } from "@/lib/prisma";
 import { matterPlanSchema, type MatterPlan } from "@/lib/validators/ai.schema";
+import { createEngagementLetter } from "@/lib/engagement-letter";
 import type { CaseType, Priority } from "@prisma/client";
 
 /**
@@ -43,6 +44,7 @@ export type OrchestrationResult = {
   client: { id: string; name: string };
   matter: { id: string; caseNumber: string; title: string } | null;
   deadlinesCreated: number;
+  engagementLetterId: string | null;
 };
 
 /**
@@ -61,7 +63,7 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
 
   const firm = await prisma.firm.findUniqueOrThrow({
     where: { id: firmId },
-    select: { aiAutoCreateMatter: true, aiAutoGenerateTasks: true },
+    select: { name: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true },
   });
 
   const client = await prisma.client.create({
@@ -77,6 +79,7 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
 
   let matter: OrchestrationResult["matter"] = null;
   let deadlinesCreated = 0;
+  let engagementLetterId: string | null = null;
 
   if (firm.aiAutoCreateMatter) {
     const caseNumber = await nextCaseNumber(firmId);
@@ -114,6 +117,29 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
         deadlinesCreated = plan.length;
       }
     }
+
+    // Automatic engagement letter — drafted to the new matter, awaiting signature.
+    if (firm.aiAutoEngagementLetter) {
+      try {
+        const letter = await createEngagementLetter({
+          firmId,
+          firmName: firm.name,
+          clientId: client.id,
+          caseId: created.id,
+          clientName: lead.name,
+          matterType: lead.caseType,
+          matterDescription: lead.description,
+          retainer: {
+            structure: lead.retainerStructure,
+            amountLow: lead.retainerAmountLow,
+            amountHigh: lead.retainerAmountHigh,
+          },
+        });
+        engagementLetterId = letter?.id ?? null;
+      } catch (err) {
+        console.error("Engagement letter auto-draft failed (non-fatal):", err);
+      }
+    }
   }
 
   await prisma.lead.update({
@@ -121,5 +147,5 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
     data: { stage: "CONVERTED", convertedClientId: client.id, convertedCaseId: matter?.id ?? null },
   });
 
-  return { client: { id: client.id, name: client.name }, matter, deadlinesCreated };
+  return { client: { id: client.id, name: client.name }, matter, deadlinesCreated, engagementLetterId };
 }

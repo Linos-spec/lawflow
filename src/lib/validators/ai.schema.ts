@@ -62,6 +62,14 @@ export const leadQualificationSchema = z.object({
   summary: z
     .string()
     .describe("2-3 sentence internal summary of the lead and the assessment"),
+  retainer: z
+    .object({
+      structure: z.enum(["HOURLY", "FLAT_FEE", "CONTINGENCY"]).describe("Recommended fee structure for this matter type"),
+      amountLow: z.number().int().min(0).describe("Suggested initial retainer / fee lower bound, in whole US dollars"),
+      amountHigh: z.number().int().min(0).describe("Suggested initial retainer / fee upper bound, in whole US dollars"),
+      rationale: z.string().describe("Brief reasoning for the recommended structure and range"),
+    })
+    .describe("Advisory retainer/fee recommendation based on matter type and complexity. The attorney sets the final terms."),
 });
 
 export type LeadQualification = z.infer<typeof leadQualificationSchema>;
