@@ -270,6 +270,10 @@ model Case {
   aiAnalysis   Json?
   aiAnalyzedAt DateTime?
 
+  // Semantic-search embedding of the matter's facts (in-app cosine similarity).
+  embedding    Float[]  @default([])
+  embeddedAt   DateTime?
+
   deadlines      Deadline[]
   billingRecords BillingRecord[]
   timeEntries    TimeEntry[]

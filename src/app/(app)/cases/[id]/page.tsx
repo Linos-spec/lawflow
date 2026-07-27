@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFirm } from "@/components/providers/firm-provider";
 import { CaseIntelligence } from "@/components/case/case-intelligence";
+import { SimilarMatters } from "@/components/case/similar-matters";
 import { CaseDeliveries } from "@/components/delivery/case-deliveries";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -258,6 +259,8 @@ export default function CaseDetailPage() {
 
       {/* AI Case Intelligence — only when the firm has enabled AI Employee mode */}
       {firm?.aiModeEnabled && <CaseIntelligence caseId={id} />}
+
+      {firm?.aiModeEnabled && <div style={{ marginBottom: "1.5rem" }}><SimilarMatters caseId={id} /></div>}
 
       <div style={{ marginBottom: "1.5rem" }}><CaseDeliveries caseId={id} /></div>
 
