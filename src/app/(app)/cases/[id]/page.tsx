@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useFirm } from "@/components/providers/firm-provider";
 import { CaseIntelligence } from "@/components/case/case-intelligence";
+import { CaseDeliveries } from "@/components/delivery/case-deliveries";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -257,6 +258,8 @@ export default function CaseDetailPage() {
 
       {/* AI Case Intelligence — only when the firm has enabled AI Employee mode */}
       {firm?.aiModeEnabled && <CaseIntelligence caseId={id} />}
+
+      <div style={{ marginBottom: "1.5rem" }}><CaseDeliveries caseId={id} /></div>
 
       {/* Info grid */}
       <div className="grid lg:grid-cols-3 gap-6">

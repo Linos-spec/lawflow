@@ -13,6 +13,13 @@ export interface Firm {
   aiAutoCreateMatter: boolean;
   aiAutoGenerateTasks: boolean;
   aiAutoEngagementLetter: boolean;
+  deliveryConnected?: boolean;
+  deliveryApiEmail?: string | null;
+  deliveryPickupLine1?: string | null;
+  deliveryPickupLine2?: string | null;
+  deliveryPickupCity?: string | null;
+  deliveryPickupState?: string | null;
+  deliveryPickupPostal?: string | null;
 }
 
 interface FirmContextValue {

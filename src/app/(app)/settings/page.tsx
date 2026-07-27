@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
+import { DeliveryConnectionCard } from "@/components/delivery/delivery-connection-card";
 import {
   User,
   Building2,
@@ -397,6 +398,7 @@ export default function SettingsPage() {
         )}
 
         {activeTab === "ai" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div className="lf-card" style={{ padding: "1.75rem", maxWidth: 640 }}>
             <div style={{ display: "flex", gap: "0.9rem", alignItems: "flex-start" }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: "var(--brand)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -458,6 +460,8 @@ export default function SettingsPage() {
                 ))}
               </div>
             )}
+          </div>
+          <DeliveryConnectionCard isAdmin={isAdmin} />
           </div>
         )}
       </div>

@@ -188,6 +188,17 @@ model Firm {
   aiAutoCreateMatter     Boolean @default(true)  // convert a qualified lead → open the matter
   aiAutoGenerateTasks    Boolean @default(true)  // draft the initial deadline/task plan for a new matter
   aiAutoEngagementLetter Boolean @default(true)  // auto-draft an engagement letter when a matter opens
+
+  // ── Linoscore Delivery connection (per-firm Customer account on the courier API) ──
+  deliveryConnected    Boolean @default(false)
+  deliveryApiEmail     String?  // firm's Linoscore Delivery login (server-side use only)
+  deliveryApiPassword  String?  // stored to obtain JWTs from the Delivery API; never returned to the client
+  deliveryCustomerId   String?  // cached customerId from the Delivery login
+  deliveryPickupLine1  String?
+  deliveryPickupLine2  String?
+  deliveryPickupCity   String?
+  deliveryPickupState  String?
+  deliveryPickupPostal String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -203,6 +214,7 @@ model Firm {
   intakeForms    IntakeForm[]
   leads          Lead[]
   documents      Document[]
+  deliveryRequests DeliveryRequest[]
 
   @@index([organizationId])
 }
@@ -262,6 +274,7 @@ model Case {
   billingRecords BillingRecord[]
   timeEntries    TimeEntry[]
   documents      Document[]
+  deliveryRequests DeliveryRequest[]
 
   @@unique([firmId, caseNumber])
   @@index([firmId])
@@ -522,6 +535,40 @@ model DocumentVersion {
 
   @@unique([documentId, versionNumber])
   @@index([documentId])
+}
+
+// ─── LINOSCORE DELIVERY (courier module) ────────────
+
+model DeliveryRequest {
+  id             String   @id @default(cuid())
+  // Identifiers from the Linoscore Delivery service
+  externalId     String   // the Delivery API delivery id (Guid)
+  trackingNumber String?
+  status         String   @default("Requested") // mirrors the Delivery service status
+  serviceLevel   String?
+  priority       String?
+  recipientName  String?
+  reference      String?  // the matter number sent as the delivery reference
+  isCourtFiling  Boolean  @default(false)
+  dropoffSummary String?  // human-readable destination (e.g. court name / address)
+  proofDocumentId String? // custody certificate pulled back as a Document once available
+  lastSyncedAt   DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  firmId String
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  caseId String?
+  case   Case?   @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  documentId String? // the document being delivered / filed
+  createdBy  String?
+
+  @@unique([firmId, externalId])
+  @@index([firmId])
+  @@index([caseId])
+  @@index([status])
 }
 
 model AuditLog {

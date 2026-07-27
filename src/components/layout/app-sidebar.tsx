@@ -21,6 +21,7 @@ import {
   Sparkles,
   UserPlus,
   FolderOpen,
+  Truck,
   Bot,
   KanbanSquare,
   ClipboardCheck,
@@ -51,6 +52,7 @@ const navGroups: NavGroup[] = [
       { label: "Cases", href: "/cases", icon: Briefcase },
       { label: "Clients", href: "/clients", icon: Users },
       { label: "Documents", href: "/documents", icon: FolderOpen },
+      { label: "Delivery", href: "/deliveries", icon: Truck },
     ],
   },
   {
