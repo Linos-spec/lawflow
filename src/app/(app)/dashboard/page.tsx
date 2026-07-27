@@ -217,6 +217,7 @@ export default function DashboardPage() {
       icon: Briefcase,
       accent: "navy" as const,
       trendLabel: "this month",
+      href: "/cases",
     },
     {
       label: "Pending Deadlines",
@@ -226,6 +227,7 @@ export default function DashboardPage() {
       icon: CalendarClock,
       accent: "gold" as const,
       trendLabel: "",
+      href: "/deadlines",
     },
     {
       label: "Overdue",
@@ -235,6 +237,7 @@ export default function DashboardPage() {
       icon: AlertTriangle,
       accent: "red" as const,
       trendLabel: "vs last month",
+      href: "/deadlines",
     },
     {
       label: "Outstanding Revenue",
@@ -244,6 +247,7 @@ export default function DashboardPage() {
       icon: DollarSign,
       accent: "green" as const,
       trendLabel: "vs last month",
+      href: "/billing",
     },
   ];
 
@@ -281,9 +285,10 @@ export default function DashboardPage() {
         {statCards.map((card) => {
           const Icon = card.icon;
           return (
-            <div
+            <Link
               key={card.label}
-              className={`lf-card lf-stat-${card.accent} animate-fade-in-up`}
+              href={card.href}
+              className={`lf-card lf-card-interactive lf-stat-${card.accent} animate-fade-in-up block`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div
@@ -366,7 +371,7 @@ export default function DashboardPage() {
                   </span>
                 )}
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
@@ -452,9 +457,10 @@ export default function DashboardPage() {
                 const urg =
                   urgencyStyles[d.priority] || urgencyStyles.MEDIUM;
                 return (
-                  <div
+                  <Link
                     key={d.id}
-                    className="flex items-center gap-3 rounded-lg p-3 transition-colors"
+                    href={d.case?.id ? `/cases/${d.case.id}` : "/deadlines"}
+                    className="flex items-center gap-3 rounded-lg p-3 transition-colors hover:brightness-95 cursor-pointer"
                     style={{ background: "var(--bg-base)" }}
                   >
                     <div
@@ -519,7 +525,7 @@ export default function DashboardPage() {
                         {urg.label}
                       </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
