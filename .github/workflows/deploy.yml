@@ -1,0 +1,31 @@
+name: Deploy to DigitalOcean
+
+# Path-filtered deploy: only rebuilds when code (not docs) changes.
+# Replaces DigitalOcean's built-in deploy-on-push, which cannot ignore paths.
+#
+# ENABLEMENT (both steps required, or this file is inert):
+#   1. Add repo secret DIGITALOCEAN_ACCESS_TOKEN (a DO API token with app write).
+#   2. Set `deploy_on_push: false` in .do/app.yaml and apply the spec, so DO
+#      stops auto-deploying and this workflow becomes the single trigger.
+# Until both are done, DO's own trigger still runs and this workflow does nothing.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "LICENSE"
+      - ".github/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: Trigger app deployment
+        run: doctl apps create-deployment 964f8e2d-d26d-419b-9d1f-7da5d78f500d --wait
