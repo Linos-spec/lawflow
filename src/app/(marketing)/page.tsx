@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import {
-  Briefcase,
-  CalendarClock,
-  Users,
-  DollarSign,
-  FileText,
-  Shield,
-  Star,
+  PhoneCall,
+  ShieldCheck,
+  Sparkles,
+  FileSignature,
+  Gauge,
+  Truck,
   ArrowRight,
 } from "lucide-react";
 
@@ -16,56 +15,48 @@ import {
    Data
    ───────────────────────────────────────────── */
 
-const firmBadges = [
-  "Davis & Partners",
-  "Morrison Legal",
-  "Sterling Law Group",
-  "Apex Attorneys",
-  "Caldwell & Associates",
-];
-
 const features = [
   {
-    icon: Briefcase,
-    title: "Case Management",
-    desc: "Track every case from intake to resolution with status tracking, notes, and deadline management.",
-    color: "var(--navy)",
-    bg: "rgba(15, 27, 51, 0.08)",
+    icon: PhoneCall,
+    title: "24/7 AI Intake",
+    desc: "An AI receptionist captures every inquiry around the clock — nothing lost to voicemail or after-hours.",
+    color: "var(--brand)",
+    bg: "var(--brand-soft)",
   },
   {
-    icon: CalendarClock,
-    title: "Deadline Tracking",
-    desc: "Never miss a filing date. Automated deadline alerts keep you ahead of every court date and statute.",
-    color: "var(--danger)",
-    bg: "var(--danger-bg)",
-  },
-  {
-    icon: Users,
-    title: "Client Management",
-    desc: "Maintain a complete client directory with contact history, case associations, and secure notes.",
-    color: "var(--info)",
-    bg: "var(--info-bg)",
-  },
-  {
-    icon: DollarSign,
-    title: "Billing & Invoicing",
-    desc: "Create invoices, track payments, and manage billing records with line-item detail.",
+    icon: ShieldCheck,
+    title: "Automated Conflict Checks",
+    desc: "Every prospect is checked against your clients and matters before you take them on — a lead with an open conflict can't convert until an attorney clears it.",
     color: "var(--success)",
     bg: "var(--success-bg)",
   },
   {
-    icon: FileText,
-    title: "Client Intake",
-    desc: "Streamline new client onboarding with digital intake forms and conflict checks.",
-    color: "var(--warning)",
-    bg: "var(--warning-bg)",
+    icon: Sparkles,
+    title: "AI Qualification & Retainer",
+    desc: "Each lead gets a score, priority, risk flags, and a recommended retainer — instantly, for your review.",
+    color: "var(--gold)",
+    bg: "rgba(245, 158, 11, 0.12)",
   },
   {
-    icon: Shield,
-    title: "Team Collaboration",
-    desc: "Role-based access control for admins, partners, associates, and paralegals.",
-    color: "#7C3AED",
-    bg: "rgba(124, 58, 237, 0.08)",
+    icon: FileSignature,
+    title: "Automatic Engagement Letters",
+    desc: "When a matter opens, the engagement letter drafts itself with the recommended terms — ready for your signature.",
+    color: "var(--info)",
+    bg: "var(--info-bg)",
+  },
+  {
+    icon: Gauge,
+    title: "AI Case Intelligence",
+    desc: "A strength and risk read, missing evidence, likely next steps, and research leads on every matter — grounded in your own files.",
+    color: "var(--brand)",
+    bg: "var(--brand-soft)",
+  },
+  {
+    icon: Truck,
+    title: "Court Filing with Proof",
+    desc: "Linoscore Delivery couriers your filings and returns a court-stamped custody certificate right onto the matter.",
+    color: "var(--gold)",
+    bg: "var(--warning-bg)",
   },
 ];
 
@@ -73,38 +64,17 @@ const steps = [
   {
     num: 1,
     title: "Sign up in 60 seconds",
-    desc: "Create your firm account and invite your team.",
+    desc: "Create your firm account — no credit card, no setup call.",
   },
   {
     num: 2,
-    title: "Set up your practice",
-    desc: "Add clients, create cases, and configure your billing preferences.",
+    title: "Share your intake link",
+    desc: "The AI answers inquiries 24/7, checks conflicts, and qualifies every lead for you.",
   },
   {
     num: 3,
-    title: "Start practicing smarter",
-    desc: "Manage deadlines, generate invoices, and grow your practice with confidence.",
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "Linos Legal cut our administrative time by 40%. The deadline tracking alone is worth the subscription.",
-    name: "Sarah M.",
-    title: "Managing Partner",
-  },
-  {
-    quote:
-      "Finally, a practice management tool that doesn't require a PhD to operate. Clean, intuitive, powerful.",
-    name: "David R.",
-    title: "Solo Practitioner",
-  },
-  {
-    quote:
-      "We migrated from spreadsheets to Linos Legal in a weekend. Our team hasn't looked back.",
-    name: "Jennifer L.",
-    title: "Associate",
+    title: "Review, sign, and file",
+    desc: "Approve the AI's engagement letter, then file with court-stamped proof via Linoscore Delivery.",
   },
 ];
 
@@ -444,7 +414,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Trusted By ───────────────────────── */}
+      {/* ── The loop ─────────────────────────── */}
       <section
         style={{
           paddingTop: 48,
@@ -454,7 +424,7 @@ export default function LandingPage() {
       >
         <div
           className="mx-auto px-6 lg:px-8 text-center"
-          style={{ maxWidth: 1200 }}
+          style={{ maxWidth: 1000 }}
         >
           <p
             style={{
@@ -463,27 +433,19 @@ export default function LandingPage() {
               color: "var(--text-muted)",
               textTransform: "uppercase",
               letterSpacing: "0.08em",
-              marginBottom: "1.25rem",
+              marginBottom: "1.5rem",
             }}
           >
-            Trusted by 500+ law firms across the country
+            From first call to court-stamped proof — one platform
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {firmBadges.map((name) => (
-              <span
-                key={name}
-                style={{
-                  display: "inline-block",
-                  padding: "0.375rem 1rem",
-                  borderRadius: 999,
-                  background: "#F3F4F6",
-                  color: "var(--text-secondary)",
-                  fontSize: "0.8125rem",
-                  fontWeight: 500,
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                {name}
+          <div
+            className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2"
+            style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--navy)" }}
+          >
+            {["Phone inquiry", "AI intake & conflict check", "Matter + drafted filing", "Couriered & filed", "Court-stamped proof"].map((label, i, arr) => (
+              <span key={label} className="inline-flex items-center gap-3">
+                <span>{label}</span>
+                {i < arr.length - 1 && <span style={{ color: "var(--gold)" }}>→</span>}
               </span>
             ))}
           </div>
@@ -654,98 +616,6 @@ export default function LandingPage() {
                 >
                   {step.desc}
                 </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Testimonials ─────────────────────── */}
-      <section style={{ paddingTop: 80, paddingBottom: 80 }}>
-        <div
-          className="mx-auto px-6 lg:px-8"
-          style={{ maxWidth: 1200 }}
-        >
-          <div className="text-center" style={{ maxWidth: 540, margin: "0 auto 3rem" }}>
-            <h2
-              style={{
-                fontFamily: "var(--font-heading)",
-                fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
-                fontWeight: 700,
-                color: "var(--navy)",
-                marginBottom: "0.75rem",
-              }}
-            >
-              Loved by legal professionals
-            </h2>
-            <p
-              style={{
-                fontSize: "1.0625rem",
-                color: "var(--text-secondary)",
-                lineHeight: 1.7,
-              }}
-            >
-              See why hundreds of law firms trust Linos Legal every day.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 stagger-children">
-            {testimonials.map((t) => (
-              <div
-                key={t.name}
-                className="lf-card animate-fade-in-up"
-                style={{
-                  padding: "1.75rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                }}
-              >
-                {/* Stars */}
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      style={{
-                        width: 16,
-                        height: 16,
-                        fill: "var(--gold)",
-                        color: "var(--gold)",
-                      }}
-                    />
-                  ))}
-                </div>
-                <p
-                  style={{
-                    fontSize: "0.9375rem",
-                    color: "var(--text-primary)",
-                    lineHeight: 1.75,
-                    fontStyle: "italic",
-                    marginBottom: "1.5rem",
-                    flex: 1,
-                  }}
-                >
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div>
-                  <div
-                    style={{
-                      fontSize: "0.875rem",
-                      fontWeight: 700,
-                      color: "var(--navy)",
-                    }}
-                  >
-                    {t.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: "0.8125rem",
-                      color: "var(--text-muted)",
-                    }}
-                  >
-                    {t.title}
-                  </div>
-                </div>
               </div>
             ))}
           </div>
