@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Scale, Loader2, Plus, X, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
+import { INTAKE_LANGUAGES } from "@/lib/translate";
 
 const CASE_TYPES: { value: string; label: string }[] = [
   { value: "FAMILY", label: "Family" },
@@ -44,6 +45,10 @@ export default function ConsultIntakePage() {
   const [description, setDescription] = useState("");
   const [adverseParties, setAdverseParties] = useState<string[]>([]);
   const [partyInput, setPartyInput] = useState("");
+  const [language, setLanguage] = useState("en");
+  const [referralSource, setReferralSource] = useState("");
+  const [consultationPreference, setConsultationPreference] = useState("");
+  const [consent, setConsent] = useState(false);
 
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -112,6 +117,10 @@ export default function ConsultIntakePage() {
           description,
           adverseParties,
           answers,
+          intakeLanguage: language,
+          referralSource,
+          consultationPreference,
+          consentToContact: consent,
         }),
       });
       const data = await res.json();
@@ -368,6 +377,35 @@ export default function ConsultIntakePage() {
               <Row label="Details" value={description} />
               {adverseParties.length > 0 && <Row label="Other parties" value={adverseParties.join(", ")} />}
             </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid var(--border-light, #eee)" }}>
+              <div>
+                <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--navy)", display: "block", marginBottom: 4 }}>What language did you fill this out in?</label>
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} style={{ width: "100%", padding: "0.6rem", borderRadius: 8, border: "1px solid var(--border-default, #ddd)", fontSize: "0.9rem" }}>
+                  {INTAKE_LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
+                </select>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 4 }}>Write in your own language — the firm will receive it in English.</p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--navy)", display: "block", marginBottom: 4 }}>How did you hear about us?</label>
+                  <input value={referralSource} onChange={(e) => setReferralSource(e.target.value)} placeholder="Referral, Google…" style={{ width: "100%", padding: "0.6rem", borderRadius: 8, border: "1px solid var(--border-default, #ddd)", fontSize: "0.9rem" }} />
+                </div>
+                <div>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--navy)", display: "block", marginBottom: 4 }}>Consultation preference</label>
+                  <select value={consultationPreference} onChange={(e) => setConsultationPreference(e.target.value)} style={{ width: "100%", padding: "0.6rem", borderRadius: 8, border: "1px solid var(--border-default, #ddd)", fontSize: "0.9rem" }}>
+                    <option value="">No preference</option>
+                    <option value="Phone">Phone</option>
+                    <option value="Video">Video</option>
+                    <option value="In person">In person</option>
+                  </select>
+                </div>
+              </div>
+              <label style={{ display: "flex", gap: "0.6rem", alignItems: "flex-start", fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 3 }} />
+                <span>I consent to being contacted by the firm about my inquiry.</span>
+              </label>
+            </div>
           </div>
         )}
 
@@ -384,7 +422,7 @@ export default function ConsultIntakePage() {
           </button>
 
           {current === "review" ? (
-            <button type="button" onClick={submit} disabled={submitting} className="lf-btn lf-btn-gold" style={{ padding: "0.75rem 1.5rem", opacity: submitting ? 0.6 : 1 }}>
+            <button type="button" onClick={submit} disabled={submitting || !consent} title={!consent ? "Please consent to be contacted" : ""} className="lf-btn lf-btn-gold" style={{ padding: "0.75rem 1.5rem", opacity: submitting || !consent ? 0.5 : 1 }}>
               {submitting && <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} />}
               Submit request
             </button>

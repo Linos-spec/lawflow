@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { publicLeadSchema } from "@/lib/validators/public-lead.schema";
 import { createLeadFromIntake } from "@/lib/intake-pipeline";
+import { translateToEnglish } from "@/lib/translate";
 
 /**
  * Public: a prospective client submits the intake questionnaire.
@@ -35,6 +36,21 @@ export async function POST(request: NextRequest) {
     return errorResponse("Intake link not found", 404);
   }
 
+  // Multilingual intake: if submitted in another language, translate the
+  // description to English for the firm and keep the original in `answers`.
+  const lang = (input.intakeLanguage || "en").toLowerCase();
+  let description = input.description || null;
+  let answers: Record<string, unknown> | null = input.answers ?? null;
+  if (lang !== "en" && description) {
+    const translated = await translateToEnglish(description);
+    if (translated) {
+      answers = { ...(answers || {}), intakeLanguage: lang, originalDescription: description };
+      description = translated;
+    } else {
+      answers = { ...(answers || {}), intakeLanguage: lang };
+    }
+  }
+
   try {
     const { lead, conflict } = await createLeadFromIntake({
       firmId: firm.id,
@@ -43,9 +59,9 @@ export async function POST(request: NextRequest) {
       phone: input.phone || null,
       source: "WEBSITE",
       caseType: input.caseType,
-      description: input.description || null,
+      description,
       adverseParties: input.adverseParties,
-      answers: input.answers ?? null,
+      answers,
       clientType: input.clientType,
       preferredName: input.preferredName || null,
       preferredContactMethod: input.preferredContactMethod,

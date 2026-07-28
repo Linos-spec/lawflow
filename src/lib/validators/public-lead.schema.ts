@@ -24,6 +24,8 @@ export const publicLeadSchema = z.object({
   consultationPreference: z.string().optional().or(z.literal("")),
   importantDates: z.string().optional().or(z.literal("")),
   consentToContact: z.boolean().optional(),
+  // Language the prospect filled the form in (for multilingual intake).
+  intakeLanguage: z.string().optional(),
 
   // Free-form questionnaire answers (branching by matter type).
   answers: z.record(z.string(), z.unknown()).optional(),
