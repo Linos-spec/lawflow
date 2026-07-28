@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2, Truck, RefreshCw, FileCheck2, ExternalLink, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
+import { PageHeader } from "@/components/layout/page-header";
 
 interface Delivery {
   id: string; externalId: string; trackingNumber: string | null; status: string;
@@ -49,15 +50,12 @@ export default function DeliveriesPage() {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 1100, margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-        <div>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: 700, color: "var(--navy)", display: "flex", alignItems: "center", gap: "0.6rem" }}>
-            <Truck style={{ width: 26, height: 26, color: "var(--gold)" }} /> Delivery
-          </h1>
-          <p style={{ color: "var(--text-secondary)", marginTop: "0.25rem" }}>Court filings &amp; document delivery via Linoscore Delivery — with court-stamped proof back on the matter.</p>
-        </div>
-      </div>
+    <>
+      <PageHeader
+        title="Delivery"
+        icon={Truck}
+        subtitle="Court filings & document delivery via Linoscore Delivery — with court-stamped proof back on the matter."
+      />
 
       {firm && !firm.deliveryConnected && (
         <div className="lf-card" style={{ padding: "1.5rem", marginBottom: "1.5rem", background: "var(--gold-bg, #faf6ec)", borderLeft: "3px solid var(--gold)" }}>
@@ -109,6 +107,6 @@ export default function DeliveriesPage() {
       <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "1rem", display: "flex", alignItems: "center", gap: 4 }}>
         <ExternalLink style={{ width: 12, height: 12 }} /> Powered by Linoscore Delivery · legaldelivery.linoscore.com
       </p>
-    </div>
+    </>
   );
 }

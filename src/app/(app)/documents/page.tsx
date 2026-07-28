@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Upload, Search, FileText, Sparkles } from "lucide-react";
+import { Loader2, Upload, Search, FileText, Sparkles, FolderOpen } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
 import { toast } from "sonner";
 import { DOC_TYPE_LABELS, SIGNATURE_LABELS, signatureStyle, SMART_FOLDERS } from "@/lib/doc-display";
 
@@ -66,17 +67,18 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div style={{ padding: "2rem", maxWidth: 1200, margin: "0 auto" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-        <div>
-          <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.75rem", fontWeight: 700, color: "var(--navy)" }}>Documents</h1>
-          <p style={{ color: "var(--text-secondary)", marginTop: "0.25rem" }}>Uploads are OCR&apos;d, auto-titled, tagged, and organized by AI.</p>
-        </div>
-        <button onClick={() => fileInput.current?.click()} disabled={uploading} className="lf-btn lf-btn-gold" style={{ padding: "0.625rem 1.25rem", opacity: uploading ? 0.6 : 1 }}>
-          {uploading ? <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 18, height: 18 }} />} Upload
-        </button>
-        <input ref={fileInput} type="file" hidden onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} />
-      </div>
+    <>
+      <PageHeader
+        title="Documents"
+        icon={FolderOpen}
+        subtitle="Uploads are OCR'd, auto-titled, tagged, and organized by AI."
+        actions={
+          <button onClick={() => fileInput.current?.click()} disabled={uploading} className="lf-btn lf-btn-gold" style={{ padding: "0.625rem 1.25rem", opacity: uploading ? 0.6 : 1 }}>
+            {uploading ? <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 18, height: 18 }} />} Upload
+          </button>
+        }
+      />
+      <input ref={fileInput} type="file" hidden onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])} />
 
       <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "1.5rem" }}>
         {/* Smart folders */}
@@ -148,6 +150,6 @@ export default function DocumentsPage() {
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }
