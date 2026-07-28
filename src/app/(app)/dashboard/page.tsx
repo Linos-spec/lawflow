@@ -8,16 +8,12 @@ import {
   CalendarClock,
   AlertTriangle,
   DollarSign,
-  TrendingUp,
-  TrendingDown,
   Plus,
   UserPlus,
   Clock,
   FileText,
+  FolderOpen,
   ArrowRight,
-  Scale,
-  Users,
-  CheckCircle2,
   AlertCircle,
   Loader2,
 } from "lucide-react";
@@ -49,27 +45,14 @@ interface BillingRecord {
   paymentStatus: string;
 }
 
-// TODO: Replace with real audit log API
-const recentActivity = [
-  { type: "case" as const, text: "New case opened: Martinez v. Acme Corp", time: "2 hours ago" },
-  { type: "client" as const, text: "Client added: Sarah Thompson", time: "5 hours ago" },
-  { type: "deadline" as const, text: "Deadline completed: File Preliminary Report", time: "Yesterday" },
-  { type: "invoice" as const, text: "Invoice #1024 paid — $3,200", time: "2 days ago" },
-];
-
+// Quick actions — neutral navigational shortcuts (New Case lives in the header,
+// so it isn't duplicated here). One neutral icon color per the color system.
 const quickActions = [
-  { label: "New Case", icon: Briefcase, href: "/cases/new", color: "var(--navy)" },
-  { label: "Add Client", icon: UserPlus, href: "/clients/new", color: "var(--gold)" },
-  { label: "Set Deadline", icon: Clock, href: "/deadlines/new", color: "var(--info)" },
-  { label: "New Invoice", icon: FileText, href: "/billing/new", color: "var(--success)" },
+  { label: "Add Client", icon: UserPlus, href: "/clients/new" },
+  { label: "Upload Document", icon: FolderOpen, href: "/documents" },
+  { label: "Set Deadline", icon: Clock, href: "/deadlines/new" },
+  { label: "New Invoice", icon: FileText, href: "/billing/new" },
 ];
-
-const activityIcons: Record<string, React.ElementType> = {
-  case: Scale,
-  client: Users,
-  deadline: CheckCircle2,
-  invoice: DollarSign,
-};
 
 const urgencyStyles: Record<string, { bg: string; text: string; label: string }> = {
   HIGH: { bg: "var(--danger-bg)", text: "var(--danger)", label: "High" },
@@ -178,11 +161,11 @@ export default function DashboardPage() {
     (d) => d.status === "OVERDUE"
   ).length;
 
-  const outstandingRevenue = billingRecords
-    .filter((b) =>
-      ["UNPAID", "OUTSTANDING", "OVERDUE"].includes(b.paymentStatus)
-    )
-    .reduce((sum, b) => sum + Number(b.totalAmount), 0);
+  const unpaidInvoices = billingRecords.filter((b) =>
+    ["UNPAID", "OUTSTANDING", "OVERDUE"].includes(b.paymentStatus)
+  );
+  const unpaidCount = unpaidInvoices.length;
+  const outstandingRevenue = unpaidInvoices.reduce((sum, b) => sum + Number(b.totalAmount), 0);
 
   // Upcoming deadlines: PENDING sorted by dueDate asc, first 4
   const upcomingDeadlines = deadlines
@@ -212,41 +195,33 @@ export default function DashboardPage() {
     {
       label: "Active Cases",
       value: loading ? "--" : String(activeCases),
-      trend: "+3",
-      trendUp: true,
+      sub: loading ? "" : `${totalCases} total ${totalCases === 1 ? "matter" : "matters"}`,
       icon: Briefcase,
       accent: "navy" as const,
-      trendLabel: "this month",
       href: "/cases",
     },
     {
       label: "Pending Deadlines",
       value: loading ? "--" : String(pendingDeadlines),
-      trend: `${pendingDeadlines} upcoming`,
-      trendUp: false,
+      sub: loading ? "" : overdueDeadlines > 0 ? `${overdueDeadlines} overdue` : "none overdue",
       icon: CalendarClock,
       accent: "gold" as const,
-      trendLabel: "",
       href: "/deadlines",
     },
     {
-      label: "Overdue",
+      label: "Overdue Deadlines",
       value: loading ? "--" : String(overdueDeadlines),
-      trend: "-2",
-      trendUp: true,
+      sub: loading ? "" : overdueDeadlines > 0 ? "needs attention" : "all clear",
       icon: AlertTriangle,
       accent: "red" as const,
-      trendLabel: "vs last month",
       href: "/deadlines",
     },
     {
       label: "Outstanding Revenue",
       value: loading ? "--" : formatCurrency(outstandingRevenue),
-      trend: "+12%",
-      trendUp: true,
+      sub: loading ? "" : `${unpaidCount} unpaid ${unpaidCount === 1 ? "invoice" : "invoices"}`,
       icon: DollarSign,
       accent: "green" as const,
-      trendLabel: "vs last month",
       href: "/billing",
     },
   ];
@@ -345,32 +320,11 @@ export default function DashboardPage() {
               >
                 {card.value}
               </p>
-              {/* Static trend placeholders - TODO: compute from historical data */}
-              <div className="mt-2 flex items-center gap-1 text-xs font-medium">
-                {card.trendUp ? (
-                  <TrendingUp
-                    style={{ width: 14, height: 14, color: "var(--success)" }}
-                  />
-                ) : (
-                  <TrendingDown
-                    style={{ width: 14, height: 14, color: "var(--warning)" }}
-                  />
-                )}
-                <span
-                  style={{
-                    color: card.trendUp
-                      ? "var(--success)"
-                      : "var(--warning)",
-                  }}
-                >
-                  {card.trend}
-                </span>
-                {card.trendLabel && (
-                  <span style={{ color: "var(--text-muted)" }}>
-                    {card.trendLabel}
-                  </span>
-                )}
-              </div>
+              {card.sub && (
+                <div className="mt-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+                  {card.sub}
+                </div>
+              )}
             </Link>
           );
         })}
@@ -391,15 +345,13 @@ export default function DashboardPage() {
               <Link
                 key={action.label}
                 href={action.href}
-                className="lf-card lf-card-interactive flex flex-col items-center gap-2.5 py-5 text-center"
+                className="lf-card lf-card-interactive flex flex-col items-center gap-2 py-4 text-center"
               >
                 <div
-                  className="flex h-10 w-10 items-center justify-center rounded-xl"
-                  style={{ background: `${action.color}10` }}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl"
+                  style={{ background: "var(--brand-soft)" }}
                 >
-                  <Icon
-                    style={{ width: 20, height: 20, color: action.color }}
-                  />
+                  <Icon style={{ width: 18, height: 18, color: "var(--brand)" }} />
                 </div>
                 <span
                   className="text-sm font-semibold"
@@ -427,14 +379,16 @@ export default function DashboardPage() {
             >
               Upcoming Deadlines
             </h2>
-            <Link
-              href="/deadlines"
-              className="flex items-center gap-1 text-xs font-semibold"
-              style={{ color: "var(--gold)" }}
-            >
-              View All
-              <ArrowRight style={{ width: 14, height: 14 }} />
-            </Link>
+            {upcomingDeadlines.length > 0 && (
+              <Link
+                href="/deadlines"
+                className="flex items-center gap-1 text-xs font-semibold"
+                style={{ color: "var(--gold)" }}
+              >
+                View All
+                <ArrowRight style={{ width: 14, height: 14 }} />
+              </Link>
+            )}
           </div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
@@ -448,9 +402,14 @@ export default function DashboardPage() {
               />
             </div>
           ) : upcomingDeadlines.length === 0 ? (
-            <p className="text-sm py-4" style={{ color: "var(--text-muted)" }}>
-              No upcoming deadlines.
-            </p>
+            <div className="flex flex-col items-center text-center py-8">
+              <CalendarClock style={{ width: 28, height: 28, color: "var(--text-muted)", marginBottom: 10 }} />
+              <p className="text-sm" style={{ color: "var(--text-secondary)" }}>No upcoming deadlines.</p>
+              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>Track filing and court dates so nothing slips through.</p>
+              <Link href="/deadlines/new" className="lf-btn lf-btn-gold mt-4" style={{ padding: "0.5rem 1rem" }}>
+                <Plus style={{ width: 15, height: 15 }} /> Set a deadline
+              </Link>
+            </div>
           ) : (
             <div className="space-y-3">
               {upcomingDeadlines.map((d) => {
@@ -546,37 +505,8 @@ export default function DashboardPage() {
               Recent Activity
             </h2>
           </div>
-          <div className="space-y-3">
-            {recentActivity.map((a, i) => {
-              const Icon = activityIcons[a.type];
-              return (
-                <div key={i} className="flex items-start gap-3 py-2">
-                  <div
-                    className="flex h-8 w-8 items-center justify-center rounded-full flex-shrink-0"
-                    style={{ background: "rgba(15,27,51,0.06)" }}
-                  >
-                    <Icon
-                      style={{
-                        width: 15,
-                        height: 15,
-                        color: "var(--navy)",
-                      }}
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm" style={{ color: "var(--navy)" }}>
-                      {a.text}
-                    </p>
-                    <p
-                      className="text-xs mt-0.5"
-                      style={{ color: "var(--text-muted)" }}
-                    >
-                      {a.time}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="py-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+            No recent activity yet. Actions across your matters will show up here.
           </div>
         </div>
       </div>

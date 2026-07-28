@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFirm } from "@/components/providers/firm-provider";
 import {
   Scale,
@@ -58,7 +58,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Calendar",
     items: [
-      { label: "Deadlines", href: "/deadlines", icon: CalendarClock, badge: 2 },
+      { label: "Deadlines", href: "/deadlines", icon: CalendarClock },
     ],
   },
   {
@@ -105,6 +105,21 @@ export function AppSidebar() {
   const { data: session } = useSession();
   const { firm } = useFirm();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [deadlineAlerts, setDeadlineAlerts] = useState(0);
+
+  // Real "deadlines approaching" count — open (pending/overdue) deadlines.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/v1/deadlines?limit=100")
+      .then((r) => r.json())
+      .then((j) => {
+        if (!active || !j?.success) return;
+        const n = (j.data as { status: string }[]).filter((d) => d.status === "PENDING" || d.status === "OVERDUE").length;
+        setDeadlineAlerts(n);
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [pathname]);
 
   const aiEnabled = !!firm?.aiModeEnabled;
   const inAiMode = aiEnabled && pathname.startsWith("/ai-employee");
@@ -157,16 +172,19 @@ export function AppSidebar() {
         </div>
       )}
 
-      {/* Notification banner */}
-      <div className="mx-3 mt-4 mb-2">
-        <div
-          className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium"
-          style={{ background: "rgba(196,154,46,0.15)", color: "var(--gold-light)" }}
-        >
-          <Bell style={{ width: 14, height: 14, flexShrink: 0 }} />
-          <span>2 deadlines approaching</span>
+      {/* Notification banner — only when there are real open deadlines */}
+      {deadlineAlerts > 0 && (
+        <div className="mx-3 mt-4 mb-2">
+          <button
+            onClick={() => router.push("/deadlines")}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium"
+            style={{ background: "rgba(245,158,11,0.15)", color: "var(--gold-light)", border: "none", cursor: "pointer" }}
+          >
+            <Bell style={{ width: 14, height: 14, flexShrink: 0 }} />
+            <span>{deadlineAlerts} deadline{deadlineAlerts === 1 ? "" : "s"} approaching</span>
+          </button>
         </div>
-      </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
@@ -183,6 +201,7 @@ export function AppSidebar() {
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
               const Icon = item.icon;
+              const badge = item.href === "/deadlines" ? deadlineAlerts : item.badge;
               return (
                 <Link
                   key={item.href}
@@ -202,14 +221,14 @@ export function AppSidebar() {
                 >
                   <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
                   <span className="flex-1">{item.label}</span>
-                  {item.badge && (
+                  {badge ? (
                     <span
                       className="flex h-5 min-w-5 items-center justify-center rounded-full text-[11px] font-bold text-white"
                       style={{ background: "var(--danger)", padding: "0 6px" }}
                     >
-                      {item.badge}
+                      {badge}
                     </span>
-                  )}
+                  ) : null}
                 </Link>
               );
             })}
