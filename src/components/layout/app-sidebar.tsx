@@ -12,7 +12,6 @@ import {
   Briefcase,
   CalendarClock,
   DollarSign,
-  FileText,
   Settings,
   HelpCircle,
   LogOut,
@@ -71,7 +70,6 @@ const navGroups: NavGroup[] = [
     label: "Intake",
     items: [
       { label: "Leads", href: "/leads", icon: UserPlus },
-      { label: "Intake Forms", href: "/intake", icon: FileText },
     ],
   },
   {

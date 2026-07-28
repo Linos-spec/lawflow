@@ -22,6 +22,11 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/register", req.url));
   }
 
+  // Retired: the legacy "Intake Forms" stub is superseded by the Leads pipeline.
+  if (pathname === "/intake" || pathname.startsWith("/intake/")) {
+    return NextResponse.redirect(new URL("/leads", req.url));
+  }
+
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route)
   );
