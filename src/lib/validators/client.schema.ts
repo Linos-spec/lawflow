@@ -8,6 +8,10 @@ const optDate = z.preprocess(
   z.coerce.date().optional()
 );
 const optBool = z.boolean().optional();
+const optNum = z.preprocess(
+  (v) => (v === "" || v == null ? undefined : v),
+  z.coerce.number().optional()
+);
 
 export const createClientSchema = z.object({
   name: z.string().min(1, "Client name is required"),
@@ -61,6 +65,35 @@ export const createClientSchema = z.object({
   permitText: optBool,
   permitEmail: optBool,
   portalEnabled: optBool,
+
+  // Billing & payment (tokenized refs only — never raw card/bank data)
+  billingContact: optStr,
+  billingAddress: optStr,
+  billingEmail: optEmail,
+  billingArrangement: z.enum(["HOURLY", "FLAT_FEE", "CONTINGENCY", "RETAINER", "EVERGREEN_RETAINER", "PRO_BONO", "MIXED"]).optional(),
+  hourlyRate: optNum,
+  flatFee: optNum,
+  contingencyPercent: optNum,
+  retainerAmount: optNum,
+  evergreenThreshold: optNum,
+  trustBalance: optNum,
+  billingFrequency: z.enum(["MONTHLY", "QUARTERLY", "MILESTONE", "ON_COMPLETION", "ANNUAL"]).optional(),
+  invoiceDeliveryMethod: optStr,
+  paymentTerms: optStr,
+  taxStatus: optStr,
+  taxVatNumber: optStr,
+  purchaseOrderNumber: optStr,
+  ebillingSystem: optStr,
+  billingGuidelines: optStr,
+  discountPercent: optNum,
+  feeCap: optNum,
+  acceptedPaymentMethods: z.array(z.string()).optional(),
+  paymentPlanDetails: optStr,
+  outstandingBalance: optNum,
+  creditBalance: optNum,
+  collectionsStatus: z.enum(["CURRENT", "PAST_DUE", "IN_COLLECTIONS", "WRITTEN_OFF"]).optional(),
+  paymentProviderCustomerId: optStr,
+  paymentMethodRef: optStr,
 
   notes: optStr,
 });

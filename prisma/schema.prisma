@@ -70,6 +70,31 @@ enum ContactMethod {
   PORTAL
 }
 
+enum BillingArrangement {
+  HOURLY
+  FLAT_FEE
+  CONTINGENCY
+  RETAINER
+  EVERGREEN_RETAINER
+  PRO_BONO
+  MIXED
+}
+
+enum BillingFrequency {
+  MONTHLY
+  QUARTERLY
+  MILESTONE
+  ON_COMPLETION
+  ANNUAL
+}
+
+enum CollectionsStatus {
+  CURRENT
+  PAST_DUE
+  IN_COLLECTIONS
+  WRITTEN_OFF
+}
+
 enum RelationshipType {
   SPOUSE
   FORMER_SPOUSE
@@ -322,6 +347,36 @@ model Client {
   permitEmail     Boolean @default(true)
   portalEnabled   Boolean @default(false)
 
+  // ── Billing & payment ──
+  billingContact        String?
+  billingAddress        String?
+  billingEmail          String?
+  billingArrangement    BillingArrangement?
+  hourlyRate            Decimal? @db.Decimal(12, 2)
+  flatFee               Decimal? @db.Decimal(14, 2)
+  contingencyPercent    Decimal? @db.Decimal(5, 2)
+  retainerAmount        Decimal? @db.Decimal(14, 2)
+  evergreenThreshold    Decimal? @db.Decimal(14, 2)
+  trustBalance          Decimal  @default(0) @db.Decimal(14, 2)
+  billingFrequency      BillingFrequency?
+  invoiceDeliveryMethod String?
+  paymentTerms          String?
+  taxStatus             String?
+  taxVatNumber          String?
+  purchaseOrderNumber   String?
+  ebillingSystem        String?
+  billingGuidelines     String?
+  discountPercent       Decimal? @db.Decimal(5, 2)
+  feeCap                Decimal? @db.Decimal(14, 2)
+  acceptedPaymentMethods String[] @default([])
+  paymentPlanDetails    String?
+  outstandingBalance    Decimal  @default(0) @db.Decimal(14, 2)
+  creditBalance         Decimal  @default(0) @db.Decimal(14, 2)
+  collectionsStatus     CollectionsStatus?
+  // Tokenized references only — raw card/bank credentials are NEVER stored (PCI).
+  paymentProviderCustomerId String?
+  paymentMethodRef          String?
+
   notes       String?  // internal notes
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -567,6 +622,15 @@ model Lead {
   description   String?
   // Opposing / adverse parties captured during intake (for conflict checking)
   adverseParties String[]  @default([])
+  // ── Minimum intake profile ──
+  clientType             ClientType     @default(INDIVIDUAL)
+  preferredName          String?
+  preferredContactMethod ContactMethod?
+  addressOrJurisdiction  String?
+  referralSource         String?
+  consultationPreference String?  // in-person, phone, video
+  consentToContact       Boolean  @default(false)
+  importantDates         String?  // key dates / deadlines mentioned at intake
   // Structured answers from the conversational questionnaire
   answers       Json?
   // AI qualification output

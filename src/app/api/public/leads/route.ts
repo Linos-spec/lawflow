@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
       description: input.description || null,
       adverseParties: input.adverseParties,
       answers: input.answers ?? null,
+      clientType: input.clientType,
+      preferredName: input.preferredName || null,
+      preferredContactMethod: input.preferredContactMethod,
+      addressOrJurisdiction: input.addressOrJurisdiction || null,
+      referralSource: input.referralSource || null,
+      consultationPreference: input.consultationPreference || null,
+      importantDates: input.importantDates || null,
+      consentToContact: input.consentToContact ?? false,
     });
 
     // Only confirm receipt to the prospect — never leak conflict/qualification.

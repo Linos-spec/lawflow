@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { runConflictCheck } from "@/lib/conflict-check";
 import { qualifyLead } from "@/lib/lead-qualification";
-import type { CaseType, LeadSource } from "@prisma/client";
+import type { CaseType, LeadSource, ClientType, ContactMethod } from "@prisma/client";
 
 /**
  * The intake "brain": turns raw intake input (from any channel — web, phone,
@@ -19,6 +19,15 @@ export async function createLeadFromIntake(input: {
   description?: string | null;
   adverseParties?: string[];
   answers?: Record<string, unknown> | null;
+  // Minimum intake profile
+  clientType?: ClientType;
+  preferredName?: string | null;
+  preferredContactMethod?: ContactMethod;
+  addressOrJurisdiction?: string | null;
+  referralSource?: string | null;
+  consultationPreference?: string | null;
+  importantDates?: string | null;
+  consentToContact?: boolean;
 }) {
   const adverseParties = (input.adverseParties || [])
     .map((p) => p.trim())
@@ -36,6 +45,14 @@ export async function createLeadFromIntake(input: {
       description: input.description || null,
       adverseParties,
       answers: (input.answers as object) ?? undefined,
+      clientType: input.clientType || "INDIVIDUAL",
+      preferredName: input.preferredName || null,
+      preferredContactMethod: input.preferredContactMethod || null,
+      addressOrJurisdiction: input.addressOrJurisdiction || null,
+      referralSource: input.referralSource || null,
+      consultationPreference: input.consultationPreference || null,
+      importantDates: input.importantDates || null,
+      consentToContact: input.consentToContact ?? false,
       stage: "NEW",
       conflictStatus: "PENDING",
     },
