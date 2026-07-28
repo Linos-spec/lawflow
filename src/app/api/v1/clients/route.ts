@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
-import { createClientSchema } from "@/lib/validators/client.schema";
+import { createClientSchema, normalizeClientInput } from "@/lib/validators/client.schema";
 
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
@@ -51,15 +51,7 @@ export async function POST(request: NextRequest) {
     const validated = createClientSchema.parse(body);
 
     const client = await prisma.client.create({
-      data: {
-        ...validated,
-        email: validated.email || null,
-        phone: validated.phone || null,
-        address: validated.address || null,
-        company: validated.company || null,
-        notes: validated.notes || null,
-        firmId: ctx.firmId,
-      },
+      data: { ...normalizeClientInput(validated), firmId: ctx.firmId },
     });
 
     return successResponse(client, 201);

@@ -48,6 +48,50 @@ enum ClientType {
   INDIVIDUAL
   BUSINESS_ENTITY
   GOVERNMENT
+  NONPROFIT
+  TRUST
+  ESTATE
+}
+
+enum ClientStatus {
+  PROSPECT
+  ACTIVE
+  INACTIVE
+  FORMER
+  DECLINED
+}
+
+enum ContactMethod {
+  EMAIL
+  MOBILE_PHONE
+  WORK_PHONE
+  HOME_PHONE
+  MAIL
+  PORTAL
+}
+
+enum RelationshipType {
+  SPOUSE
+  FORMER_SPOUSE
+  PARTNER
+  DEPENDENT
+  CHILD
+  PARENT
+  GUARDIAN
+  BUSINESS_PARTNER
+  EMPLOYER
+  RELATED_COMPANY
+  SUBSIDIARY
+  AFFILIATE
+  PARENT_COMPANY
+  TRUSTEE
+  BENEFICIARY
+  EXECUTOR
+  POWER_OF_ATTORNEY
+  AUTHORIZED_REPRESENTATIVE
+  DECISION_MAKER
+  EMERGENCY_CONTACT
+  OTHER
 }
 
 enum DeadlineType {
@@ -167,6 +211,7 @@ model User {
 
   timeEntries TimeEntry[]
   auditLogs   AuditLog[]
+  responsibleForCases Case[] @relation("ResponsibleAttorney")
 
   @@index([organizationId])
   @@index([email])
@@ -216,6 +261,7 @@ model Firm {
   documents      Document[]
   deliveryRequests DeliveryRequest[]
   signatureRequests SignatureRequest[]
+  relatedContacts RelatedContact[]
 
   @@index([organizationId])
 }
@@ -224,13 +270,59 @@ model Firm {
 
 model Client {
   id          String     @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
+  name        String     // primary / display name
   clientType  ClientType @default(INDIVIDUAL)
-  company     String?
-  notes       String?
+  status      ClientStatus @default(PROSPECT)
+
+  // ── Identity (individual) ──
+  legalName           String?
+  preferredName       String?
+  aliases             String[]  @default([]) // former names / aliases
+  pronouns            String?
+  dateOfBirth         DateTime?
+  placeOfBirth        String?
+  nationality         String?
+  preferredLanguage   String?
+  interpreterRequired Boolean   @default(false)
+  photoUrl            String?   // photograph (individual) or logo (organization)
+
+  // ── Identity (organization) ──
+  company            String?  // legacy display org name
+  legalBusinessName  String?
+  dbaNames           String[] @default([]) // trading / DBA names
+  entityType         String?               // LLC, C-Corp, LP, etc.
+  formationState     String?
+  formationCountry   String?
+  formationDate      DateTime?
+  registrationNumber String?               // registration / company number
+  taxId              String?               // Tax ID / EIN
+  registeredAgent    String?
+  industry           String?
+  website            String?
+  parentCompany      String?
+
+  // ── Contact information ──
+  email          String? // primary email
+  secondaryEmail String?
+  phone          String? // legacy / primary phone
+  mobilePhone    String?
+  workPhone      String?
+  homePhone      String?
+  preferredContactMethod ContactMethod?
+  bestTimeToContact      String?
+  address         String?  // physical address
+  mailingAddress  String?
+  previousAddress String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+  communicationRestrictions String?
+  permitVoicemail Boolean @default(true)
+  permitText      Boolean @default(true)
+  permitEmail     Boolean @default(true)
+  portalEnabled   Boolean @default(false)
+
+  notes       String?  // internal notes
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -241,8 +333,42 @@ model Client {
   billingRecords BillingRecord[]
   intakeForms    IntakeForm[]
   documents      Document[]
+  relatedContacts RelatedContact[] @relation("ClientRelatedContacts")
+  linkedAsRelated RelatedContact[] @relation("RelatedClientLink")
 
   @@index([firmId])
+  @@index([status])
+}
+
+// Relationship & household — each related person/entity is its own contact
+// record linked to the client (not free text), optionally tied to another Client.
+model RelatedContact {
+  id               String           @id @default(cuid())
+  relationshipType RelationshipType
+  name             String
+  email            String?
+  phone            String?
+  organization     String?
+  address          String?
+  isPrimaryDecisionMaker Boolean    @default(false)
+  hasPowerOfAttorney     Boolean    @default(false)
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  firmId String
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  clientId String
+  client   Client @relation("ClientRelatedContacts", fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Optional link when the related party is itself a client of the firm.
+  relatedClientId String?
+  relatedClient   Client? @relation("RelatedClientLink", fields: [relatedClientId], references: [id], onDelete: SetNull)
+
+  @@index([firmId])
+  @@index([clientId])
+  @@index([relatedClientId])
 }
 
 model Case {
@@ -254,10 +380,27 @@ model Case {
   caseType    CaseType   @default(CIVIL)
   priority    Priority   @default(MEDIUM)
   filingDate  DateTime?
+  openedDate  DateTime?
   closingDate DateTime?
-  courtName   String?
+  courtName   String?    // court or agency
   judgeName   String?
   notes       String?
+
+  // ── Matter details ──
+  practiceArea         String?
+  matterSubtype        String?
+  jurisdiction         String?
+  venue                String?
+  docketNumber         String?   // court's case/docket number (distinct from internal caseNumber)
+  opposingParties      String[]  @default([])
+  opposingCounsel      String?
+  claimValue           Decimal?  @db.Decimal(19, 2) // claim or transaction value
+  matterStage          String?
+  nextAction           String?
+  statuteOfLimitations DateTime?
+  assignedTeamIds      String[]  @default([]) // User ids on the matter team
+  customFields         Json?     // practice-area-specific custom fields
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -266,6 +409,9 @@ model Case {
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  responsibleAttorneyId String?
+  responsibleAttorney   User?   @relation("ResponsibleAttorney", fields: [responsibleAttorneyId], references: [id], onDelete: SetNull)
 
   // Cached AI Case Intelligence analysis (regenerated on demand).
   aiAnalysis   Json?

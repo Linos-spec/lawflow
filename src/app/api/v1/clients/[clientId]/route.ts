@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
-import { updateClientSchema } from "@/lib/validators/client.schema";
+import { updateClientSchema, normalizeClientInput } from "@/lib/validators/client.schema";
 
 export async function GET(
   _request: NextRequest,
@@ -47,14 +47,7 @@ export async function PUT(
 
     const client = await prisma.client.update({
       where: { id: clientId },
-      data: {
-        ...validated,
-        email: validated.email || null,
-        phone: validated.phone || null,
-        address: validated.address || null,
-        company: validated.company || null,
-        notes: validated.notes || null,
-      },
+      data: normalizeClientInput(validated),
     });
 
     return successResponse(client);

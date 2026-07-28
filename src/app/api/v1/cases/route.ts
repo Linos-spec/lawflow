@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
-import { createCaseSchema } from "@/lib/validators/case.schema";
+import { createCaseSchema, normalizeCaseInput } from "@/lib/validators/case.schema";
 
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
@@ -56,17 +56,7 @@ export async function POST(request: NextRequest) {
     const caseNumber = `LF-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`;
 
     const newCase = await prisma.case.create({
-      data: {
-        caseNumber,
-        title: validated.title,
-        clientId: validated.clientId,
-        caseType: validated.caseType,
-        status: validated.status,
-        priority: validated.priority,
-        description: validated.description || null,
-        notes: validated.notes || null,
-        firmId: ctx.firmId,
-      },
+      data: { ...normalizeCaseInput(validated), caseNumber, firmId: ctx.firmId },
       include: {
         client: { select: { id: true, name: true } },
       },
