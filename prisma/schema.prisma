@@ -215,6 +215,7 @@ model Firm {
   leads          Lead[]
   documents      Document[]
   deliveryRequests DeliveryRequest[]
+  signatureRequests SignatureRequest[]
 
   @@index([organizationId])
 }
@@ -512,6 +513,7 @@ model Document {
   uploadedBy String?
 
   versions        DocumentVersion[]
+  signatureRequests SignatureRequest[]
   currentVersionId String?
 
   @@index([firmId])
@@ -573,6 +575,45 @@ model DeliveryRequest {
   @@index([firmId])
   @@index([caseId])
   @@index([status])
+}
+
+// ─── E-SIGNATURE (built-in signer) ──────────────────
+
+enum SignatureRequestStatus {
+  PENDING
+  SIGNED
+  DECLINED
+  VOID
+}
+
+model SignatureRequest {
+  id            String                 @id @default(cuid())
+  token         String                 @unique @default(cuid()) // public signing-link token
+  status        SignatureRequestStatus @default(PENDING)
+  signerName    String
+  signerEmail   String?
+  // Signature capture + ESIGN/UETA audit trail
+  signatureData String?  // typed full name (rendered as the signature)
+  signatureType String?  // "typed" | "drawn"
+  consent       Boolean  @default(false)
+  signedAt      DateTime?
+  signerIp      String?
+  signerUserAgent String?
+  auditTrail    Json?    // append-only list of events (created/viewed/signed)
+  expiresAt     DateTime?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  firmId String
+  firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([firmId])
+  @@index([documentId])
+  @@index([token])
 }
 
 model AuditLog {

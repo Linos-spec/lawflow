@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowLeft, Download, Upload, Trash2, History, Sparkles, FileText } from "lucide-react";
+import { Loader2, ArrowLeft, Download, Upload, Trash2, History, Sparkles, FileText, PenLine } from "lucide-react";
 import { toast } from "sonner";
 import { DOC_TYPE_LABELS, SIGNATURE_LABELS, humanSize } from "@/lib/doc-display";
 
@@ -63,6 +63,23 @@ export default function DocumentDetailPage() {
     if (res.ok) { toast.success("Deleted"); router.push("/documents"); } else toast.error("Delete failed");
   };
 
+  const sendForSignature = async () => {
+    const signerName = window.prompt("Who is signing? Enter the signer's full name:");
+    if (!signerName?.trim()) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/v1/documents/${id}/signature-request`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ signerName: signerName.trim() }),
+      });
+      const json = await res.json();
+      if (!res.ok) { toast.error(json.error || "Could not create signing link"); return; }
+      try { await navigator.clipboard.writeText(json.data.signingUrl); } catch { /* clipboard may be blocked */ }
+      toast.success("Signing link copied — send it to the signer", { description: json.data.signingUrl, duration: 8000 });
+      await load();
+    } finally { setBusy(false); }
+  };
+
   if (loading) return <div style={{ padding: "3rem", textAlign: "center" }}><Loader2 style={{ width: 24, height: 24, animation: "spin 1s linear infinite", color: "var(--gold)" }} /></div>;
   if (!doc) return <div style={{ padding: "2rem" }}>Not found. <Link href="/documents" style={{ color: "var(--gold)" }}>Back</Link></div>;
 
@@ -105,6 +122,9 @@ export default function DocumentDetailPage() {
         </div>
         {doc.case && <div><label style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: 4 }}>Case</label><span style={{ fontSize: "0.875rem", color: "var(--navy)" }}>{doc.case.caseNumber}</span></div>}
         <div style={{ flex: 1 }} />
+        <button onClick={sendForSignature} disabled={busy} className="lf-btn lf-btn-primary" style={{ padding: "0.5rem 0.875rem" }}>
+          <PenLine style={{ width: 16, height: 16 }} /> Send for signature
+        </button>
         <button onClick={() => fileInput.current?.click()} disabled={busy} className="lf-btn" style={{ padding: "0.5rem 0.875rem", background: "var(--bg-base)", color: "var(--navy)" }}>
           <Upload style={{ width: 16, height: 16 }} /> New version
         </button>

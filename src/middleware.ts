@@ -10,6 +10,8 @@ const publicRoutes = [
   // Prospective-client intake funnel, shared by a firm via its public link.
   // Distinct from the authenticated internal /intake pages.
   "/consult",
+  // Public e-signing page, gated by an unguessable token.
+  "/sign",
 ];
 
 export default auth((req) => {
