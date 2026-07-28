@@ -12,9 +12,11 @@ import {
   UserPlus,
   Clock,
   FileText,
+  FileSignature,
   FolderOpen,
   ArrowRight,
   AlertCircle,
+  CheckCircle2,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -101,6 +103,7 @@ export default function DashboardPage() {
   const [cases, setCases] = useState<CaseRecord[]>([]);
   const [deadlines, setDeadlines] = useState<DeadlineRecord[]>([]);
   const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([]);
+  const [pendingSigCount, setPendingSigCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   // Hydration-safe: set greeting and date only on client
@@ -124,21 +127,24 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [casesRes, deadlinesRes, billingRes] = await Promise.all([
-          fetch("/api/v1/cases?limit=50"),
-          fetch("/api/v1/deadlines?limit=10"),
-          fetch("/api/v1/billing?limit=10"),
+        const [casesRes, deadlinesRes, billingRes, sigRes] = await Promise.all([
+          fetch("/api/v1/cases?limit=100"),
+          fetch("/api/v1/deadlines?limit=100"),
+          fetch("/api/v1/billing?limit=100"),
+          fetch("/api/v1/documents?signature=PENDING"),
         ]);
 
-        const [casesJson, deadlinesJson, billingJson] = await Promise.all([
+        const [casesJson, deadlinesJson, billingJson, sigJson] = await Promise.all([
           casesRes.json(),
           deadlinesRes.json(),
           billingRes.json(),
+          sigRes.json(),
         ]);
 
         if (casesJson.success) setCases(casesJson.data);
         if (deadlinesJson.success) setDeadlines(deadlinesJson.data);
         if (billingJson.success) setBillingRecords(billingJson.data);
+        if (sigJson.success) setPendingSigCount(Array.isArray(sigJson.data) ? sigJson.data.length : 0);
       } catch {
         toast.error("Failed to load dashboard data");
       } finally {
@@ -181,6 +187,25 @@ export default function DashboardPage() {
     statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
   });
   const totalCases = cases.length;
+
+  // Needs-attention items — real signals, each links to the records behind it.
+  const weekAhead = Date.now() + 7 * 86_400_000;
+  const dueThisWeek = deadlines.filter(
+    (d) => d.status === "PENDING" && new Date(d.dueDate).getTime() <= weekAhead
+  ).length;
+  const overdueInvoiceCount = billingRecords.filter((b) => b.paymentStatus === "OVERDUE").length;
+
+  const attentionItems = [
+    { key: "overdue-deadlines", count: overdueDeadlines, label: overdueDeadlines === 1 ? "Overdue deadline" : "Overdue deadlines", href: "/deadlines", icon: AlertTriangle, tone: "danger" as const },
+    { key: "due-week", count: dueThisWeek, label: "Due this week", href: "/deadlines", icon: CalendarClock, tone: "warning" as const },
+    { key: "awaiting-sig", count: pendingSigCount, label: "Awaiting signature", href: "/documents", icon: FileSignature, tone: "warning" as const },
+    { key: "overdue-invoices", count: overdueInvoiceCount, label: overdueInvoiceCount === 1 ? "Overdue invoice" : "Overdue invoices", href: "/billing", icon: DollarSign, tone: "danger" as const },
+  ].filter((a) => a.count > 0);
+
+  const toneStyle = (tone: "danger" | "warning") =>
+    tone === "danger"
+      ? { bg: "var(--danger-bg)", color: "var(--danger)" }
+      : { bg: "var(--warning-bg)", color: "var(--warning)" };
   const caseBreakdown = Object.entries(statusCounts).map(
     ([status, count]) => ({
       label: formatStatusLabel(status),
@@ -255,7 +280,40 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stat cards */}
+      {/* Needs attention — urgent, action-oriented, real data */}
+      {!loading && (
+        attentionItems.length > 0 ? (
+          <div>
+            <h2 className="text-lg font-bold mb-3" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>
+              Needs attention
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {attentionItems.map((a) => {
+                const t = toneStyle(a.tone);
+                const Icon = a.icon;
+                return (
+                  <Link key={a.key} href={a.href} className="lf-card lf-card-interactive flex items-center gap-3 py-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl flex-shrink-0" style={{ background: t.bg }}>
+                      <Icon style={{ width: 22, height: 22, color: t.color }} />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)", color: t.color, lineHeight: 1 }}>{a.count}</div>
+                      <div className="text-xs font-medium mt-1" style={{ color: "var(--text-secondary)" }}>{a.label}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div className="lf-card flex items-center gap-3" style={{ borderLeft: "4px solid var(--success)" }}>
+            <CheckCircle2 style={{ width: 22, height: 22, color: "var(--success)", flexShrink: 0 }} />
+            <span className="text-sm font-medium" style={{ color: "var(--navy)" }}>You&apos;re all caught up — nothing needs attention right now.</span>
+          </div>
+        )
+      )}
+
+      {/* Practice at a glance */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 stagger-children">
         {statCards.map((card) => {
           const Icon = card.icon;
