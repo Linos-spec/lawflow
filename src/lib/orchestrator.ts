@@ -3,6 +3,7 @@ import { openai } from "@ai-sdk/openai";
 import { prisma } from "@/lib/prisma";
 import { matterPlanSchema, type MatterPlan } from "@/lib/validators/ai.schema";
 import { createEngagementLetter } from "@/lib/engagement-letter";
+import { immigrationStarterChecklist } from "@/lib/practice-areas/immigration";
 import type { CaseType, Priority } from "@prisma/client";
 
 /**
@@ -17,8 +18,12 @@ function hasAiKey() {
   return !!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith("sk-placeholder");
 }
 
-/** AI-drafted starter deadlines for a matter type. Best-effort; [] without a key. */
+/** Starter deadlines for a matter type. Immigration (the beachhead vertical) uses
+ * a curated, deterministic checklist; other types fall back to AI. [] without a key. */
 export async function generateMatterPlan(input: { caseType: string; description: string | null }): Promise<MatterPlan["deadlines"]> {
+  if (input.caseType === "IMMIGRATION") {
+    return immigrationStarterChecklist();
+  }
   if (!hasAiKey()) return [];
   try {
     const { object } = await generateObject({
