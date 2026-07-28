@@ -2,6 +2,7 @@ import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { prisma } from "@/lib/prisma";
 import { createDocument } from "@/lib/document-pipeline";
+import { immigrationEngagementScope, immigrationEvidenceChecklist } from "@/lib/practice-areas/immigration";
 
 function hasAiKey() {
   return !!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith("sk-placeholder");
@@ -28,6 +29,11 @@ export async function generateEngagementLetterText(input: {
   retainer?: { structure?: string | null; amountLow?: number | null; amountHigh?: number | null } | null;
 }): Promise<string | null> {
   if (!hasAiKey()) return null;
+  // Immigration (beachhead vertical): inject standard scope + evidence expectations.
+  const isImmigration = input.matterType?.toUpperCase() === "IMMIGRATION";
+  const immigrationBlock = isImmigration
+    ? `\n\nImmigration scope to reflect in the letter: ${immigrationEngagementScope()}\nRequired client-provided documents to list under client responsibilities: ${immigrationEvidenceChecklist().join("; ")}.`
+    : "";
   try {
     const { text } = await generateText({
       model: openai("gpt-4o-mini"),
@@ -36,7 +42,7 @@ export async function generateEngagementLetterText(input: {
 Client: ${input.clientName}
 Matter type: ${input.matterType.replace(/_/g, " ").toLowerCase()}
 Matter description: ${input.matterDescription || "Not provided"}
-Fee/retainer terms: ${feeTerms(input.retainer)}`,
+Fee/retainer terms: ${feeTerms(input.retainer)}${immigrationBlock}`,
     });
     return text?.trim() || null;
   } catch (err) {

@@ -66,3 +66,40 @@ export const IMMIGRATION_TERMS = {
   intakePrompt: "Tell us about your immigration situation",
   proofOfService: "filing receipt notice",
 };
+
+/**
+ * Evidence a client typically must provide for immigration filings. General
+ * baseline + a few high-frequency type-specific items. Attorney tailors per case.
+ */
+export function immigrationEvidenceChecklist(matterKey?: string): string[] {
+  const base = [
+    "Valid passport(s) — biographic page",
+    "Any prior USCIS/EOIR notices, receipts, or decisions",
+    "I-94 arrival/departure record (if applicable)",
+    "Current immigration status documents (visa, EAD, green card)",
+    "Government-issued photo ID",
+    "Two passport-style photographs",
+  ];
+  const byType: Record<string, string[]> = {
+    family_petition: ["Marriage/birth certificates proving the qualifying relationship", "Proof of the petitioner's U.S. status/citizenship", "Evidence of a bona fide relationship (photos, joint accounts, lease)"],
+    adjustment: ["Form I-693 medical exam (sealed)", "Birth certificate with certified translation", "Proof of lawful entry / I-94"],
+    naturalization: ["Green card (front and back)", "Travel history for the past 5 years", "Tax transcripts and any selective-service registration"],
+    asylum: ["Personal declaration of persecution", "Country-condition evidence", "Corroborating documents (police/medical reports, witness letters)"],
+    removal_defense: ["Notice to Appear (NTA)", "All prior court/USCIS filings", "Evidence supporting relief (hardship, ties, rehabilitation)"],
+    u_visa: ["Form I-918 Supplement B certification from law enforcement", "Evidence of the qualifying crime and harm suffered"],
+    naturalization_derivative: [],
+  };
+  return matterKey && byType[matterKey] ? [...base, ...byType[matterKey]] : base;
+}
+
+/** Scope/context injected into engagement letters for immigration matters. */
+export function immigrationEngagementScope(matterKey?: string): string {
+  const t = matterKey ? IMMIGRATION_MATTER_TYPES.find((x) => x.key === matterKey) : undefined;
+  const formLine = t ? `The representation covers preparation and filing of Form ${t.form} (${t.label}) with ${t.agency}.` : "The representation covers the immigration matter described.";
+  return [
+    formLine,
+    "Scope is limited to this filing and directly related USCIS/EOIR correspondence; it does not include appeals, motions, or separate applications unless added in writing.",
+    "The client is responsible for providing complete, truthful information and the supporting evidence listed, and for attending any biometrics appointments, interviews, or hearings.",
+    "Government filing fees are the client's responsibility and are separate from attorney fees. Processing times are set by the government and are outside the firm's control.",
+  ].join(" ");
+}
