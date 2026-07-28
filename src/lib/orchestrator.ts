@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { matterPlanSchema, type MatterPlan } from "@/lib/validators/ai.schema";
 import { createEngagementLetter } from "@/lib/engagement-letter";
 import { immigrationStarterChecklist } from "@/lib/practice-areas/immigration";
+import { instantiateWorkflow, builtInWorkflowFor } from "@/lib/workflow";
 import type { CaseType, Priority } from "@prisma/client";
 
 /**
@@ -49,6 +50,7 @@ export type OrchestrationResult = {
   client: { id: string; name: string };
   matter: { id: string; caseNumber: string; title: string } | null;
   deadlinesCreated: number;
+  tasksCreated: number;
   engagementLetterId: string | null;
 };
 
@@ -84,6 +86,7 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
 
   let matter: OrchestrationResult["matter"] = null;
   let deadlinesCreated = 0;
+  let tasksCreated = 0;
   let engagementLetterId: string | null = null;
 
   if (firm.aiAutoCreateMatter) {
@@ -121,6 +124,13 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
         });
         deadlinesCreated = plan.length;
       }
+
+      // Instantiate the practice-area workflow → real Tasks with relative deadlines,
+      // approval gates, and (once assigned) ownership. The operational engine.
+      const steps = builtInWorkflowFor(lead.caseType);
+      if (steps) {
+        tasksCreated = await instantiateWorkflow({ firmId, caseId: created.id, steps, openDate: new Date() });
+      }
     }
 
     // Automatic engagement letter — drafted to the new matter, awaiting signature.
@@ -152,5 +162,5 @@ export async function orchestrateConversion(leadId: string, firmId: string): Pro
     data: { stage: "CONVERTED", convertedClientId: client.id, convertedCaseId: matter?.id ?? null },
   });
 
-  return { client: { id: client.id, name: client.name }, matter, deadlinesCreated, engagementLetterId };
+  return { client: { id: client.id, name: client.name }, matter, deadlinesCreated, tasksCreated, engagementLetterId };
 }
