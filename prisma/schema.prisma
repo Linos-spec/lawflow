@@ -26,14 +26,27 @@ enum CaseStatus {
 }
 
 enum CaseType {
+  // ── Litigation & Disputes ──
   CIVIL
-  CRIMINAL
-  FAMILY
-  CORPORATE
-  IMMIGRATION
-  REAL_ESTATE
-  BANKRUPTCY
   PERSONAL_INJURY
+  EMPLOYMENT
+  WORKERS_COMP
+  CIVIL_RIGHTS
+  // ── Family & Personal ──
+  IMMIGRATION
+  FAMILY
+  CRIMINAL
+  ESTATE_PLANNING
+  ELDER_LAW
+  SOCIAL_SECURITY
+  // ── Business & Property ──
+  CORPORATE
+  REAL_ESTATE
+  LANDLORD_TENANT
+  INTELLECTUAL_PROPERTY
+  TAX
+  BANKRUPTCY
+  // ── Other ──
   OTHER
 }
 

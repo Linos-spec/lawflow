@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRACTICE_AREA_KEYS } from "@/lib/practice-areas/catalog";
 
 const optStr = z.string().optional();
 const optDate = z.preprocess(
@@ -13,10 +14,7 @@ const optNum = z.preprocess(
 export const createCaseSchema = z.object({
   title: z.string().min(1, "Matter name is required"),
   clientId: z.string().min(1, "Client is required"),
-  caseType: z.enum([
-    "CIVIL", "CRIMINAL", "FAMILY", "CORPORATE", "IMMIGRATION",
-    "REAL_ESTATE", "BANKRUPTCY", "PERSONAL_INJURY", "OTHER",
-  ]).default("CIVIL"),
+  caseType: z.enum(PRACTICE_AREA_KEYS).default("CIVIL"),
   status: z.enum([
     "OPEN", "ACTIVE", "ON_HOLD", "PENDING", "CLOSED", "ARCHIVED",
   ]).default("OPEN"),

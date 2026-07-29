@@ -4,18 +4,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { Scale, Loader2, Plus, X, CheckCircle2, ArrowRight, ArrowLeft } from "lucide-react";
 import { INTAKE_LANGUAGES } from "@/lib/translate";
+import { PRACTICE_AREA_OPTIONS } from "@/lib/practice-areas/catalog";
 
-const CASE_TYPES: { value: string; label: string }[] = [
-  { value: "FAMILY", label: "Family" },
-  { value: "PERSONAL_INJURY", label: "Personal Injury" },
-  { value: "CRIMINAL", label: "Criminal Defense" },
-  { value: "REAL_ESTATE", label: "Real Estate" },
-  { value: "IMMIGRATION", label: "Immigration" },
-  { value: "BANKRUPTCY", label: "Bankruptcy" },
-  { value: "CORPORATE", label: "Business / Corporate" },
-  { value: "CIVIL", label: "Civil Dispute" },
-  { value: "OTHER", label: "Something else" },
-];
+const CASE_TYPES: { value: string; label: string }[] = PRACTICE_AREA_OPTIONS;
 
 // Branching follow-up question, tailored by matter type.
 type Branch = { key: string; question: string; options?: string[]; kind: "choice" | "text" | "date" };

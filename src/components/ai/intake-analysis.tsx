@@ -11,24 +11,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { IntakeAnalysis } from "@/lib/validators/ai.schema";
+import { PRACTICE_AREA_LABELS as caseTypeLabels } from "@/lib/practice-areas/catalog";
 
 const priorityStyles: Record<string, { bg: string; text: string }> = {
   HIGH: { bg: "var(--danger-bg)", text: "var(--danger)" },
   URGENT: { bg: "var(--danger-bg)", text: "var(--danger)" },
   MEDIUM: { bg: "var(--warning-bg)", text: "var(--warning)" },
   LOW: { bg: "var(--success-bg)", text: "var(--success)" },
-};
-
-const caseTypeLabels: Record<string, string> = {
-  CIVIL: "Civil",
-  CRIMINAL: "Criminal",
-  FAMILY: "Family",
-  CORPORATE: "Corporate",
-  IMMIGRATION: "Immigration",
-  REAL_ESTATE: "Real Estate",
-  BANKRUPTCY: "Bankruptcy",
-  PERSONAL_INJURY: "Personal Injury",
-  OTHER: "Other",
 };
 
 export function IntakeAnalysisButton({

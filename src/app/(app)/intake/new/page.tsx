@@ -5,17 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
-
-const matterTypes = [
-  "CIVIL", "CRIMINAL", "FAMILY", "CORPORATE", "IMMIGRATION",
-  "REAL_ESTATE", "BANKRUPTCY", "PERSONAL_INJURY", "OTHER",
-];
-const typeLabels: Record<string, string> = {
-  CIVIL: "Civil", CRIMINAL: "Criminal", FAMILY: "Family",
-  CORPORATE: "Corporate", IMMIGRATION: "Immigration",
-  REAL_ESTATE: "Real Estate", BANKRUPTCY: "Bankruptcy",
-  PERSONAL_INJURY: "Personal Injury", OTHER: "Other",
-};
+import { PRACTICE_AREAS_BY_GROUP } from "@/lib/practice-areas/catalog";
 
 const referralSources = [
   "Referral", "Website", "Social Media", "Legal Directory",
@@ -133,8 +123,12 @@ export default function NewIntakePage() {
             value={form.caseType}
             onChange={(e) => update("caseType", e.target.value)}
           >
-            {matterTypes.map((t) => (
-              <option key={t} value={t}>{typeLabels[t]}</option>
+            {PRACTICE_AREAS_BY_GROUP.map((g) => (
+              <optgroup key={g.group} label={g.group}>
+                {g.areas.map((a) => (
+                  <option key={a.key} value={a.key}>{a.label}</option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>

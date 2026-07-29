@@ -1,5 +1,7 @@
 // Label maps for all enums
 
+import { PRACTICE_AREA_LABELS } from "./practice-areas/catalog";
+
 export const CASE_STATUS_LABELS: Record<string, string> = {
   OPEN: "Open",
   ACTIVE: "Active",
@@ -9,17 +11,9 @@ export const CASE_STATUS_LABELS: Record<string, string> = {
   ARCHIVED: "Archived",
 };
 
-export const CASE_TYPE_LABELS: Record<string, string> = {
-  CIVIL: "Civil",
-  CRIMINAL: "Criminal",
-  FAMILY: "Family",
-  CORPORATE: "Corporate",
-  IMMIGRATION: "Immigration",
-  REAL_ESTATE: "Real Estate",
-  BANKRUPTCY: "Bankruptcy",
-  PERSONAL_INJURY: "Personal Injury",
-  OTHER: "Other",
-};
+// Practice-area (matter type) labels come from the canonical catalog so pickers,
+// badges, filters, and AI classification never drift out of sync.
+export const CASE_TYPE_LABELS: Record<string, string> = PRACTICE_AREA_LABELS;
 
 export const PRIORITY_LABELS: Record<string, string> = {
   LOW: "Low",

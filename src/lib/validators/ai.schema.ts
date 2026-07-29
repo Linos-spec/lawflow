@@ -1,18 +1,9 @@
 import { z } from "zod";
+import { PRACTICE_AREA_KEYS } from "@/lib/practice-areas/catalog";
 
 export const intakeAnalysisSchema = z.object({
   suggestedCaseType: z
-    .enum([
-      "CIVIL",
-      "CRIMINAL",
-      "FAMILY",
-      "CORPORATE",
-      "IMMIGRATION",
-      "REAL_ESTATE",
-      "BANKRUPTCY",
-      "PERSONAL_INJURY",
-      "OTHER",
-    ])
+    .enum(PRACTICE_AREA_KEYS)
     .describe("The most appropriate case type based on the intake description"),
   estimatedPriority: z
     .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])
@@ -45,10 +36,7 @@ export const leadQualificationSchema = z.object({
     .max(100)
     .describe("0-100 score of how strong/promising this lead is"),
   suggestedCaseType: z
-    .enum([
-      "CIVIL", "CRIMINAL", "FAMILY", "CORPORATE", "IMMIGRATION",
-      "REAL_ESTATE", "BANKRUPTCY", "PERSONAL_INJURY", "OTHER",
-    ])
+    .enum(PRACTICE_AREA_KEYS)
     .describe("Most appropriate case type based on the lead's description and answers"),
   priority: z
     .enum(["LOW", "MEDIUM", "HIGH", "URGENT"])

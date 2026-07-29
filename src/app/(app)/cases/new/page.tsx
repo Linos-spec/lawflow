@@ -5,18 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
-
-const caseTypes = [
-  "CIVIL", "CRIMINAL", "FAMILY", "CORPORATE", "IMMIGRATION",
-  "REAL_ESTATE", "BANKRUPTCY", "PERSONAL_INJURY", "OTHER",
-];
-
-const caseTypeLabels: Record<string, string> = {
-  CIVIL: "Civil", CRIMINAL: "Criminal", FAMILY: "Family",
-  CORPORATE: "Corporate", IMMIGRATION: "Immigration",
-  REAL_ESTATE: "Real Estate", BANKRUPTCY: "Bankruptcy",
-  PERSONAL_INJURY: "Personal Injury", OTHER: "Other",
-};
+import { PRACTICE_AREAS_BY_GROUP } from "@/lib/practice-areas/catalog";
 
 const caseStatuses = ["OPEN", "ACTIVE", "ON_HOLD", "PENDING"];
 const statusLabels: Record<string, string> = {
@@ -156,8 +145,12 @@ export default function NewCasePage() {
               value={form.caseType}
               onChange={(e) => update("caseType", e.target.value)}
             >
-              {caseTypes.map((t) => (
-                <option key={t} value={t}>{caseTypeLabels[t]}</option>
+              {PRACTICE_AREAS_BY_GROUP.map((g) => (
+                <optgroup key={g.group} label={g.group}>
+                  {g.areas.map((a) => (
+                    <option key={a.key} value={a.key}>{a.label}</option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </div>
