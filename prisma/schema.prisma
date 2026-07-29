@@ -253,6 +253,8 @@ model Firm {
   // Public identifier used for the unauthenticated intake link (/intake/[publicId]).
   // DB-level default so `prisma db push` backfills existing rows (no migration files here).
   publicId  String   @unique @default(dbgenerated("gen_random_uuid()::text"))
+  // iCal feed token (nullable; generated on demand) for calendar subscription.
+  calendarToken String? @unique
   // Opt-in "AI Employee" mode — a firm admin enables the AI pipeline workspace.
   aiModeEnabled Boolean @default(false)
   // Orchestrator setup (admin-configured): what the AI Employee does automatically.

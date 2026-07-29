@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lawflow-dev",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "NEXTAUTH_URL=http://localhost:3005 exec npx next dev -p 3005"],
+      "port": 3005
+    }
+  ]
+}
