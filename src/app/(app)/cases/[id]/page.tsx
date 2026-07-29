@@ -5,6 +5,7 @@ import { useFirm } from "@/components/providers/firm-provider";
 import { CaseIntelligence } from "@/components/case/case-intelligence";
 import { SimilarMatters } from "@/components/case/similar-matters";
 import { CaseDeliveries } from "@/components/delivery/case-deliveries";
+import { CasePortal } from "@/components/case/case-portal";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -263,6 +264,8 @@ export default function CaseDetailPage() {
       {firm?.aiModeEnabled && <div style={{ marginBottom: "1.5rem" }}><SimilarMatters caseId={id} /></div>}
 
       <div style={{ marginBottom: "1.5rem" }}><CaseDeliveries caseId={id} /></div>
+
+      <div style={{ marginBottom: "1.5rem" }}><CasePortal caseId={id} /></div>
 
       {/* Info grid */}
       <div className="grid lg:grid-cols-3 gap-6">

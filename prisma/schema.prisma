@@ -479,6 +479,12 @@ model Case {
   embedding    Float[]  @default([])
   embeddedAt   DateTime?
 
+  // Client portal — an unguessable token drives a read-only, no-login progress view.
+  // Nullable + generated on demand when the firm enables the portal, so adding
+  // the column is non-destructive (prod applies schema via `db push` on boot).
+  portalToken   String?  @unique
+  portalEnabled Boolean  @default(false)
+
   deadlines      Deadline[]
   billingRecords BillingRecord[]
   timeEntries    TimeEntry[]
