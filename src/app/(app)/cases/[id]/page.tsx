@@ -6,6 +6,7 @@ import { CaseIntelligence } from "@/components/case/case-intelligence";
 import { SimilarMatters } from "@/components/case/similar-matters";
 import { CaseDeliveries } from "@/components/delivery/case-deliveries";
 import { CasePortal } from "@/components/case/case-portal";
+import { CASE_TYPE_LABELS } from "@/lib/constants";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -251,7 +252,7 @@ export default function CaseDetailPage() {
               className="mt-0.5 text-sm"
               style={{ color: "var(--text-secondary)" }}
             >
-              {c.caseNumber} &middot; {c.caseType} &middot; Filed{" "}
+              {c.caseNumber} &middot; {CASE_TYPE_LABELS[c.caseType] || c.caseType} &middot; Filed{" "}
               {formatDate(c.createdAt)}
             </p>
           </div>

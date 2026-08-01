@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
+import { publicBaseUrl } from "@/lib/base-url";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -43,6 +44,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   await prisma.document.update({ where: { id: docId }, data: { signatureStatus: "PENDING" } });
 
-  const origin = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+  const origin = publicBaseUrl(request);
   return successResponse({ id: sr.id, token: sr.token, signingUrl: `${origin}/sign/${sr.token}` }, 201);
 }

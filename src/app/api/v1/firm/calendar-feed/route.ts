@@ -3,12 +3,12 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse } from "@/lib/api/response";
+import { publicBaseUrl } from "@/lib/base-url";
 
 export const runtime = "nodejs";
 
 function feedUrl(req: NextRequest, token: string) {
-  const origin = process.env.NEXTAUTH_URL || req.nextUrl.origin;
-  return `${origin}/api/public/calendar/${token}.ics`;
+  return `${publicBaseUrl(req)}/api/public/calendar/${token}.ics`;
 }
 
 /** Current calendar-subscription URL for the firm (null if not generated yet). */

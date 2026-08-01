@@ -41,10 +41,10 @@ const features = [
   {
     title: "Intake Analyzer",
     description:
-      "Analyze intake forms with AI to get suggested case types, priority levels, risk flags, and recommended next steps.",
+      "Analyze inbound leads with AI to get suggested case types, priority levels, risk flags, and recommended next steps.",
     icon: ClipboardList,
-    action: "Go to Intake Forms to analyze",
-    href: "/intake",
+    action: "Go to Leads to analyze",
+    href: "/leads",
     color: "var(--warning)",
   },
 ];
