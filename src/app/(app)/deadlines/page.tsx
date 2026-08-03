@@ -16,6 +16,8 @@ import { formatDate } from "@/lib/utils";
 import {
   PRIORITY_LABELS,
 } from "@/lib/constants";
+import { DeadlineCalculator } from "@/components/deadlines/deadline-calculator";
+import { CalendarSubscribe } from "@/components/deadlines/calendar-subscribe";
 
 interface DeadlineRecord {
   id: string;
@@ -147,6 +149,13 @@ export default function DeadlinesPage() {
                 {completed.length}
               </p>
             </div>
+          </div>
+
+          {/* Safety-system tools — court-rule calculator + calendar subscription.
+              Shown regardless of whether any deadlines exist yet. */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <DeadlineCalculator />
+            <CalendarSubscribe />
           </div>
 
           {/* Empty state when no deadlines at all */}
