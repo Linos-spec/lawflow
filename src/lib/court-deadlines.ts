@@ -10,35 +10,37 @@
  * rules. The engine is exact about the math; it does not warrant the rule.
  */
 
+// All date math is done in UTC so results never depend on the server's or
+// client's timezone — a court deadline must be the same calendar date everywhere.
 function pad(n: number) { return String(n).padStart(2, "0"); }
-export function toISODate(d: Date): string { return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`; }
+export function toISODate(d: Date): string { return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
 
 function nthWeekday(year: number, month: number, weekday: number, n: number): Date {
   // month 0-based; weekday 0=Sun..6=Sat; n=1..5
-  const first = new Date(year, month, 1);
-  const offset = (7 + weekday - first.getDay()) % 7;
-  return new Date(year, month, 1 + offset + (n - 1) * 7);
+  const first = new Date(Date.UTC(year, month, 1));
+  const offset = (7 + weekday - first.getUTCDay()) % 7;
+  return new Date(Date.UTC(year, month, 1 + offset + (n - 1) * 7));
 }
 function lastWeekday(year: number, month: number, weekday: number): Date {
-  const last = new Date(year, month + 1, 0);
-  const offset = (7 + last.getDay() - weekday) % 7;
-  return new Date(year, month, last.getDate() - offset);
+  const last = new Date(Date.UTC(year, month + 1, 0));
+  const offset = (7 + last.getUTCDay() - weekday) % 7;
+  return new Date(Date.UTC(year, month, last.getUTCDate() - offset));
 }
 function observed(d: Date): Date {
   // Federal holidays on Sat are observed Fri; on Sun observed Mon.
-  if (d.getDay() === 6) return new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
-  if (d.getDay() === 0) return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1);
+  if (d.getUTCDay() === 6) return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - 1));
+  if (d.getUTCDay() === 0) return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1));
   return d;
 }
 
 /** Observed U.S. federal holidays for a year, as a Set of ISO dates. */
 export function usFederalHolidays(year: number): Set<string> {
   const fixed = [
-    new Date(year, 0, 1),   // New Year's Day
-    new Date(year, 5, 19),  // Juneteenth
-    new Date(year, 6, 4),   // Independence Day
-    new Date(year, 10, 11), // Veterans Day
-    new Date(year, 11, 25), // Christmas
+    new Date(Date.UTC(year, 0, 1)),   // New Year's Day
+    new Date(Date.UTC(year, 5, 19)),  // Juneteenth
+    new Date(Date.UTC(year, 6, 4)),   // Independence Day
+    new Date(Date.UTC(year, 10, 11)), // Veterans Day
+    new Date(Date.UTC(year, 11, 25)), // Christmas
   ].map(observed);
   const floating = [
     nthWeekday(year, 0, 1, 3),   // MLK — 3rd Mon Jan
@@ -52,25 +54,25 @@ export function usFederalHolidays(year: number): Set<string> {
 }
 
 export function isCourtHoliday(d: Date): boolean {
-  return usFederalHolidays(d.getFullYear()).has(toISODate(d));
+  return usFederalHolidays(d.getUTCFullYear()).has(toISODate(d));
 }
 export function isBusinessDay(d: Date): boolean {
-  return d.getDay() !== 0 && d.getDay() !== 6 && !isCourtHoliday(d);
+  return d.getUTCDay() !== 0 && d.getUTCDay() !== 6 && !isCourtHoliday(d);
 }
 
 /** Roll a date forward to the next business day if it falls on a weekend/holiday. */
 export function rollToBusinessDay(d: Date): Date {
   const out = new Date(d);
-  while (!isBusinessDay(out)) out.setDate(out.getDate() + 1);
+  while (!isBusinessDay(out)) out.setUTCDate(out.getUTCDate() + 1);
   return out;
 }
 export function addCalendarDays(d: Date, n: number): Date {
-  const out = new Date(d); out.setDate(out.getDate() + n); return out;
+  const out = new Date(d); out.setUTCDate(out.getUTCDate() + n); return out;
 }
 export function addBusinessDays(d: Date, n: number): Date {
   const out = new Date(d);
   let added = 0;
-  while (added < n) { out.setDate(out.getDate() + 1); if (isBusinessDay(out)) added++; }
+  while (added < n) { out.setUTCDate(out.getUTCDate() + 1); if (isBusinessDay(out)) added++; }
   return out;
 }
 
