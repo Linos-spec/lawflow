@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
-import { Loader2, CheckCircle2, Circle, FileText, PenLine, Phone, Mail } from "lucide-react";
+import { Loader2, CheckCircle2, Circle, FileText, PenLine, Phone, Mail, Upload } from "lucide-react";
 
 interface Stage { key: string; label: string; done: boolean; current: boolean }
-interface Doc { id: string; title: string; documentType: string; signatureStatus: string }
+interface Doc { id: string; title: string; documentType: string; signatureStatus: string; uploadedByClient?: boolean }
 interface Portal {
   firmName: string; firmEmail: string | null; firmPhone: string | null;
   clientName: string; matterTitle: string; matterNumber: string;
@@ -19,6 +19,9 @@ export default function ClientPortalPage() {
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<Portal | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMsg, setUploadMsg] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -28,6 +31,31 @@ export default function ClientPortalPage() {
     } finally { setLoading(false); }
   }, [token]);
   useEffect(() => { load(); }, [load]);
+
+  const onUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadMsg(null);
+      setUploading(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch(`/api/public/portal/${token}/upload`, { method: "POST", body: fd });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          setUploadMsg("Uploaded — your firm has received it.");
+          await load();
+        } else {
+          setUploadMsg(json.error || "Upload failed. Please try again.");
+        }
+      } catch {
+        setUploadMsg("Upload failed. Please try again.");
+      } finally {
+        setUploading(false);
+      }
+    }
+    if (fileRef.current) fileRef.current.value = "";
+  }, [token, load]);
 
   if (loading) return <div style={{ padding: "6rem", textAlign: "center" }}><Loader2 style={{ width: 28, height: 28, animation: "spin 1s linear infinite", color: "var(--brand)" }} /></div>;
   if (!data) return <div style={{ maxWidth: 640, margin: "4rem auto", padding: "2rem", textAlign: "center", color: "var(--text-secondary)" }}>This portal link isn&apos;t active. Please contact your law firm.</div>;
@@ -88,6 +116,11 @@ export default function ClientPortalPage() {
                 <div key={d.id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.6rem 0.7rem", borderRadius: 8, background: "var(--bg-base)" }}>
                   <FileText style={{ width: 18, height: 18, color: "var(--gold)", flexShrink: 0 }} />
                   <span style={{ flex: 1, fontSize: "0.9rem", color: "var(--navy)", fontWeight: 500 }}>{d.title}</span>
+                  {d.uploadedByClient && (
+                    <span style={{ fontSize: "0.72rem", fontWeight: 700, background: "var(--success-bg)", color: "var(--success)", padding: "0.15rem 0.55rem", borderRadius: 999 }}>
+                      You uploaded
+                    </span>
+                  )}
                   {d.signatureStatus === "PENDING" && (
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: "0.72rem", fontWeight: 700, background: "var(--warning-bg)", color: "var(--warning)", padding: "0.15rem 0.55rem", borderRadius: 999 }}>
                       <PenLine style={{ width: 12, height: 12 }} /> Needs signature
@@ -97,6 +130,22 @@ export default function ClientPortalPage() {
               ))}
             </div>
           )}
+
+          {/* Client upload */}
+          <div style={{ marginTop: "1.1rem", paddingTop: "1.1rem", borderTop: "1px solid var(--border-light)" }}>
+            <input ref={fileRef} type="file" onChange={onUpload} style={{ display: "none" }} disabled={uploading} />
+            <button
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="lf-btn lf-btn-gold"
+              style={{ padding: "0.5rem 1rem" }}
+            >
+              {uploading ? <Loader2 style={{ width: 16, height: 16, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 16, height: 16 }} />}
+              {uploading ? "Uploading…" : "Send us a document"}
+            </button>
+            {uploadMsg && <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: "0.6rem" }}>{uploadMsg}</p>}
+            <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>PDFs, images, or documents up to 15&nbsp;MB.</p>
+          </div>
         </div>
 
         {/* Contact */}
@@ -104,6 +153,7 @@ export default function ClientPortalPage() {
           <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Questions about your case?</span>
           {data.firmEmail && <a href={`mailto:${data.firmEmail}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "var(--brand)", fontSize: "0.88rem", textDecoration: "none" }}><Mail style={{ width: 15, height: 15 }} />{data.firmEmail}</a>}
           {data.firmPhone && <a href={`tel:${data.firmPhone}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "var(--brand)", fontSize: "0.88rem", textDecoration: "none" }}><Phone style={{ width: 15, height: 15 }} />{data.firmPhone}</a>}
+          {!data.firmEmail && !data.firmPhone && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Reply to your firm&apos;s last message and they&apos;ll be glad to help.</span>}
         </div>
 
         <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "1.5rem" }}>Powered by Linos Legal</p>

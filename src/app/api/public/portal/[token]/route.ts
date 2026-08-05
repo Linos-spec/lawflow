@@ -5,6 +5,8 @@ import { computeMatterProgress } from "@/lib/matter-progress";
 
 export const runtime = "nodejs";
 
+import { PORTAL_CLIENT_UPLOADER } from "@/lib/portal";
+
 // Documents appropriate to show a client (never internal work-product/notes).
 const CLIENT_DOC_TYPES = ["ENGAGEMENT_LETTER", "COURT_FILING", "CORRESPONDENCE", "INVOICE"] as const;
 
@@ -26,11 +28,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     prisma.document.findMany({
       where: {
         caseId: matter.id, firmId: matter.firmId,
-        OR: [{ documentType: { in: [...CLIENT_DOC_TYPES] } }, { signatureStatus: "PENDING" }],
+        OR: [
+          { documentType: { in: [...CLIENT_DOC_TYPES] } },
+          { signatureStatus: "PENDING" },
+          { uploadedBy: PORTAL_CLIENT_UPLOADER }, // the client's own uploads
+        ],
       },
       orderBy: { updatedAt: "desc" },
       take: 30,
-      select: { id: true, title: true, documentType: true, signatureStatus: true, updatedAt: true },
+      select: { id: true, title: true, documentType: true, signatureStatus: true, uploadedBy: true, updatedAt: true },
     }),
     prisma.billingRecord.aggregate({
       where: { caseId: matter.id, firmId: matter.firmId, paymentStatus: { in: ["UNPAID", "OUTSTANDING", "OVERDUE"] } },
@@ -51,6 +57,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     currentLabel: progress?.currentLabel ?? "In progress",
     closed: progress?.closed ?? false,
     outstandingBalance: outstanding,
-    documents,
+    documents: documents.map((d) => ({
+      id: d.id,
+      title: d.title,
+      documentType: d.documentType,
+      signatureStatus: d.signatureStatus,
+      uploadedByClient: d.uploadedBy === PORTAL_CLIENT_UPLOADER,
+    })),
   });
 }
