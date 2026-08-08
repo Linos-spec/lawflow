@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { runConflictCheck } from "@/lib/conflict-check";
 import { qualifyLead } from "@/lib/lead-qualification";
+import { logIntakeEvent } from "@/lib/intake-events";
 import type { CaseType, LeadSource, ClientType, ContactMethod } from "@prisma/client";
 
 /**
@@ -54,8 +55,14 @@ export async function createLeadFromIntake(input: {
       importantDates: input.importantDates || null,
       consentToContact: input.consentToContact ?? false,
       stage: "NEW",
+      intakeStatus: "AI_PROCESSING",
       conflictStatus: "PENDING",
     },
+  });
+
+  await logIntakeEvent(prisma, {
+    leadId: lead.id, firmId: input.firmId, type: "received", actorLabel: "System",
+    toStatus: "NEW", note: `Intake received via ${input.source.toLowerCase()}`,
   });
 
   // 2) Deterministic conflict check (always runs). Exclude the lead we just
@@ -87,12 +94,20 @@ export async function createLeadFromIntake(input: {
     answers: input.answers,
   });
 
-  // 4) Roll everything up onto the lead and advance the stage.
+  await logIntakeEvent(prisma, {
+    leadId: lead.id, firmId: input.firmId, type: "conflict_checked", actorLabel: "System",
+    note: conflict.matchCount > 0
+      ? `Conflict check: ${conflict.matchCount} potential match(es) — ${conflict.status.toLowerCase()}`
+      : "Conflict check: no matches found",
+  });
+
+  // 4) Roll everything up onto the lead and advance to human review.
   const updated = await prisma.lead.update({
     where: { id: lead.id },
     data: {
       conflictStatus: conflict.status,
       stage: "QUALIFYING",
+      intakeStatus: "NEEDS_REVIEW",
       ...(qualification
         ? {
             qualified: qualification.qualified,
@@ -109,6 +124,15 @@ export async function createLeadFromIntake(input: {
           }
         : {}),
     },
+  });
+
+  await logIntakeEvent(prisma, {
+    leadId: lead.id, firmId: input.firmId, type: "ai_processed",
+    actorLabel: qualification ? "AI" : "System",
+    fromStatus: "AI_PROCESSING", toStatus: "NEEDS_REVIEW",
+    note: qualification
+      ? `AI review complete — ${qualification.qualified ? "looks qualified" : "needs attention"} (score ${qualification.qualificationScore}). Ready for human review.`
+      : "AI unavailable — routed straight to human review.",
   });
 
   return { lead: updated, conflict, qualification };

@@ -28,6 +28,13 @@ export default function LeadsPage() {
   const [copied, setCopied] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
 
+  // Deep link from "New intake" (AI Intake page) opens the add form directly.
+  useEffect(() => {
+    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("new") === "1") {
+      setShowAdd(true);
+    }
+  }, []);
+
   const load = async () => {
     try {
       setLoading(true);

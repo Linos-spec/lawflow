@@ -192,6 +192,21 @@ enum LeadStage {
   LOST
 }
 
+// Human-reviewable intake progression (distinct from the LeadStage funnel and
+// from the legacy IntakeForm status). Linear path:
+// NEW → AI_PROCESSING → NEEDS_REVIEW → FOLLOW_UP → QUALIFIED → CONVERTED.
+// DECLINED and ARCHIVED are terminal.
+enum IntakeReviewStatus {
+  NEW
+  AI_PROCESSING
+  NEEDS_REVIEW
+  FOLLOW_UP
+  QUALIFIED
+  CONVERTED
+  DECLINED
+  ARCHIVED
+}
+
 enum ConflictStatus {
   PENDING
   CLEAR
@@ -251,6 +266,7 @@ model User {
   auditLogs   AuditLog[]
   responsibleForCases Case[] @relation("ResponsibleAttorney")
   assignedTasks Task[] @relation("TaskAssignee")
+  assignedLeads Lead[] @relation("LeadAssignee")
 
   @@index([organizationId])
   @@index([email])
@@ -643,6 +659,7 @@ model Lead {
   // Funnel
   source        LeadSource @default(WEBSITE)
   stage         LeadStage  @default(NEW)
+  intakeStatus  IntakeReviewStatus @default(NEW)
   caseType      CaseType   @default(OTHER)
   description   String?
   // Opposing / adverse parties captured during intake (for conflict checking)
@@ -685,13 +702,38 @@ model Lead {
   convertedClientId String?
   convertedCaseId   String?
 
+  // Intake assignment (which team member owns the review)
+  assignedToId String?
+  assignedTo   User?   @relation("LeadAssignee", fields: [assignedToId], references: [id])
+
   conflictChecks ConflictCheck[]
+  intakeEvents   IntakeEvent[]
 
   @@index([firmId])
   @@index([stage])
+  @@index([intakeStatus])
   @@index([source])
   @@index([conflictStatus])
   @@index([createdAt])
+}
+
+// Append-only audit trail for an intake: every status change, assignment,
+// note, and automated step, with who did it and when.
+model IntakeEvent {
+  id          String        @id @default(cuid())
+  leadId      String
+  lead        Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  firmId      String
+  type        String        // status_change | assigned | note | received | ai_processed | conflict_checked | converted
+  fromStatus  IntakeReviewStatus?
+  toStatus    IntakeReviewStatus?
+  actorId     String?       // user id; null for automated (AI/system) events
+  actorLabel  String        // "AI", "System", or a user-name snapshot
+  note        String?
+  createdAt   DateTime      @default(now())
+
+  @@index([leadId])
+  @@index([firmId])
 }
 
 model ConflictCheck {

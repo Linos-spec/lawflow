@@ -70,6 +70,7 @@ const navGroups: NavGroup[] = [
     label: "Intake",
     items: [
       { label: "Leads", href: "/leads", icon: UserPlus },
+      { label: "AI Intake", href: "/ai-intake", icon: ClipboardCheck },
     ],
   },
   {

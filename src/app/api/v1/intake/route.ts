@@ -1,64 +1,52 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
-import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
-import { createIntakeSchema } from "@/lib/validators/intake.schema";
+import { successResponse } from "@/lib/api/response";
+import type { Prisma } from "@prisma/client";
 
+export const runtime = "nodejs";
+
+/** Intake queue + per-status counts for the AI Intake workspace. */
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
-  const searchParams = request.nextUrl.searchParams;
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "50");
-  const status = searchParams.get("status") || "";
+  const sp = request.nextUrl.searchParams;
+  const status = sp.get("status") || "";
+  const q = (sp.get("q") || "").trim();
 
-  const where = {
+  const where: Prisma.LeadWhereInput = {
     firmId: ctx.firmId,
-    ...(status && {
-      status: status as "PENDING" | "IN_REVIEW" | "CONVERTED" | "REJECTED" | "COMPLETED",
+    ...(status && { intakeStatus: status as Prisma.LeadWhereInput["intakeStatus"] }),
+    ...(q && {
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+      ],
     }),
   };
 
-  const [forms, total] = await Promise.all([
-    prisma.intakeForm.findMany({
+  const [items, grouped] = await Promise.all([
+    prisma.lead.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
+      take: 200,
+      select: {
+        id: true, name: true, caseType: true, intakeStatus: true,
+        conflictStatus: true, qualified: true, aiPriority: true, createdAt: true,
+        assignedTo: { select: { id: true, name: true } },
+      },
     }),
-    prisma.intakeForm.count({ where }),
+    prisma.lead.groupBy({
+      by: ["intakeStatus"],
+      where: { firmId: ctx.firmId },
+      _count: { _all: true },
+    }),
   ]);
 
-  return paginatedResponse(forms, total, page, limit);
-}
+  const counts: Record<string, number> = {};
+  for (const g of grouped) counts[g.intakeStatus] = g._count._all;
 
-export async function POST(request: NextRequest) {
-  const ctx = await getOrgFirmIds();
-  if (!ctx || !ctx.firmId) return unauthorizedResponse();
-
-  try {
-    const body = await request.json();
-    const validated = createIntakeSchema.parse(body);
-
-    const intakeForm = await prisma.intakeForm.create({
-      data: {
-        prospectName: validated.prospectName,
-        prospectEmail: validated.prospectEmail || null,
-        prospectPhone: validated.prospectPhone || null,
-        caseType: validated.caseType,
-        description: validated.description || null,
-        notes: validated.notes || null,
-        firmId: ctx.firmId,
-      },
-    });
-
-    return successResponse(intakeForm, 201);
-  } catch (error) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return errorResponse("Validation failed", 400);
-    }
-    console.error("Create intake error:", error);
-    return errorResponse("Internal server error", 500);
-  }
+  return successResponse({ items, counts });
 }
