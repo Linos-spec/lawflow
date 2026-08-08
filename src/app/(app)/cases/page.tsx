@@ -299,9 +299,13 @@ export default function CasesPage() {
                               <Edit3 style={{ width: 14, height: 14 }} /> Edit
                             </button>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
-                                toast.error("Delete not yet implemented");
+                                setOpenMenuId(null);
+                                if (!confirm(`Delete “${c.title}”? This removes the matter and its deadlines, documents, and tasks. This cannot be undone.`)) return;
+                                const res = await fetch(`/api/v1/cases/${c.id}`, { method: "DELETE" });
+                                if (res.ok) { setCases((prev) => prev.filter((x) => x.id !== c.id)); toast.success("Case deleted"); }
+                                else { const j = await res.json().catch(() => ({})); toast.error(j.error || "Could not delete case"); }
                               }}
                               className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
                               style={{ color: "var(--danger)" }}

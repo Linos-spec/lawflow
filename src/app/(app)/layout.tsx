@@ -10,7 +10,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex h-screen" style={{ background: "var(--bg-base)" }}>
           <AppSidebar />
           <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-7xl p-6">{children}</div>
+            {/* Extra bottom padding so page content/actions clear the floating
+                "Ask Linoscore AI" button, especially on narrower viewports. */}
+            <div className="mx-auto max-w-7xl p-6 pb-28">{children}</div>
           </main>
           <AiChatWrapper />
         </div>
