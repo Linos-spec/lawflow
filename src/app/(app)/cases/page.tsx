@@ -13,6 +13,8 @@ import {
   Edit3,
   Trash2,
   Loader2,
+  Sparkles,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -59,6 +61,16 @@ export default function CasesPage() {
   const [search, setSearch] = useState("");
   const [activeStatus, setActiveStatus] = useState<string>("All");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [attention, setAttention] = useState<
+    { id: string; title: string; caseNumber: string; client: string; score: number; reasons: { severity: string; text: string }[] }[]
+  >([]);
+
+  useEffect(() => {
+    fetch("/api/v1/cases/attention")
+      .then((r) => r.json())
+      .then((j) => { if (j.success) setAttention(j.data.cases); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     async function fetchCases() {
@@ -146,6 +158,36 @@ export default function CasesPage() {
         </div>
       ) : (
         <>
+          {/* Which cases need attention? — explainable, rules-based ranking */}
+          {attention.length > 0 && (
+            <div className="lf-card" style={{ borderLeft: "4px solid var(--gold)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.75rem" }}>
+                <Sparkles style={{ width: 17, height: 17, color: "var(--gold)" }} />
+                <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1rem", fontWeight: 700, color: "var(--navy)" }}>Cases needing attention</h2>
+                <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>· ranked by concrete signals</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {attention.map((a) => (
+                  <div key={a.id} onClick={() => router.push(`/cases/${a.id}`)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", padding: "0.6rem 0.75rem", borderRadius: 8, background: "var(--bg-base)", cursor: "pointer" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--navy)" }}>{a.title} <span style={{ fontWeight: 400, color: "var(--text-muted)" }}>· {a.client}</span></p>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem", marginTop: 4 }}>
+                        {a.reasons.map((r, i) => (
+                          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: "0.72rem", fontWeight: 600, padding: "0.1rem 0.45rem", borderRadius: 999,
+                            background: r.severity === "high" ? "var(--danger-bg)" : r.severity === "medium" ? "var(--warning-bg)" : "rgba(15,23,42,0.05)",
+                            color: r.severity === "high" ? "var(--danger)" : r.severity === "medium" ? "var(--warning)" : "var(--text-secondary)" }}>
+                            {r.severity === "high" && <AlertTriangle style={{ width: 11, height: 11 }} />}{r.text}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "0.75rem", color: "var(--gold)", fontWeight: 600, flexShrink: 0 }}>Open →</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Search + Filters (only once cases exist) */}
           <div className="space-y-3">
             <div className="lf-search" style={{ maxWidth: 400 }}>
