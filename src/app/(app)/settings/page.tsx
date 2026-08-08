@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
 import { DeliveryConnectionCard } from "@/components/delivery/delivery-connection-card";
+import { AuditLogViewer } from "@/components/settings/audit-log-viewer";
 import {
   User,
   Building2,
@@ -14,6 +15,7 @@ import {
   Upload,
   Check,
   Bot,
+  ScrollText,
 } from "lucide-react";
 
 const tabs = [
@@ -22,6 +24,7 @@ const tabs = [
   { id: "ai", label: "AI Employee", icon: Bot },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: Shield },
+  { id: "audit", label: "Audit Log", icon: ScrollText },
   { id: "billing", label: "Plan & Billing", icon: CreditCard },
 ] as const;
 
@@ -92,7 +95,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="lf-tabs">
-        {tabs.map((tab) => {
+        {tabs.filter((tab) => tab.id !== "audit" || isAdmin).map((tab) => {
           const Icon = tab.icon;
           return (
             <button
@@ -326,6 +329,11 @@ export default function SettingsPage() {
               )}
             </div>
           </div>
+        )}
+
+        {/* ── Audit Log (admin only) ── */}
+        {activeTab === "audit" && isAdmin && (
+          <div className="max-w-4xl"><AuditLogViewer /></div>
         )}
 
         {/* ── Plan & Billing ── */}

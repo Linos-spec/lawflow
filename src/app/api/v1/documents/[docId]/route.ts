@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -71,9 +72,10 @@ export async function DELETE(
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
   const { docId } = await params;
 
-  const existing = await prisma.document.findFirst({ where: { id: docId, firmId: ctx.firmId }, select: { id: true } });
+  const existing = await prisma.document.findFirst({ where: { id: docId, firmId: ctx.firmId }, select: { id: true, title: true } });
   if (!existing) return errorResponse("Document not found", 404);
 
   await prisma.document.delete({ where: { id: docId } });
+  await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "document.delete", entity: "Document", entityId: docId, entityLabel: existing.title });
   return successResponse({ deleted: true });
 }

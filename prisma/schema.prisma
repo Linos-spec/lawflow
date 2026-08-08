@@ -964,17 +964,25 @@ model WorkflowTemplate {
   @@index([practiceArea])
 }
 
+// Immutable-by-convention audit trail. A record survives the deletion of the
+// user who created it (userId → null, actorName keeps the snapshot) so the
+// governance history is never lost.
 model AuditLog {
-  id        String   @id @default(cuid())
-  action    String
-  entity    String
-  entityId  String
-  details   String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  firmId     String
+  action     String   // dotted verb, e.g. "case.delete", "client.export", "user.role_change"
+  category   String   @default("data") // data | access | auth | config
+  entity     String
+  entityId   String
+  entityLabel String? // human-readable name snapshot (e.g. the matter title)
+  details    String?
+  actorName  String   // snapshot of the actor's name at the time
+  createdAt  DateTime @default(now())
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
+  @@index([firmId, createdAt])
   @@index([userId])
   @@index([entity, entityId])
 }

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
 import { createCaseSchema, normalizeCaseInput } from "@/lib/validators/case.schema";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "case.create", entity: "Case", entityId: newCase.id, entityLabel: `${newCase.caseNumber} · ${newCase.title}` });
     return successResponse(newCase, 201);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
