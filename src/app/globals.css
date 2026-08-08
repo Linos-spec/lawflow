@@ -21,8 +21,8 @@
   --bg-base:    #f8fafc;
   --bg-card:    #FFFFFF;
   --text-primary:   #0f172a;
-  --text-secondary: #64748b;
-  --text-muted:     #94a3b8;
+  --text-secondary: #475569; /* slate-600 — AA on light bg */
+  --text-muted:     #64748b; /* slate-500 — darkened for contrast */
   --border-default: #e2e8f0;
   --border-light:   #f1f5f9;
 
@@ -639,30 +639,32 @@
   position: fixed;
   bottom: 24px;
   right: 24px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  height: 48px;
+  padding: 0 18px 0 16px;
+  border-radius: 999px;
   background: var(--gold);
-  color: white;
+  color: #422006;
+  font-weight: 700;
+  font-size: 0.9rem;
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   box-shadow: var(--shadow-lg);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
   z-index: 50;
 }
 .lf-ai-fab:hover {
-  transform: scale(1.08);
+  transform: translateY(-1px);
+  background: var(--gold-light);
   box-shadow: var(--shadow-xl);
 }
-.lf-ai-fab::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid var(--gold);
-  animation: pulse-ring 2s ease-out infinite;
-  pointer-events: none;
+.lf-ai-fab-label {
+  white-space: nowrap;
+}
+/* Collapse to an icon-only circle on small screens to save space. */
+@media (max-width: 640px) {
+  .lf-ai-fab { padding: 0; width: 52px; height: 52px; justify-content: center; border-radius: 50%; }
+  .lf-ai-fab-label { display: none; }
 }

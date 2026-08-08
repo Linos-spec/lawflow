@@ -206,8 +206,8 @@ export function AppSidebar() {
                   href={item.href}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150"
                   style={{
-                    background: isActive ? "rgba(196,154,46,0.15)" : "transparent",
-                    color: isActive ? "var(--gold-light)" : "rgba(255,255,255,0.7)",
+                    background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.7)",
                     borderLeft: isActive ? "3px solid var(--gold)" : "3px solid transparent",
                   }}
                   onMouseEnter={(e) => {
@@ -217,7 +217,7 @@ export function AppSidebar() {
                     if (!isActive) e.currentTarget.style.background = "transparent";
                   }}
                 >
-                  <Icon style={{ width: 18, height: 18, flexShrink: 0 }} />
+                  <Icon style={{ width: 18, height: 18, flexShrink: 0, color: isActive ? "var(--gold-light)" : undefined }} />
                   <span className="flex-1">{item.label}</span>
                   {badge ? (
                     <span
@@ -241,27 +241,27 @@ export function AppSidebar() {
             href="/settings"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150"
             style={{
-              color: pathname === "/settings" ? "var(--gold-light)" : "rgba(255,255,255,0.6)",
-              background: pathname === "/settings" ? "rgba(196,154,46,0.15)" : "transparent",
+              color: pathname === "/settings" ? "#fff" : "rgba(255,255,255,0.6)",
+              background: pathname === "/settings" ? "rgba(255,255,255,0.08)" : "transparent",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = pathname === "/settings" ? "rgba(196,154,46,0.15)" : "transparent";
+              e.currentTarget.style.background = pathname === "/settings" ? "rgba(255,255,255,0.08)" : "transparent";
             }}
           >
-            <Settings style={{ width: 18, height: 18 }} />
+            <Settings style={{ width: 18, height: 18, color: pathname === "/settings" ? "var(--gold-light)" : undefined }} />
             Settings
           </Link>
           <Link
             href="/help"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150"
             style={{
-              color: pathname === "/help" ? "var(--gold-light)" : "rgba(255,255,255,0.6)",
-              background: pathname === "/help" ? "rgba(196,154,46,0.15)" : "transparent",
+              color: pathname === "/help" ? "#fff" : "rgba(255,255,255,0.6)",
+              background: pathname === "/help" ? "rgba(255,255,255,0.08)" : "transparent",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = pathname === "/help" ? "rgba(196,154,46,0.15)" : "transparent";
+              e.currentTarget.style.background = pathname === "/help" ? "rgba(255,255,255,0.08)" : "transparent";
             }}
           >
             <HelpCircle style={{ width: 18, height: 18 }} />
