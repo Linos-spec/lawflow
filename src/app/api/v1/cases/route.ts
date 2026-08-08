@@ -51,9 +51,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createCaseSchema.parse(body);
 
-    // Generate case number
+    // Use the firm's internal number if provided; otherwise auto-generate.
+    const override = validated.caseNumber?.trim();
     const count = await prisma.case.count({ where: { firmId: ctx.firmId } });
-    const caseNumber = `LF-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`;
+    const caseNumber = override || `LF-${new Date().getFullYear()}-${String(count + 1).padStart(3, "0")}`;
 
     const newCase = await prisma.case.create({
       data: { ...normalizeCaseInput(validated), caseNumber, firmId: ctx.firmId },

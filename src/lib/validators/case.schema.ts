@@ -41,6 +41,18 @@ export const createCaseSchema = z.object({
   closingDate: optDate,
   responsibleAttorneyId: optStr,
   assignedTeamIds: z.array(z.string()).optional(),
+
+  // Optional internal case-number override (else auto-generated LF-YYYY-NNN).
+  caseNumber: optStr,
+
+  // ── Billing & engagement ──
+  billingType: z.enum(["HOURLY", "FLAT_FEE", "CONTINGENCY"]).optional(),
+  hourlyRate: optNum,
+  flatFee: optNum,
+  contingencyPct: optNum,
+  retainerAmount: optNum,
+  engagementLetterStatus: optStr,
+  trustAccount: z.coerce.boolean().optional(),
 });
 
 export const updateCaseSchema = createCaseSchema.partial();

@@ -490,6 +490,15 @@ model Case {
   assignedTeamIds      String[]  @default([]) // User ids on the matter team
   customFields         Json?     // practice-area-specific custom fields
 
+  // ── Billing & engagement (matter defaults; invoices live in BillingRecord) ──
+  billingType            BillingType?
+  hourlyRate             Int?         // whole dollars
+  flatFee                Int?         // whole dollars
+  contingencyPct         Int?         // whole percent
+  retainerAmount         Int?         // whole dollars
+  engagementLetterStatus String?      // NOT_STARTED | SENT | SIGNED
+  trustAccount           Boolean      @default(false)
+
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
