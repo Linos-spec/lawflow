@@ -2,10 +2,12 @@
 
 import { PRACTICE_AREA_LABELS } from "./practice-areas/catalog";
 
+// Lifecycle: Intake → Active → On hold → Closed. "Open" was ambiguous next to
+// "Active", so the initial state now reads "Intake" (enum key stays OPEN).
 export const CASE_STATUS_LABELS: Record<string, string> = {
-  OPEN: "Open",
+  OPEN: "Intake",
   ACTIVE: "Active",
-  ON_HOLD: "On Hold",
+  ON_HOLD: "On hold",
   PENDING: "Pending",
   CLOSED: "Closed",
   ARCHIVED: "Archived",

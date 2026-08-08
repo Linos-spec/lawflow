@@ -32,13 +32,15 @@ interface CaseRecord {
 
 const statusFilters = ["All", "OPEN", "ACTIVE", "ON_HOLD", "PENDING", "CLOSED"] as const;
 
+// Urgency-coded: neutral blue for ordinary/new, green for healthy/active,
+// amber for states needing attention (on hold / waiting), gray for done.
 const statusBadgeStyles: Record<string, { bg: string; text: string }> = {
-  OPEN: { bg: "var(--info-bg)", text: "var(--info)" },
-  ACTIVE: { bg: "var(--success-bg)", text: "var(--success)" },
-  ON_HOLD: { bg: "rgba(15,27,51,0.06)", text: "var(--navy)" },
-  PENDING: { bg: "var(--warning-bg)", text: "var(--warning)" },
-  CLOSED: { bg: "#F3F4F6", text: "var(--text-secondary)" },
-  ARCHIVED: { bg: "#F3F4F6", text: "var(--text-muted)" },
+  OPEN: { bg: "#dbeafe", text: "#1e40af" },      // Intake — neutral blue
+  ACTIVE: { bg: "#dcfce7", text: "#15803d" },    // healthy green
+  ON_HOLD: { bg: "#fef3c7", text: "#b45309" },   // attention amber
+  PENDING: { bg: "#fef3c7", text: "#b45309" },   // waiting amber
+  CLOSED: { bg: "#f1f5f9", text: "#475569" },    // done gray
+  ARCHIVED: { bg: "#f1f5f9", text: "#64748b" },  // muted gray
 };
 
 function getInitials(name: string): string {
@@ -107,46 +109,11 @@ export default function CasesPage() {
               Manage and track your legal cases
             </p>
           </div>
-          <Link href="/cases/new" className="lf-btn lf-btn-primary">
+          <Link href="/cases/new" className="lf-btn lf-btn-gold">
             <Plus style={{ width: 16, height: 16 }} />
             New Case
           </Link>
         </div>
-      </div>
-
-      {/* Search + Filters */}
-      <div className="space-y-3">
-        <div className="lf-search" style={{ maxWidth: 400 }}>
-          <Search style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0 }} />
-          <input
-            type="text"
-            placeholder="Search by title, client, or case number..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {statusFilters.map((s) => (
-            <button
-              key={s}
-              onClick={() => setActiveStatus(s)}
-              className={`lf-pill ${activeStatus === s ? "lf-pill-active" : ""}`}
-            >
-              {s === "All" ? "All" : CASE_STATUS_LABELS[s] || s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Summary bar */}
-      <div
-        className="flex items-center gap-4 text-sm px-1"
-        style={{ color: "var(--text-secondary)" }}
-      >
-        <span>
-          <strong style={{ color: "var(--navy)" }}>{filtered.length}</strong>{" "}
-          {filtered.length === 1 ? "case" : "cases"}
-        </span>
       </div>
 
       {/* Loading state */}
@@ -160,26 +127,67 @@ export default function CasesPage() {
             <p className="lf-empty-title">Loading cases...</p>
           </div>
         </div>
-      ) : filtered.length === 0 ? (
-        <div className="lf-card">
-          <div className="lf-empty">
-            <Briefcase className="lf-empty-icon" />
-            <p className="lf-empty-title">No cases found</p>
-            <p className="lf-empty-desc">
-              {search || activeStatus !== "All"
-                ? "Try adjusting your search or filters."
-                : "Get started by creating your first case to begin tracking matters, deadlines, and billing."}
-            </p>
-            {!search && activeStatus === "All" && (
-              <Link href="/cases/new" className="lf-btn lf-btn-gold">
-                <Plus style={{ width: 16, height: 16 }} />
-                Create First Case
-              </Link>
-            )}
+      ) : cases.length === 0 ? (
+        /* Zero-case onboarding leads the page — no search/filters until there's data. */
+        <div className="lf-card" style={{ maxWidth: 460, margin: "1.5rem auto", padding: "2rem 1.75rem", textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: "50%", background: "var(--gold-bg, #fef3e2)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.9rem" }}>
+            <Briefcase style={{ width: 25, height: 25, color: "var(--gold)" }} />
+          </div>
+          <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1.15rem", fontWeight: 700, color: "var(--navy)" }}>Create your first case</h2>
+          <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", maxWidth: 340, margin: "0.4rem auto 1.25rem" }}>Keep client details, documents, deadlines, tasks, and billing together.</p>
+          <div style={{ display: "flex", gap: "0.6rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/cases/new" className="lf-btn lf-btn-gold" style={{ padding: "0.6rem 1.25rem" }}>
+              <Plus style={{ width: 16, height: 16 }} /> Create case
+            </Link>
+            <button onClick={() => toast("Case import is coming soon.")} className="lf-btn lf-btn-outline" style={{ padding: "0.6rem 1.25rem" }}>
+              Import cases
+            </button>
           </div>
         </div>
       ) : (
-        <div className="lf-card" style={{ padding: 0, overflow: "hidden" }}>
+        <>
+          {/* Search + Filters (only once cases exist) */}
+          <div className="space-y-3">
+            <div className="lf-search" style={{ maxWidth: 400 }}>
+              <Search style={{ width: 16, height: 16, color: "var(--text-muted)", flexShrink: 0 }} />
+              <input
+                type="text"
+                placeholder="Search by title, client, or case number..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {statusFilters.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setActiveStatus(s)}
+                  className={`lf-pill ${activeStatus === s ? "lf-pill-active" : ""}`}
+                >
+                  {s === "All" ? "All" : CASE_STATUS_LABELS[s] || s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Summary bar */}
+          <div className="flex items-center gap-4 text-sm px-1" style={{ color: "var(--text-secondary)" }}>
+            <span>
+              <strong style={{ color: "var(--navy)" }}>{filtered.length}</strong>{" "}
+              {filtered.length === 1 ? "case" : "cases"}
+            </span>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="lf-card">
+              <div className="lf-empty">
+                <Briefcase className="lf-empty-icon" />
+                <p className="lf-empty-title">No matching cases</p>
+                <p className="lf-empty-desc">Try adjusting your search or filters.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="lf-card" style={{ padding: 0, overflow: "hidden" }}>
           <table className="lf-table">
             <thead>
               <tr>
@@ -309,7 +317,9 @@ export default function CasesPage() {
               })}
             </tbody>
           </table>
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
