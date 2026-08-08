@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
 import { DeliveryConnectionCard } from "@/components/delivery/delivery-connection-card";
 import { AuditLogViewer } from "@/components/settings/audit-log-viewer";
+import { TeamRoles } from "@/components/settings/team-roles";
 import {
   User,
+  Users,
   Building2,
   Bell,
   Shield,
@@ -24,9 +26,12 @@ const tabs = [
   { id: "ai", label: "AI Employee", icon: Bot },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: Shield },
+  { id: "team", label: "Team & Roles", icon: Users },
   { id: "audit", label: "Audit Log", icon: ScrollText },
   { id: "billing", label: "Plan & Billing", icon: CreditCard },
 ] as const;
+
+const ADMIN_TABS = ["audit", "team"];
 
 type TabId = (typeof tabs)[number]["id"];
 
@@ -95,7 +100,7 @@ export default function SettingsPage() {
 
       {/* Tabs */}
       <div className="lf-tabs">
-        {tabs.filter((tab) => tab.id !== "audit" || isAdmin).map((tab) => {
+        {tabs.filter((tab) => !ADMIN_TABS.includes(tab.id) || isAdmin).map((tab) => {
           const Icon = tab.icon;
           return (
             <button
@@ -329,6 +334,11 @@ export default function SettingsPage() {
               )}
             </div>
           </div>
+        )}
+
+        {/* ── Team & Roles (admin only) ── */}
+        {activeTab === "team" && isAdmin && (
+          <div className="max-w-3xl"><TeamRoles currentUserId={session?.user?.id} /></div>
         )}
 
         {/* ── Audit Log (admin only) ── */}
