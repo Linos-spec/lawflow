@@ -6,7 +6,7 @@ import { CaseIntelligence } from "@/components/case/case-intelligence";
 import { SimilarMatters } from "@/components/case/similar-matters";
 import { CaseDeliveries } from "@/components/delivery/case-deliveries";
 import { CasePortal } from "@/components/case/case-portal";
-import { CASE_TYPE_LABELS } from "@/lib/constants";
+import { CASE_TYPE_LABELS, CASE_STATUS_LABELS } from "@/lib/constants";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -239,7 +239,7 @@ export default function CaseDetailPage() {
                 className="lf-badge"
                 style={{ background: sb.bg, color: sb.text }}
               >
-                {formatStatusLabel(c.status)}
+                {CASE_STATUS_LABELS[c.status] || formatStatusLabel(c.status)}
               </span>
               <span
                 className="lf-badge"
