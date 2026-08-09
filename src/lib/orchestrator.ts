@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { matterPlanSchema, type MatterPlan } from "@/lib/validators/ai.schema";
 import { createEngagementLetter } from "@/lib/engagement-letter";
@@ -16,7 +16,7 @@ import type { CaseType, Priority } from "@prisma/client";
  */
 
 function hasAiKey() {
-  return !!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith("sk-placeholder");
+  return !!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder");
 }
 
 /** Starter deadlines for a matter type. Immigration (the beachhead vertical) uses
@@ -28,7 +28,7 @@ export async function generateMatterPlan(input: { caseType: string; description:
   if (!hasAiKey()) return [];
   try {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       schema: matterPlanSchema,
       system: `You are a senior legal paralegal for Linos Legal. For a new ${input.caseType} matter, list the initial deadlines and tasks a competent firm opens on day one. Be specific to the matter type. These are SUGGESTIONS the supervising attorney must verify against jurisdiction rules — never present them as authoritative filing dates.`,
       prompt: `Matter type: ${input.caseType}\nDescription: ${input.description || "Not provided"}`,

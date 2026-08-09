@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { leadQualificationSchema, type LeadQualification } from "@/lib/validators/ai.schema";
 
 /**
@@ -34,7 +34,7 @@ INBOUND LEAD:
 
   try {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       schema: leadQualificationSchema,
       system: `You are a senior legal intake specialist for Linos Legal. Assess an inbound lead for a law firm.
 

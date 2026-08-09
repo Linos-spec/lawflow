@@ -1,5 +1,5 @@
 import { streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
@@ -115,7 +115,7 @@ ${caseData.billingRecords.map((b) => {
   `.trim();
 
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: aiModel,
     system: systemPrompt,
     prompt: caseContext,
   });

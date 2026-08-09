@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 
 /**
  * Extract searchable text from an uploaded document.
@@ -42,12 +42,12 @@ async function extractPdf(buffer: Buffer): Promise<string> {
 }
 
 async function ocrImage(buffer: Buffer, mimeType: string): Promise<string> {
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.startsWith("sk-placeholder")) {
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder")) {
     return ""; // OCR needs the AI key; degrade gracefully.
   }
   const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
   const { text } = await generateText({
-    model: openai("gpt-4o-mini"),
+    model: aiModel,
     messages: [
       {
         role: "user",

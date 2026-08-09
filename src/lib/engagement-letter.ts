@@ -1,11 +1,11 @@
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { createDocument } from "@/lib/document-pipeline";
 import { immigrationEngagementScope, immigrationEvidenceChecklist } from "@/lib/practice-areas/immigration";
 
 function hasAiKey() {
-  return !!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith("sk-placeholder");
+  return !!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder");
 }
 
 const STRUCTURE_LABELS: Record<string, string> = {
@@ -36,7 +36,7 @@ export async function generateEngagementLetterText(input: {
     : "";
   try {
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       system: `You draft client engagement letters (retainer agreements) for the law firm "${input.firmName}". Produce a complete, professional letter in Markdown covering: the parties, scope of representation, the fee/retainer terms provided, billing and payment practices, client responsibilities, confidentiality, termination, and a signature block for client and attorney. Use standard, plain professional language. Use [bracketed placeholders] for anything not provided (effective date, addresses, hourly rates, jurisdiction). Begin with a one-line note: "DRAFT — for attorney review and finalization before sending." Do not present it as executed or as legal advice to the client.`,
       prompt: `Firm: ${input.firmName}
 Client: ${input.clientName}

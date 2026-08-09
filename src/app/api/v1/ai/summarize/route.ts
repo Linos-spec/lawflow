@@ -1,5 +1,5 @@
 import { streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
@@ -70,7 +70,7 @@ ${caseData.billingRecords.map((b) => `  - ${b.invoiceNumber}: $${Number(b.totalA
   `.trim();
 
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: aiModel,
     system: `You are a senior legal assistant AI for a law practice management system called Linos Legal. Generate a concise, professional case brief summary. Structure your response with these sections:
 
 ## Case Overview

@@ -1,5 +1,5 @@
 import { streamText, tool } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { z } from "zod";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const { messages } = await req.json();
 
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: aiModel,
     system: `You are an AI legal practice assistant for Linos Legal, a law practice management system. You help lawyers and legal staff with questions about their cases, deadlines, billing, and clients.
 
 You have access to tools that can query the firm's database. Use these tools proactively when the user asks about their data. Always be professional, concise, and helpful.

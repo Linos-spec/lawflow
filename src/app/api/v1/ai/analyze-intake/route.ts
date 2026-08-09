@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 import { intakeAnalysisSchema } from "@/lib/validators/ai.schema";
@@ -39,7 +39,7 @@ INTAKE FORM DETAILS:
 
   try {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       schema: intakeAnalysisSchema,
       system: `You are a senior legal intake specialist AI for Linos Legal, a law practice management system. Analyze the intake form and provide a structured assessment.
 

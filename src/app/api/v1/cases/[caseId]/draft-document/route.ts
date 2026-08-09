@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
@@ -31,7 +31,7 @@ export async function POST(
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
   const { caseId } = await params;
 
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.startsWith("sk-placeholder")) {
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder")) {
     return errorResponse("AI drafting requires an OpenAI key", 503);
   }
 
@@ -68,7 +68,7 @@ ${c.deadlines.map((d) => `  - ${d.title} | Due ${d.dueDate.toISOString().split("
 
   try {
     const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       system: `You are a senior legal drafting assistant for Linos Legal. Draft a complete, professional "${input.title}" for the matter below.${input.guidance ? ` Purpose/context: ${input.guidance}.` : ""}
 Rules:
 - Produce a full working draft, properly formatted for the document type.

@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 
 /**
  * Multilingual intake — a prospect writes in their own language, the firm reads
@@ -8,10 +8,10 @@ import { openai } from "@ai-sdk/openai";
  */
 export async function translateToEnglish(text: string): Promise<string | null> {
   if (!text?.trim()) return null;
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.startsWith("sk-placeholder")) return null;
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder")) return null;
   try {
     const { text: out } = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       system:
         "You are a professional legal translator. Translate the message into clear, natural English. Output ONLY the translation — no commentary, no quotes. Preserve names, dates, places, and legal meaning exactly.",
       prompt: text.slice(0, 8000),

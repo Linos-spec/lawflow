@@ -1,10 +1,10 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { prisma } from "@/lib/prisma";
 import { caseIntelligenceSchema, type CaseIntelligence } from "@/lib/validators/ai.schema";
 
 function hasAiKey() {
-  return !!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.startsWith("sk-placeholder");
+  return !!process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder");
 }
 
 export type CaseContext = {
@@ -35,7 +35,7 @@ Deadlines (${c.deadlines.length}): ${c.deadlines.map((d) => `${d.title} (${d.sta
 
   try {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       schema: caseIntelligenceSchema,
       system: `You are a senior litigation strategist AI for Linos Legal. Analyze the matter and produce a candid strategic assessment for the supervising attorney.
 

@@ -1,5 +1,5 @@
 import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { aiModel } from "@/lib/ai";
 import { documentAnalysisSchema, type DocumentAnalysis } from "@/lib/validators/ai.schema";
 
 /**
@@ -13,13 +13,13 @@ export async function organizeDocument(input: {
 }): Promise<DocumentAnalysis | null> {
   const text = input.extractedText?.trim();
   if (!text) return null; // nothing to analyze (e.g. scanned doc with no OCR)
-  if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.startsWith("sk-placeholder")) {
+  if (!process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY.startsWith("sk-placeholder")) {
     return null;
   }
 
   try {
     const { object } = await generateObject({
-      model: openai("gpt-4o-mini"),
+      model: aiModel,
       schema: documentAnalysisSchema,
       system: `You are a legal document classifier for Linos Legal. Analyze the document text and organize it: determine its type, propose a consistent professional title, list the parties, and add useful tags. Be concise and accurate.`,
       prompt: `Original file name: ${input.originalName}\n\nDocument text (may be truncated):\n${text.slice(0, 12_000)}`,
