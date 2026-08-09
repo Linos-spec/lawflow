@@ -10,7 +10,9 @@
  * saveFile()/readFile() and never touches the backend directly.
  */
 
-export const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB cap for the DB-backed MVP
+// 50 MB cap. Larger legal files (discovery, medical records) need object storage
+// — set the SPACES_* env vars to lift this further (see saveFile below).
+export const MAX_FILE_BYTES = 50 * 1024 * 1024;
 
 const SPACES_ENABLED = !!(
   process.env.SPACES_BUCKET &&

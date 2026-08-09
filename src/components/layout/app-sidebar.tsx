@@ -106,14 +106,18 @@ export function AppSidebar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [deadlineAlerts, setDeadlineAlerts] = useState(0);
 
-  // Real "deadlines approaching" count — open (pending/overdue) deadlines.
+  // "Approaching" = overdue, or pending and due within 14 days — so a date weeks
+  // out doesn't read as urgent noise.
   useEffect(() => {
     let active = true;
     fetch("/api/v1/deadlines?limit=100")
       .then((r) => r.json())
       .then((j) => {
         if (!active || !j?.success) return;
-        const n = (j.data as { status: string }[]).filter((d) => d.status === "PENDING" || d.status === "OVERDUE").length;
+        const soon = Date.now() + 14 * 86_400_000;
+        const n = (j.data as { status: string; dueDate: string }[]).filter((d) =>
+          d.status === "OVERDUE" || (d.status === "PENDING" && +new Date(d.dueDate) <= soon)
+        ).length;
         setDeadlineAlerts(n);
       })
       .catch(() => {});

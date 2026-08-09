@@ -41,6 +41,12 @@ export default function NewDeadlinePage() {
     description: "",
   });
 
+  // Prefill the related case when opened from a matter (…/deadlines/new?case=ID).
+  useEffect(() => {
+    const c = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("case");
+    if (c) setForm((f) => ({ ...f, caseId: c }));
+  }, []);
+
   useEffect(() => {
     fetch("/api/v1/cases?limit=200")
       .then((res) => res.json())

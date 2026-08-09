@@ -183,8 +183,8 @@ export default function CaseWorkspace() {
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
         <button onClick={() => { setTab("tasks"); setShowTaskForm(true); }} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CheckSquare style={{ width: 15, height: 15 }} /> Add task</button>
         <button onClick={() => fileInput.current?.click()} disabled={uploading} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>{uploading ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 15, height: 15 }} />} Upload document</button>
-        <Link href="/deadlines/new" className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CalendarClock style={{ width: 15, height: 15 }} /> Add deadline</Link>
-        <button onClick={() => toast("Time tracking is coming soon.")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><Timer style={{ width: 15, height: 15 }} /> Record time</button>
+        <Link href={`/deadlines/new?case=${id}`} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CalendarClock style={{ width: 15, height: 15 }} /> Add deadline</Link>
+        <button disabled title="Time tracking — coming soon" className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem", opacity: 0.5, cursor: "not-allowed" }}><Timer style={{ width: 15, height: 15 }} /> Record time <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>· soon</span></button>
         <button onClick={() => setTab("communications")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><MessageSquare style={{ width: 15, height: 15 }} /> Send message</button>
       </div>
 
@@ -215,7 +215,7 @@ export default function CaseWorkspace() {
                   </div>
                   <span style={{ fontWeight: 700, color: new Date(nextDeadline.dueDate) < new Date() ? "var(--danger)" : "var(--navy)", fontSize: "0.9rem" }}>{formatDate(nextDeadline.dueDate)}</span>
                 </div>
-              ) : <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>No upcoming deadlines. <Link href="/deadlines/new" style={{ color: "var(--gold)" }}>Add one →</Link></p>}
+              ) : <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>No upcoming deadlines. <Link href={`/deadlines/new?case=${id}`} style={{ color: "var(--gold)" }}>Add one →</Link></p>}
             </Card>
 
             {/* Tasks needing attention */}
@@ -341,7 +341,7 @@ export default function CaseWorkspace() {
       {/* ── DEADLINES ── */}
       {tab === "deadlines" && (
         <Card>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}><H2>Deadlines</H2><Link href="/deadlines/new" className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.9rem", fontSize: "0.83rem" }}><Plus style={{ width: 15, height: 15 }} /> Add</Link></div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}><H2>Deadlines</H2><Link href={`/deadlines/new?case=${id}`} className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.9rem", fontSize: "0.83rem" }}><Plus style={{ width: 15, height: 15 }} /> Add</Link></div>
           {c.deadlines.length === 0 ? <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>No deadlines set for this case.</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               {c.deadlines.map((d) => {
