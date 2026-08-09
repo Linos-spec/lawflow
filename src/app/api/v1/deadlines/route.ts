@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
 import { createDeadlineSchema } from "@/lib/validators/deadline.schema";
+import { logAudit } from "@/lib/audit";
 
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "deadline.create", entity: "Deadline", entityId: deadline.id, entityLabel: deadline.title, details: deadline.case ? `on ${deadline.case.caseNumber}` : undefined });
     return successResponse(deadline, 201);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
