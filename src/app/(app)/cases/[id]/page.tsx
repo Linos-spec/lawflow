@@ -85,6 +85,11 @@ export default function CaseWorkspace() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<FirmUser[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [taskTitle, setTaskTitle] = useState("");
+  const [taskAssignee, setTaskAssignee] = useState("");
+  const [taskDue, setTaskDue] = useState("");
+  const [savingTask, setSavingTask] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   const loadCase = useCallback(async () => {
@@ -103,6 +108,22 @@ export default function CaseWorkspace() {
   useEffect(() => { loadCase(); loadDocs(); loadTasks(); fetch("/api/v1/firm/users").then((r) => r.json()).then((j) => { if (j.success) setUsers(j.data); }).catch(() => {}); }, [loadCase, loadDocs, loadTasks]);
 
   const userName = useCallback((uid: string | null) => users.find((u) => u.id === uid)?.name || "Unassigned", [users]);
+
+  const assignAttorney = async (uid: string) => {
+    const res = await fetch(`/api/v1/cases/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ responsibleAttorneyId: uid || null }) });
+    if (res.ok) { toast.success("Responsible attorney updated"); loadCase(); }
+    else toast.error("Could not update the assignment");
+  };
+
+  const createTask = async () => {
+    if (!taskTitle.trim()) return;
+    setSavingTask(true);
+    try {
+      const res = await fetch(`/api/v1/cases/${id}/tasks`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: taskTitle, assigneeId: taskAssignee || undefined, dueDate: taskDue || undefined }) });
+      if (res.ok) { toast.success("Task added"); setTaskTitle(""); setTaskAssignee(""); setTaskDue(""); setShowTaskForm(false); loadTasks(); }
+      else { const j = await res.json().catch(() => ({})); toast.error(j.error || "Could not add task"); }
+    } finally { setSavingTask(false); }
+  };
 
   const onUpload = async (file: File) => {
     setUploading(true);
@@ -160,7 +181,7 @@ export default function CaseWorkspace() {
 
       {/* Action bar */}
       <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" }}>
-        <button onClick={() => setTab("tasks")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CheckSquare style={{ width: 15, height: 15 }} /> Add task</button>
+        <button onClick={() => { setTab("tasks"); setShowTaskForm(true); }} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CheckSquare style={{ width: 15, height: 15 }} /> Add task</button>
         <button onClick={() => fileInput.current?.click()} disabled={uploading} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>{uploading ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 15, height: 15 }} />} Upload document</button>
         <Link href="/deadlines/new" className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CalendarClock style={{ width: 15, height: 15 }} /> Add deadline</Link>
         <button onClick={() => toast("Time tracking is coming soon.")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><Timer style={{ width: 15, height: 15 }} /> Record time</button>
@@ -289,8 +310,22 @@ export default function CaseWorkspace() {
       {/* ── TASKS ── */}
       {tab === "tasks" && (
         <Card>
-          <H2>Tasks</H2>
-          {tasks.length === 0 ? <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>No tasks yet. Tasks are created by workflows or manually.</p> : (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+            <H2>Tasks</H2>
+            <button onClick={() => setShowTaskForm((v) => !v)} className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.9rem", fontSize: "0.83rem" }}><Plus style={{ width: 15, height: 15 }} /> Add task</button>
+          </div>
+          {showTaskForm && (
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", background: "var(--bg-base)", borderRadius: 10, padding: "0.75rem", marginBottom: "0.75rem" }}>
+              <input value={taskTitle} onChange={(e) => setTaskTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createTask()} placeholder="Task title…" autoFocus style={{ flex: 2, minWidth: 180, padding: "0.5rem 0.65rem", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: "0.86rem", color: "var(--navy)" }} />
+              <select value={taskAssignee} onChange={(e) => setTaskAssignee(e.target.value)} style={{ flex: 1, minWidth: 120, padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: "0.84rem", color: "var(--navy)", background: "var(--bg-card)" }}>
+                <option value="">Unassigned</option>
+                {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+              <input type="date" value={taskDue} onChange={(e) => setTaskDue(e.target.value)} style={{ padding: "0.5rem 0.6rem", borderRadius: 8, border: "1px solid var(--border-default)", fontSize: "0.84rem", color: "var(--navy)" }} />
+              <button onClick={createTask} disabled={savingTask || !taskTitle.trim()} className="lf-btn lf-btn-gold" style={{ padding: "0.5rem 1rem", fontSize: "0.84rem" }}>{savingTask ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : "Add"}</button>
+            </div>
+          )}
+          {tasks.length === 0 ? <p style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>No tasks yet. Add one above, or they&apos;ll be created automatically by workflows.</p> : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               {tasks.map((t) => (
                 <div key={t.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.6rem 0.75rem", borderRadius: 8, background: "var(--bg-base)", opacity: t.status === "DONE" || t.status === "CANCELLED" ? 0.6 : 1 }}>
@@ -380,7 +415,14 @@ export default function CaseWorkspace() {
           </Card>
           <Card>
             <H2>Legal team</H2>
-            <Row label="Responsible attorney" value={userName(c.responsibleAttorneyId)} />
+            <div style={{ marginBottom: "0.6rem" }}>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginBottom: 4 }}>Responsible attorney</p>
+              <select value={c.responsibleAttorneyId || ""} onChange={(e) => assignAttorney(e.target.value)}
+                style={{ width: "100%", padding: "0.45rem 0.6rem", borderRadius: 8, border: `1px solid ${c.responsibleAttorneyId ? "var(--border-default)" : "var(--warning)"}`, fontSize: "0.86rem", color: "var(--navy)", background: "var(--bg-card)" }}>
+                <option value="">Unassigned</option>
+                {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+              </select>
+            </div>
             {c.assignedTeamIds.length > 0 && <Row label="Supporting team" value={c.assignedTeamIds.map(userName).join(", ")} />}
             {c.jurisdiction && <Row label="Jurisdiction" value={c.jurisdiction} />}
             {c.courtName && <Row label="Court / agency" value={c.courtName} />}

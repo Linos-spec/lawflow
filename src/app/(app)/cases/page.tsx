@@ -333,7 +333,7 @@ export default function CasesPage() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                router.push(`/cases/${c.id}/edit`);
+                                router.push(`/cases/${c.id}`);
                               }}
                               className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
                               style={{ color: "var(--text-primary)" }}
