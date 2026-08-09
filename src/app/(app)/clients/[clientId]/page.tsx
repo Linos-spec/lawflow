@@ -6,7 +6,10 @@ import Link from "next/link";
 import {
   ArrowLeft, Loader2, Mail, Phone, MapPin, Building2, Pencil,
   Briefcase, FileText, DollarSign, CalendarClock, UserPlus, Clock, AlertTriangle,
+  Download, Trash2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { can } from "@/lib/rbac";
 import { toast } from "sonner";
 import {
   CLIENT_TYPE_LABELS, CASE_STATUS_LABELS, CASE_TYPE_LABELS,
@@ -42,6 +45,15 @@ function getInitials(name: string) {
 export default function ClientOverviewPage() {
   const { clientId } = useParams<{ clientId: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
+  const role = session?.user?.role;
+
+  const eraseClient = useCallback(async (name: string) => {
+    if (!confirm(`Erase all data for “${name}”? This permanently deletes the client and every related matter, document, deadline, and invoice. This cannot be undone.`)) return;
+    const res = await fetch(`/api/v1/clients/${clientId}`, { method: "DELETE" });
+    if (res.ok) { toast.success("Client data erased"); router.push("/clients"); }
+    else { const j = await res.json().catch(() => ({})); toast.error(j.error || "Could not erase client"); }
+  }, [clientId, router]);
   const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -93,9 +105,21 @@ export default function ClientOverviewPage() {
             {client.address && <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><MapPin style={{ width: 14, height: 14 }} />{client.address}</span>}
           </div>
         </div>
-        <button onClick={() => router.push(`/clients/${clientId}/edit`)} className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.875rem" }}>
-          <Pencil style={{ width: 15, height: 15 }} /> Edit
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0, flexWrap: "wrap" }}>
+          <button onClick={() => router.push(`/clients/${clientId}/edit`)} className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.875rem" }}>
+            <Pencil style={{ width: 15, height: 15 }} /> Edit
+          </button>
+          {can(role, "client.export") && (
+            <a href={`/api/v1/clients/${clientId}/export`} className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.875rem" }} title="Export all data held about this client (DSAR)">
+              <Download style={{ width: 15, height: 15 }} /> Export data
+            </a>
+          )}
+          {can(role, "client.delete") && (
+            <button onClick={() => eraseClient(client.name)} className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.875rem", color: "var(--danger)", borderColor: "var(--danger)" }} title="Right to erasure">
+              <Trash2 style={{ width: 15, height: 15 }} /> Erase
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Stat row */}

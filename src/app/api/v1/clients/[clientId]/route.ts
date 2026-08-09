@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { updateClientSchema, normalizeClientInput } from "@/lib/validators/client.schema";
+import { logAudit } from "@/lib/audit";
+import { can } from "@/lib/rbac";
 
 export async function GET(
   _request: NextRequest,
@@ -66,15 +68,18 @@ export async function DELETE(
 ) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  if (!can(ctx.role, "client.delete")) return errorResponse("Only an admin can erase a client.", 403);
 
   const { clientId } = await params;
 
   const existing = await prisma.client.findFirst({
     where: { id: clientId, firmId: ctx.firmId },
+    select: { id: true, name: true },
   });
   if (!existing) return errorResponse("Client not found", 404);
 
   await prisma.client.delete({ where: { id: clientId } });
+  await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "client.erase", category: "data", entity: "Client", entityId: clientId, entityLabel: existing.name, details: "Right-to-erasure: client and related records deleted" });
 
   return successResponse({ deleted: true });
 }

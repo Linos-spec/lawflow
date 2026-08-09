@@ -14,6 +14,8 @@ const publicRoutes = [
   "/sign",
   // Public client portal (read-only matter progress), gated by an unguessable token.
   "/portal",
+  // Public policy pages (privacy, terms, DPA, security overview).
+  "/legal",
 ];
 
 export default auth((req) => {
