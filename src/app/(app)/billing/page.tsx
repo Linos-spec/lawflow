@@ -321,7 +321,7 @@ export default function BillingPage() {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    router.push(`/billing/${r.id}/edit`);
+                                    router.push(`/billing/${r.id}`);
                                   }}
                                   className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm hover:bg-[var(--bg-base)] transition-colors"
                                   style={{ color: "var(--text-primary)" }}
