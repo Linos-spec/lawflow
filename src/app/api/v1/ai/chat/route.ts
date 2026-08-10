@@ -10,8 +10,10 @@ export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
+  // 400 (not 5xx) so DigitalOcean/Cloudflare forwards the body; the chat client
+  // surfaces this as an honest error instead of an opaque 504.
   if (!aiConfigured()) {
-    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable Ask Linoscore AI.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable Ask Linoscore AI.", notConfigured: true }), { status: 400, headers: { "Content-Type": "application/json" } });
   }
 
   const firmId = ctx.firmId;

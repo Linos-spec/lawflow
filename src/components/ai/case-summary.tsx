@@ -17,9 +17,9 @@ export function CaseSummary({ caseId }: { caseId: string }) {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ caseId }),
       });
       const json = await res.json().catch(() => ({}));
-      if (res.status === 503 && json.notConfigured) { setNotConfigured(true); return; }
-      if (!res.ok) { setError(json.error || "Failed to generate summary."); return; }
-      setSummary(json.summary || "");
+      if (json.notConfigured) { setNotConfigured(true); return; }
+      if (json.aiError || !res.ok || !json.summary) { setError(json.error || "Failed to generate summary."); return; }
+      setSummary(json.summary);
       setExpanded(true);
     } catch {
       setError("Couldn't reach the AI service. Please try again.");

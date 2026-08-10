@@ -66,9 +66,9 @@ export default function DraftPage() {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ caseId, templateType: templateId }),
       });
       const json = await res.json().catch(() => ({}));
-      if (res.status === 503 && json.notConfigured) { setNotConfigured(true); return; }
-      if (!res.ok) { setError(json.error || "Failed to generate document."); return; }
-      setCompletion(json.document || "");
+      if (json.notConfigured) { setNotConfigured(true); return; }
+      if (json.aiError || !res.ok || !json.document) { setError(json.error || "Failed to generate document."); return; }
+      setCompletion(json.document);
     } catch {
       setError("Couldn't reach the AI service. Please try again.");
     } finally { setIsLoading(false); }

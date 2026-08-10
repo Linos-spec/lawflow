@@ -51,8 +51,9 @@ export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
+  // 200 JSON (never 5xx) so DigitalOcean/Cloudflare doesn't swallow the body.
   if (!aiConfigured()) {
-    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable document drafting.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable document drafting.", notConfigured: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 
   const { caseId, templateType } = await req.json();
@@ -124,6 +125,6 @@ ${caseData.billingRecords.map((b) => {
     return new Response(JSON.stringify({ document: text }), { headers: { "Content-Type": "application/json" } });
   } catch (err) {
     console.error("Draft error:", err);
-    return new Response(JSON.stringify({ error: "The AI service could not generate this document. Please try again.", detail: String(err instanceof Error ? err.message : err).slice(0, 300) }), { status: 502, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ aiError: true, error: "The AI service could not generate this document. Please try again.", detail: String(err instanceof Error ? err.message : err).slice(0, 300) }), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 }

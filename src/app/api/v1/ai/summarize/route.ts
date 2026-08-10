@@ -8,8 +8,11 @@ export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
+  // NOTE: DigitalOcean/Cloudflare intercepts 5xx and serves its own html error
+  // page (client sees an opaque 504), so all AI states below use 200 JSON with
+  // explicit flags the client keys off of — never a 5xx.
   if (!aiConfigured()) {
-    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable AI features.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable AI features.", notConfigured: true }), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 
   const { caseId } = await req.json();
@@ -74,6 +77,6 @@ Base every statement on the supplied case data only. Professional tone.`,
     return new Response(JSON.stringify({ summary: text }), { headers: { "Content-Type": "application/json" } });
   } catch (err) {
     console.error("Summarize error:", err);
-    return new Response(JSON.stringify({ error: "The AI service could not generate a summary. Please try again.", detail: String(err instanceof Error ? err.message : err).slice(0, 300) }), { status: 502, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ aiError: true, error: "The AI service could not generate a summary. Please try again.", detail: String(err instanceof Error ? err.message : err).slice(0, 300) }), { status: 200, headers: { "Content-Type": "application/json" } });
   }
 }
