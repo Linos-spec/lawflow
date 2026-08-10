@@ -1,7 +1,9 @@
-import { streamText } from "ai";
-import { aiModel } from "@/lib/ai";
+import { generateText } from "ai";
+import { aiModel, aiConfigured } from "@/lib/ai";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 const templatePrompts: Record<string, string> = {
   demand_letter: `Generate a professional demand letter based on the case details below. Include:
@@ -49,6 +51,10 @@ Use formal legal motion format and appropriate citations placeholders.`,
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+
+  if (!aiConfigured()) {
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable document drafting.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
 
   const { caseId, templateType } = await req.json();
   if (!caseId || !templateType) {
@@ -114,11 +120,11 @@ ${caseData.billingRecords.map((b) => {
 }).join("\n") || "  None"}
   `.trim();
 
-  const result = streamText({
-    model: aiModel,
-    system: systemPrompt,
-    prompt: caseContext,
-  });
-
-  return result.toTextStreamResponse();
+  try {
+    const { text } = await generateText({ model: aiModel, system: systemPrompt, prompt: caseContext });
+    return new Response(JSON.stringify({ document: text }), { headers: { "Content-Type": "application/json" } });
+  } catch (err) {
+    console.error("Draft error:", err);
+    return new Response(JSON.stringify({ error: "The AI service could not generate this document. Please try again." }), { status: 502, headers: { "Content-Type": "application/json" } });
+  }
 }

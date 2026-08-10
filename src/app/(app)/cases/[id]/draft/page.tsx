@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { useCompletion } from "@ai-sdk/react";
 import {
   ArrowLeft,
   FileText,
@@ -15,6 +14,7 @@ import {
   Download,
   RefreshCw,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,20 +52,31 @@ export default function DraftPage() {
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { completion, isLoading, complete, setCompletion } = useCompletion({
-    api: "/api/v1/ai/draft",
-    body: { caseId, templateType: selectedTemplate },
-    onError: () => {
-      toast.error("Failed to generate document. Please try again.");
-    },
-  });
+  const [completion, setCompletion] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notConfigured, setNotConfigured] = useState(false);
 
   const hasContent = completion.length > 0;
 
+  async function generate(templateId: string) {
+    setIsLoading(true); setError(null); setNotConfigured(false); setCompletion("");
+    try {
+      const res = await fetch("/api/v1/ai/draft", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ caseId, templateType: templateId }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (res.status === 503 && json.notConfigured) { setNotConfigured(true); return; }
+      if (!res.ok) { setError(json.error || "Failed to generate document."); return; }
+      setCompletion(json.document || "");
+    } catch {
+      setError("Couldn't reach the AI service. Please try again.");
+    } finally { setIsLoading(false); }
+  }
+
   function handleSelectTemplate(templateId: string) {
     setSelectedTemplate(templateId);
-    setCompletion("");
-    setTimeout(() => complete(""), 100);
+    generate(templateId);
   }
 
   async function handleCopy() {
@@ -207,10 +218,7 @@ export default function DraftPage() {
             {hasContent && (
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    setCompletion("");
-                    setTimeout(() => complete(""), 100);
-                  }}
+                  onClick={() => selectedTemplate && generate(selectedTemplate)}
                   disabled={isLoading}
                   className="lf-btn lf-btn-outline"
                   style={{ fontSize: "0.8125rem" }}
@@ -254,6 +262,18 @@ export default function DraftPage() {
 
           {/* Document output */}
           <div className="lf-ai-card">
+            {notConfigured && !isLoading && (
+              <div className="text-sm rounded-lg p-3" style={{ background: "var(--warning-bg)", color: "#92400e" }}>
+                <div className="flex items-center gap-1.5 font-semibold mb-1"><AlertTriangle style={{ width: 14, height: 14 }} /> AI isn&apos;t configured yet</div>
+                Add an <code>ANTHROPIC_API_KEY</code> in your deployment settings to turn on AI drafting.
+              </div>
+            )}
+            {error && !isLoading && (
+              <div className="text-sm rounded-lg p-3 flex items-center justify-between gap-2" style={{ background: "var(--danger-bg)", color: "var(--danger)" }}>
+                <span>{error}</span>
+                <button onClick={() => selectedTemplate && generate(selectedTemplate)} className="underline" style={{ fontWeight: 600 }}>Retry</button>
+              </div>
+            )}
             {isLoading && !hasContent && (
               <div className="space-y-3 py-4">
                 <div className="flex items-center gap-2 mb-4">

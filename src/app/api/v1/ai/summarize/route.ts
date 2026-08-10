@@ -1,49 +1,31 @@
-import { streamText } from "ai";
-import { aiModel } from "@/lib/ai";
+import { generateText } from "ai";
+import { aiModel, aiConfigured } from "@/lib/ai";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
-  const { caseId } = await req.json();
-  if (!caseId) {
-    return new Response(JSON.stringify({ error: "caseId is required" }), {
-      status: 400,
-    });
+  if (!aiConfigured()) {
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable AI features.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
   }
+
+  const { caseId } = await req.json();
+  if (!caseId) return new Response(JSON.stringify({ error: "caseId is required" }), { status: 400, headers: { "Content-Type": "application/json" } });
 
   const caseData = await prisma.case.findFirst({
     where: { id: caseId, firmId: ctx.firmId },
-    include: {
-      client: true,
-      deadlines: { orderBy: { dueDate: "asc" } },
-      billingRecords: { include: { lineItems: true } },
-    },
+    include: { client: true, deadlines: { orderBy: { dueDate: "asc" } }, billingRecords: { include: { lineItems: true } } },
   });
+  if (!caseData) return new Response(JSON.stringify({ error: "Case not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
 
-  if (!caseData) {
-    return new Response(JSON.stringify({ error: "Case not found" }), {
-      status: 404,
-    });
-  }
-
-  const totalBilled = caseData.billingRecords.reduce(
-    (sum, b) => sum + Number(b.totalAmount),
-    0
-  );
-  const totalPaid = caseData.billingRecords.reduce(
-    (sum, b) => sum + Number(b.paidAmount),
-    0
-  );
-
-  const pendingDeadlines = caseData.deadlines.filter(
-    (d) => d.status === "PENDING"
-  );
-  const overdueDeadlines = caseData.deadlines.filter(
-    (d) => d.status === "OVERDUE"
-  );
+  const totalBilled = caseData.billingRecords.reduce((s, b) => s + Number(b.totalAmount), 0);
+  const totalPaid = caseData.billingRecords.reduce((s, b) => s + Number(b.paidAmount), 0);
+  const pending = caseData.deadlines.filter((d) => d.status === "PENDING");
+  const overdue = caseData.deadlines.filter((d) => d.status === "OVERDUE");
 
   const caseContext = `
 CASE INFORMATION:
@@ -52,7 +34,6 @@ CASE INFORMATION:
 - Type: ${caseData.caseType}
 - Status: ${caseData.status}
 - Priority: ${caseData.priority}
-- Filed: ${caseData.createdAt.toISOString().split("T")[0]}
 - Description: ${caseData.description || "Not provided"}
 - Notes: ${caseData.notes || "None"}
 
@@ -60,37 +41,40 @@ CLIENT:
 - Name: ${caseData.client.name}
 - Type: ${caseData.client.clientType}
 - Email: ${caseData.client.email}
-- Company: ${caseData.client.company || "N/A"}
 
-DEADLINES (${caseData.deadlines.length} total, ${pendingDeadlines.length} pending, ${overdueDeadlines.length} overdue):
-${caseData.deadlines.map((d) => `  - ${d.title} | Due: ${d.dueDate.toISOString().split("T")[0]} | Status: ${d.status} | Priority: ${d.priority}`).join("\n") || "  None"}
+DEADLINES (${caseData.deadlines.length} total, ${pending.length} pending, ${overdue.length} overdue):
+${caseData.deadlines.map((d) => `  - ${d.title} | Due: ${d.dueDate.toISOString().split("T")[0]} | ${d.status} | ${d.priority}`).join("\n") || "  None"}
 
 BILLING (${caseData.billingRecords.length} invoices, Total: $${totalBilled.toFixed(2)}, Paid: $${totalPaid.toFixed(2)}):
 ${caseData.billingRecords.map((b) => `  - ${b.invoiceNumber}: $${Number(b.totalAmount).toFixed(2)} (${b.paymentStatus})`).join("\n") || "  None"}
   `.trim();
 
-  const result = streamText({
-    model: aiModel,
-    system: `You are a senior legal assistant AI for a law practice management system called Linos Legal. Generate a concise, professional case brief summary. Structure your response with these sections:
+  try {
+    const { text } = await generateText({
+      model: aiModel,
+      system: `You are a senior legal assistant for a practice-management system called Linos Legal. Write a concise, professional case brief with these markdown sections:
 
 ## Case Overview
-Brief 2-3 sentence overview of the case.
+2-3 sentences.
 
 ## Key Details
-Bullet points covering client, case type, current status, and priority.
+Bullet points: client, case type, status, priority.
 
 ## Deadlines & Timeline
-Summary of upcoming and overdue deadlines. Flag any urgent items.
+Upcoming and overdue deadlines; flag urgent items.
 
 ## Financial Summary
-Overview of billing status including outstanding amounts.
+Billing status and outstanding amounts.
 
 ## Recommendations
-2-3 actionable next steps based on the current case state.
+2-3 actionable next steps.
 
-Keep the tone professional and suitable for a legal practice. Be concise but thorough.`,
-    prompt: caseContext,
-  });
-
-  return result.toTextStreamResponse();
+Base every statement on the supplied case data only. Professional tone.`,
+      prompt: caseContext,
+    });
+    return new Response(JSON.stringify({ summary: text }), { headers: { "Content-Type": "application/json" } });
+  } catch (err) {
+    console.error("Summarize error:", err);
+    return new Response(JSON.stringify({ error: "The AI service could not generate a summary. Please try again." }), { status: 502, headers: { "Content-Type": "application/json" } });
+  }
 }

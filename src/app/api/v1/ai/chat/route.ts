@@ -1,15 +1,22 @@
-import { streamText, tool } from "ai";
-import { aiModel } from "@/lib/ai";
+import { streamText, tool, convertToModelMessages } from "ai";
+import { aiModel, aiConfigured } from "@/lib/ai";
 import { z } from "zod";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
 
+  if (!aiConfigured()) {
+    return new Response(JSON.stringify({ error: "AI is not configured. Add an ANTHROPIC_API_KEY to enable Ask Linoscore AI.", notConfigured: true }), { status: 503, headers: { "Content-Type": "application/json" } });
+  }
+
   const firmId = ctx.firmId;
   const { messages } = await req.json();
+  const modelMessages = await convertToModelMessages(messages);
 
   const result = streamText({
     model: aiModel,
@@ -26,7 +33,7 @@ Key behaviors:
 - Never make up case numbers, dates, or financial figures — always use the tools to get real data
 - Format currency amounts properly (e.g., $1,234.56)
 - Format dates in a human-readable way (e.g., March 15, 2026)`,
-    messages,
+    messages: modelMessages,
     tools: {
       searchCases: tool({
         description:
@@ -201,5 +208,5 @@ Key behaviors:
     },
   });
 
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

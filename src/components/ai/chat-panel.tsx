@@ -13,7 +13,7 @@ const suggestedPrompts = [
 ];
 
 export function ChatPanel({ onClose }: { onClose: () => void }) {
-  const { messages, status, sendMessage } = useChat({
+  const { messages, status, sendMessage, error } = useChat({
     transport: new DefaultChatTransport({ api: "/api/v1/ai/chat" }),
   });
 
@@ -198,6 +198,14 @@ export function ChatPanel({ onClose }: { onClose: () => void }) {
               </div>
             </div>
           )}
+
+        {error && (
+          <div className="text-sm rounded-lg p-3" style={{ background: "var(--danger-bg)", color: "var(--danger)" }}>
+            {/configur|anthropic/i.test(String(error.message || ""))
+              ? "AI isn't configured yet — add an ANTHROPIC_API_KEY in your deployment settings to enable Ask Linoscore AI."
+              : "The assistant hit an error. Please try again."}
+          </div>
+        )}
 
         <div ref={messagesEndRef} />
       </div>
