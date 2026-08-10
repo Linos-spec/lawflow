@@ -1,5 +1,4 @@
-import { generateText } from "ai";
-import { aiModel, aiConfigured } from "@/lib/ai";
+import { anthropicComplete, aiConfigured } from "@/lib/ai-rest";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
@@ -121,10 +120,10 @@ ${caseData.billingRecords.map((b) => {
   `.trim();
 
   try {
-    const { text } = await generateText({ model: aiModel, system: systemPrompt, prompt: caseContext });
+    const text = await anthropicComplete({ system: systemPrompt, prompt: caseContext, maxTokens: 3000 });
     return new Response(JSON.stringify({ document: text }), { headers: { "Content-Type": "application/json" } });
   } catch (err) {
     console.error("Draft error:", err);
-    return new Response(JSON.stringify({ error: "The AI service could not generate this document. Please try again." }), { status: 502, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "The AI service could not generate this document. Please try again.", detail: String(err instanceof Error ? err.message : err).slice(0, 300) }), { status: 502, headers: { "Content-Type": "application/json" } });
   }
 }
