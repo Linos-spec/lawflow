@@ -17,20 +17,26 @@ export async function anthropicComplete(opts: {
   prompt: string;
   maxTokens?: number;
 }): Promise<string> {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": process.env.ANTHROPIC_API_KEY || "",
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: AI_MODEL,
-      max_tokens: opts.maxTokens ?? 2000,
-      system: opts.system,
-      messages: [{ role: "user", content: opts.prompt }],
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": process.env.ANTHROPIC_API_KEY || "",
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: AI_MODEL,
+        max_tokens: opts.maxTokens ?? 2000,
+        system: opts.system,
+        messages: [{ role: "user", content: opts.prompt }],
+      }),
+      signal: AbortSignal.timeout(25000),
+    });
+  } catch (e) {
+    throw new Error(`Anthropic fetch failed: ${e instanceof Error ? e.name + " " + e.message : String(e)}`);
+  }
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
