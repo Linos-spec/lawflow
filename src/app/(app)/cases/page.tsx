@@ -16,7 +16,6 @@ import {
   Sparkles,
   AlertTriangle,
   Upload,
-  X,
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -64,7 +63,6 @@ export default function CasesPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [importOpen, setImportOpen] = useState(false);
   const [attention, setAttention] = useState<
     { id: string; title: string; caseNumber: string; client: string; score: number; reasons: { severity: string; text: string }[] }[]
   >([]);
@@ -142,13 +140,9 @@ export default function CasesPage() {
           </div>
           {hasCases && (
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => { track("case_import_started"); setImportOpen(true); }}
-                className="lf-btn lf-btn-outline"
-                aria-label="Import cases"
-              >
+              <Link href="/cases/import" className="lf-btn lf-btn-outline" aria-label="Import cases">
                 <Upload style={{ width: 16, height: 16 }} /> <span className="hidden sm:inline">Import</span>
-              </button>
+              </Link>
               <Link href="/cases/new" onClick={() => track("case_create_started", { from: "header" })} className="lf-btn lf-btn-gold">
                 <Plus style={{ width: 16, height: 16 }} /> New case
               </Link>
@@ -194,9 +188,9 @@ export default function CasesPage() {
               <Link href="/cases/new" onClick={() => track("case_create_started", { from: "empty_state" })} className="lf-btn lf-btn-gold" style={{ padding: "0.6rem 1.25rem" }}>
                 <Plus style={{ width: 16, height: 16 }} /> Create your first case
               </Link>
-              <button onClick={() => { track("case_import_started"); setImportOpen(true); }} className="lf-btn lf-btn-outline" style={{ padding: "0.6rem 1.25rem" }}>
+              <Link href="/cases/import" className="lf-btn lf-btn-outline" style={{ padding: "0.6rem 1.25rem" }}>
                 <Upload style={{ width: 16, height: 16 }} /> Import cases
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -373,45 +367,6 @@ export default function CasesPage() {
           )}
         </>
       )}
-
-      {importOpen && <ImportModal onClose={() => setImportOpen(false)} />}
-    </div>
-  );
-}
-
-/** Import affordance — states the format/fields; the flow itself is coming soon. */
-function ImportModal({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  return (
-    <div className="lf-modal-scrim" onClick={onClose}>
-      <div className="lf-modal" role="dialog" aria-modal="true" aria-labelledby="import-title" onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: "var(--gold-bg, #fef3e2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Upload style={{ width: 20, height: 20, color: "var(--gold)" }} aria-hidden />
-            </div>
-            <h2 id="import-title" style={{ fontFamily: "var(--font-heading)", fontSize: "1.15rem", fontWeight: 700, color: "var(--navy)" }}>Import cases</h2>
-          </div>
-          <button onClick={onClose} className="lf-icon-btn" aria-label="Close"><X style={{ width: 20, height: 20 }} /></button>
-        </div>
-        <p style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginTop: "0.75rem", lineHeight: 1.55 }}>
-          Bulk-import matters from a <strong>CSV</strong> file (up to 5&nbsp;MB). You&apos;ll map your columns to
-          matter fields, preview validation, and confirm before any records are created.
-        </p>
-        <div style={{ background: "var(--bg-base)", border: "1px solid var(--border-default)", borderRadius: 12, padding: "0.75rem 1rem", marginTop: "0.9rem" }}>
-          <p style={{ fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", fontWeight: 600, marginBottom: 4 }}>Required columns</p>
-          <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Matter name · Client name · Matter type · Status · Open date</p>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: "1rem" }}>
-          <span className="lf-badge" style={{ background: "var(--warning-bg)", color: "var(--warning)" }}>Coming soon</span>
-          <button onClick={onClose} className="lf-btn lf-btn-gold">Got it</button>
-        </div>
-      </div>
     </div>
   );
 }
