@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useFirm } from "@/components/providers/firm-provider";
+import { track } from "@/lib/analytics";
 import {
   Scale,
   LayoutDashboard,
@@ -24,6 +25,10 @@ import {
   Bot,
   KanbanSquare,
   ClipboardCheck,
+  Menu,
+  X,
+  PanelLeftClose,
+  PanelLeft,
 } from "lucide-react";
 
 interface NavItem {
@@ -32,19 +37,13 @@ interface NavItem {
   icon: React.ElementType;
   badge?: number;
 }
-
 interface NavGroup {
   label: string;
   items: NavItem[];
 }
 
 const navGroups: NavGroup[] = [
-  {
-    label: "Overview",
-    items: [
-      { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-    ],
-  },
+  { label: "Overview", items: [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] },
   {
     label: "Case Management",
     items: [
@@ -54,18 +53,8 @@ const navGroups: NavGroup[] = [
       { label: "Delivery", href: "/deliveries", icon: Truck },
     ],
   },
-  {
-    label: "Calendar",
-    items: [
-      { label: "Deadlines", href: "/deadlines", icon: CalendarClock },
-    ],
-  },
-  {
-    label: "Finance",
-    items: [
-      { label: "Billing", href: "/billing", icon: DollarSign },
-    ],
-  },
+  { label: "Calendar", items: [{ label: "Deadlines", href: "/deadlines", icon: CalendarClock }] },
+  { label: "Finance", items: [{ label: "Billing", href: "/billing", icon: DollarSign }] },
   {
     label: "Intake",
     items: [
@@ -73,15 +62,9 @@ const navGroups: NavGroup[] = [
       { label: "AI Intake", href: "/ai-intake", icon: ClipboardCheck },
     ],
   },
-  {
-    label: "AI Tools",
-    items: [
-      { label: "AI Assistant", href: "/ai", icon: Sparkles },
-    ],
-  },
+  { label: "AI Tools", items: [{ label: "AI Assistant", href: "/ai", icon: Sparkles }] },
 ];
 
-// Navigation shown when the firm has switched into AI Employee mode.
 const aiNavGroups: NavGroup[] = [
   {
     label: "AI Employee",
@@ -90,13 +73,10 @@ const aiNavGroups: NavGroup[] = [
       { label: "Review Queue", href: "/ai-employee/review", icon: ClipboardCheck },
     ],
   },
-  {
-    label: "AI Tools",
-    items: [
-      { label: "AI Assistant", href: "/ai", icon: Sparkles },
-    ],
-  },
+  { label: "AI Tools", items: [{ label: "AI Assistant", href: "/ai", icon: Sparkles }] },
 ];
+
+const COLLAPSE_KEY = "lf-sidebar-collapsed";
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -105,9 +85,44 @@ export function AppSidebar() {
   const { firm } = useFirm();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [deadlineAlerts, setDeadlineAlerts] = useState(0);
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // "Approaching" = overdue, or pending and due within 14 days — so a date weeks
-  // out doesn't read as urgent noise.
+  // Restore the persisted collapse preference (after mount → no hydration skew).
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(COLLAPSE_KEY) === "1") setCollapsed(true);
+    } catch { /* ignore */ }
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((c) => {
+      const next = !c;
+      try { localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0"); } catch { /* ignore */ }
+      track("sidebar_collapsed", { collapsed: next });
+      return next;
+    });
+  }, []);
+
+  // Close the mobile drawer / user menu on route change.
+  useEffect(() => { setMobileOpen(false); setUserMenuOpen(false); }, [pathname]);
+
+  // Escape closes whatever's open.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { setMobileOpen(false); setUserMenuOpen(false); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Prevent body scroll behind the open mobile drawer.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   useEffect(() => {
     let active = true;
     fetch("/api/v1/deadlines?limit=100")
@@ -127,213 +142,229 @@ export function AppSidebar() {
   const aiEnabled = !!firm?.aiModeEnabled;
   const inAiMode = aiEnabled && pathname.startsWith("/ai-employee");
   const groups = inAiMode ? aiNavGroups : navGroups;
+  const userInitials = session?.user?.name
+    ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "U";
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
 
   return (
-    <aside
-      className="flex h-screen w-64 flex-col flex-shrink-0"
-      style={{ background: "var(--navy)", color: "var(--sidebar-foreground)" }}
-    >
-      {/* Logo */}
-      <div className="flex h-16 items-center gap-2.5 px-5" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <div
-          className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ background: "var(--gold)" }}
+    <>
+      {/* Mobile top bar (hidden ≥ md) */}
+      <div className="lf-mobile-topbar md:hidden">
+        <button
+          type="button"
+          onClick={() => setMobileOpen(true)}
+          className="lf-icon-btn"
+          aria-label="Open navigation menu"
+          aria-expanded={mobileOpen}
+          aria-controls="app-sidebar"
         >
-          <Scale className="h-4.5 w-4.5 text-white" style={{ width: 18, height: 18 }} />
-        </div>
-        <span
-          className="text-lg font-bold text-white"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          Linos Legal
-        </span>
-      </div>
-
-      {/* Workspace switcher — only when the firm has enabled AI Employee mode */}
-      {aiEnabled && (
-        <div className="mx-3 mt-3" style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(255,255,255,0.06)" }}>
-          {[
-            { key: "practice", label: "Practice", icon: Briefcase, active: !inAiMode, href: "/dashboard" },
-            { key: "ai", label: "AI Employee", icon: Bot, active: inAiMode, href: "/ai-employee" },
-          ].map((m) => (
-            <button
-              key={m.key}
-              onClick={() => router.push(m.href)}
-              className="flex-1"
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                padding: "0.4rem 0.5rem", borderRadius: 8, border: "none", cursor: "pointer",
-                fontSize: "0.78rem", fontWeight: 600,
-                background: m.active ? "var(--gold)" : "transparent",
-                color: m.active ? "#fff" : "rgba(255,255,255,0.65)",
-                transition: "all 0.15s ease",
-              }}
-            >
-              <m.icon style={{ width: 14, height: 14 }} /> {m.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Notification banner — only when there are real open deadlines */}
-      {deadlineAlerts > 0 && (
-        <div className="mx-3 mt-4 mb-2">
-          <button
-            onClick={() => router.push("/deadlines")}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium"
-            style={{ background: "rgba(245,158,11,0.15)", color: "var(--gold-light)", border: "none", cursor: "pointer" }}
-          >
-            <Bell style={{ width: 14, height: 14, flexShrink: 0 }} />
-            <span>{deadlineAlerts} deadline{deadlineAlerts === 1 ? "" : "s"} approaching</span>
-          </button>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
-        {groups.map((group) => (
-          <div key={group.label} className="mb-4">
-            <p
-              className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.35)" }}
-            >
-              {group.label}
-            </p>
-            {group.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href));
-              const Icon = item.icon;
-              const badge = item.href === "/deadlines" ? deadlineAlerts : item.badge;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150"
-                  style={{
-                    background: isActive ? "rgba(255,255,255,0.08)" : "transparent",
-                    color: isActive ? "#fff" : "rgba(255,255,255,0.7)",
-                    borderLeft: isActive ? "3px solid var(--gold)" : "3px solid transparent",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) e.currentTarget.style.background = "rgba(255,255,255,0.06)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  <Icon style={{ width: 18, height: 18, flexShrink: 0, color: isActive ? "var(--gold-light)" : undefined }} />
-                  <span className="flex-1">{item.label}</span>
-                  {badge ? (
-                    <span
-                      className="flex h-5 min-w-5 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                      style={{ background: "var(--danger)", padding: "0 6px" }}
-                    >
-                      {badge}
-                    </span>
-                  ) : null}
-                </Link>
-              );
-            })}
+          <Menu style={{ width: 22, height: 22 }} />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: "var(--gold)" }}>
+            <Scale style={{ width: 16, height: 16, color: "#fff" }} />
           </div>
-        ))}
-      </nav>
-
-      {/* Footer links */}
-      <div className="px-3 pb-1" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        <div className="pt-3 space-y-0.5">
-          <Link
-            href="/settings"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150"
-            style={{
-              color: pathname === "/settings" ? "#fff" : "rgba(255,255,255,0.6)",
-              background: pathname === "/settings" ? "rgba(255,255,255,0.08)" : "transparent",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = pathname === "/settings" ? "rgba(255,255,255,0.08)" : "transparent";
-            }}
-          >
-            <Settings style={{ width: 18, height: 18, color: pathname === "/settings" ? "var(--gold-light)" : undefined }} />
-            Settings
-          </Link>
-          <Link
-            href="/help"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150"
-            style={{
-              color: pathname === "/help" ? "#fff" : "rgba(255,255,255,0.6)",
-              background: pathname === "/help" ? "rgba(255,255,255,0.08)" : "transparent",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = pathname === "/help" ? "rgba(255,255,255,0.08)" : "transparent";
-            }}
-          >
-            <HelpCircle style={{ width: 18, height: 18 }} />
-            Help &amp; Support
-          </Link>
+          <span className="font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>Linos Legal</span>
         </div>
+        <span style={{ width: 40 }} aria-hidden />
       </div>
 
-      {/* User menu */}
-      <div className="px-3 pb-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        <div className="relative pt-3">
+      {/* Backdrop scrim for the mobile drawer */}
+      {mobileOpen && (
+        <button
+          type="button"
+          className="lf-scrim md:hidden"
+          aria-label="Close navigation menu"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      <aside
+        id="app-sidebar"
+        className={`lf-sidebar ${collapsed ? "is-collapsed" : ""} ${mobileOpen ? "is-open" : ""}`}
+        aria-label="Primary"
+      >
+        {/* Logo + collapse toggle */}
+        <div className="lf-sidebar-head">
+          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0" aria-label="Linos Legal — Dashboard">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ background: "var(--gold)" }}>
+              <Scale style={{ width: 18, height: 18, color: "#fff" }} />
+            </div>
+            {!collapsed && (
+              <span className="text-lg font-bold text-white truncate" style={{ fontFamily: "var(--font-heading)" }}>Linos Legal</span>
+            )}
+          </Link>
+          {/* Desktop collapse toggle */}
           <button
-            onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors duration-150"
-            style={{ color: "rgba(255,255,255,0.85)" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+            type="button"
+            onClick={toggleCollapsed}
+            className="lf-icon-btn-dark hidden md:inline-flex"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white flex-shrink-0"
-              style={{ background: "var(--navy-muted)" }}
-            >
-              {session?.user?.name
-                ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
-                : "U"}
-            </div>
-            <div className="flex-1 text-left min-w-0">
-              <p className="truncate font-medium text-sm text-white">
-                {session?.user?.name || "User"}
-              </p>
-              <p className="truncate text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>
-                {session?.user?.email || ""}
-              </p>
-            </div>
-            <ChevronDown
-              style={{
-                width: 16,
-                height: 16,
-                color: "rgba(255,255,255,0.4)",
-                transform: userMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.2s ease",
-              }}
-            />
+            {collapsed ? <PanelLeft style={{ width: 18, height: 18 }} /> : <PanelLeftClose style={{ width: 18, height: 18 }} />}
           </button>
-
-          {userMenuOpen && (
-            <div
-              className="absolute bottom-full left-0 mb-1 w-full rounded-lg p-1 shadow-xl animate-fade-in"
-              style={{
-                background: "var(--navy-light)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            >
-              <button
-                onClick={() => signOut({ callbackUrl: "/login" })}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors"
-                style={{ color: "#F87171" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(248,113,113,0.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-              >
-                <LogOut style={{ width: 16, height: 16 }} />
-                Sign Out
-              </button>
-            </div>
-          )}
+          {/* Mobile close */}
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="lf-icon-btn-dark md:hidden"
+            aria-label="Close navigation menu"
+          >
+            <X style={{ width: 20, height: 20 }} />
+          </button>
         </div>
-      </div>
-    </aside>
+
+        {/* Workspace switcher */}
+        {aiEnabled && !collapsed && (
+          <div className="mx-3 mt-3" style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(255,255,255,0.06)" }}>
+            {[
+              { key: "practice", label: "Practice", icon: Briefcase, active: !inAiMode, href: "/dashboard" },
+              { key: "ai", label: "AI Employee", icon: Bot, active: inAiMode, href: "/ai-employee" },
+            ].map((m) => (
+              <button
+                key={m.key}
+                onClick={() => router.push(m.href)}
+                className="flex-1 lf-ws-btn"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  padding: "0.4rem 0.5rem", borderRadius: 8, border: "none", cursor: "pointer",
+                  fontSize: "0.78rem", fontWeight: 600,
+                  background: m.active ? "var(--gold)" : "transparent",
+                  color: m.active ? "#fff" : "rgba(255,255,255,0.65)",
+                }}
+              >
+                <m.icon style={{ width: 14, height: 14 }} /> {m.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Deadline banner */}
+        {deadlineAlerts > 0 && !collapsed && (
+          <div className="mx-3 mt-4 mb-1">
+            <button
+              onClick={() => router.push("/deadlines")}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-medium lf-nav-focus"
+              style={{ background: "rgba(245,158,11,0.15)", color: "var(--gold-light)", border: "none", cursor: "pointer" }}
+            >
+              <Bell style={{ width: 14, height: 14, flexShrink: 0 }} />
+              <span>{deadlineAlerts} deadline{deadlineAlerts === 1 ? "" : "s"} approaching</span>
+            </button>
+          </div>
+        )}
+
+        {/* Navigation — independently scrollable */}
+        <nav className="lf-sidebar-nav" aria-label="Main navigation">
+          {groups.map((group) => (
+            <div key={group.label} className="mb-4">
+              {!collapsed && (
+                <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  {group.label}
+                </p>
+              )}
+              {group.items.map((item) => {
+                const active = isActive(item.href);
+                const Icon = item.icon;
+                const badge = item.href === "/deadlines" ? deadlineAlerts : item.badge;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`lf-nav-link ${active ? "is-active" : ""} ${collapsed ? "is-collapsed" : ""}`}
+                    aria-current={active ? "page" : undefined}
+                    aria-label={collapsed ? item.label : undefined}
+                    title={collapsed ? item.label : undefined}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon className="lf-nav-icon" style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden />
+                    {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                    {badge ? (
+                      <span
+                        className={collapsed ? "lf-nav-dot" : "lf-nav-badge"}
+                        aria-label={collapsed ? `${badge} alerts` : undefined}
+                      >
+                        {collapsed ? "" : badge}
+                      </span>
+                    ) : null}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer: settings + help */}
+        <div className="lf-sidebar-foot">
+          {[
+            { href: "/settings", label: "Settings", icon: Settings },
+            { href: "/help", label: "Help & Support", icon: HelpCircle },
+          ].map((item) => {
+            const active = pathname === item.href;
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`lf-nav-link ${active ? "is-active" : ""} ${collapsed ? "is-collapsed" : ""}`}
+                aria-current={active ? "page" : undefined}
+                aria-label={collapsed ? item.label : undefined}
+                title={collapsed ? item.label : undefined}
+                onClick={() => setMobileOpen(false)}
+              >
+                <Icon className="lf-nav-icon" style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden />
+                {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* User menu (pinned) */}
+        <div className="lf-sidebar-user">
+          <div className="relative">
+            <button
+              onClick={() => setUserMenuOpen((o) => !o)}
+              className="lf-user-btn"
+              aria-haspopup="menu"
+              aria-expanded={userMenuOpen}
+              aria-label="Account menu"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white flex-shrink-0" style={{ background: "var(--navy-muted)" }}>
+                {userInitials}
+              </div>
+              {!collapsed && (
+                <>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="truncate font-medium text-sm text-white">{session?.user?.name || "User"}</p>
+                    <p className="truncate text-[11px]" style={{ color: "rgba(255,255,255,0.45)" }}>{session?.user?.email || ""}</p>
+                  </div>
+                  <ChevronDown style={{ width: 16, height: 16, color: "rgba(255,255,255,0.4)", transform: userMenuOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }} />
+                </>
+              )}
+            </button>
+
+            {userMenuOpen && (
+              <div
+                role="menu"
+                className="absolute bottom-full left-0 mb-1 w-full rounded-lg p-1 shadow-xl animate-fade-in"
+                style={{ background: "var(--navy-light)", border: "1px solid rgba(255,255,255,0.1)", minWidth: 180 }}
+              >
+                <button
+                  role="menuitem"
+                  onClick={() => signOut({ callbackUrl: "/login" })}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm lf-nav-focus"
+                  style={{ color: "#F87171", background: "transparent", border: "none", cursor: "pointer" }}
+                >
+                  <LogOut style={{ width: 16, height: 16 }} /> Sign out
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </aside>
+    </>
   );
 }

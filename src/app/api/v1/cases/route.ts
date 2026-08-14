@@ -35,6 +35,14 @@ export async function GET(request: NextRequest) {
       take: limit,
       include: {
         client: { select: { id: true, name: true } },
+        responsibleAttorney: { select: { id: true, name: true } },
+        // Soonest still-open deadline → "Next deadline" column.
+        deadlines: {
+          where: { status: { in: ["PENDING", "OVERDUE"] } },
+          orderBy: { dueDate: "asc" },
+          take: 1,
+          select: { dueDate: true, title: true, status: true },
+        },
         _count: { select: { deadlines: true, billingRecords: true } },
       },
     }),

@@ -9,10 +9,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <FirmProvider>
         <div className="flex h-screen" style={{ background: "var(--bg-base)" }}>
           <AppSidebar />
-          <main className="flex-1 overflow-y-auto">
-            {/* Extra bottom padding so page content/actions clear the floating
-                "Ask Linoscore AI" button, especially on narrower viewports. */}
-            <div className="mx-auto max-w-7xl p-6 pb-28">{children}</div>
+          <main id="main-content" className="flex-1 overflow-y-auto overflow-x-hidden">
+            {/* Responsive gutters (16/24/32) + top clearance for the mobile top
+                bar, and bottom padding so content clears the floating AI launcher. */}
+            <div
+              className="mx-auto px-4 pt-20 pb-28 md:px-6 md:pt-6 lg:px-8 lg:pt-8"
+              style={{ maxWidth: 1440 }}
+            >
+              {children}
+            </div>
           </main>
           <AiChatWrapper />
         </div>
