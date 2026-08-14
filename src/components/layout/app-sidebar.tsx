@@ -151,8 +151,8 @@ export function AppSidebar() {
 
   return (
     <>
-      {/* Mobile top bar (hidden ≥ md) */}
-      <div className="lf-mobile-topbar md:hidden">
+      {/* Mobile top bar (hidden ≥ md via CSS) */}
+      <div className="lf-mobile-topbar">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -201,7 +201,7 @@ export function AppSidebar() {
           <button
             type="button"
             onClick={toggleCollapsed}
-            className="lf-icon-btn-dark hidden md:inline-flex"
+            className="lf-icon-btn-dark lf-hide-mobile"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
@@ -211,7 +211,7 @@ export function AppSidebar() {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="lf-icon-btn-dark md:hidden"
+            className="lf-icon-btn-dark lf-hide-desktop"
             aria-label="Close navigation menu"
           >
             <X style={{ width: 20, height: 20 }} />

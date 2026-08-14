@@ -826,6 +826,15 @@
   border-bottom: 1px solid var(--border-default);
   padding-top: env(safe-area-inset-top, 0px);
 }
+/* Unlayered .lf-* display rules beat Tailwind's md:hidden (which lives in
+   @layer utilities), so drive the responsive show/hide from here. */
+@media (min-width: 768px) { .lf-mobile-topbar { display: none; } }
+
+/* Responsive visibility helpers (win over Tailwind utilities reliably). */
+.lf-hide-mobile { display: none !important; }
+@media (min-width: 768px) { .lf-hide-mobile { display: inline-flex !important; } }
+.lf-hide-desktop { display: inline-flex !important; }
+@media (min-width: 768px) { .lf-hide-desktop { display: none !important; } }
 .lf-scrim {
   position: fixed; inset: 0; z-index: 58;
   background: rgba(15,23,42,0.5);
