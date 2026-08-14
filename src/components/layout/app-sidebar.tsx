@@ -87,12 +87,23 @@ export function AppSidebar() {
   const [deadlineAlerts, setDeadlineAlerts] = useState(0);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
 
   // Restore the persisted collapse preference (after mount → no hydration skew).
   useEffect(() => {
     try {
       if (localStorage.getItem(COLLAPSE_KEY) === "1") setCollapsed(true);
     } catch { /* ignore */ }
+  }, []);
+
+  // Collapse is a desktop-only affordance — the mobile drawer always shows
+  // full labels regardless of the saved preference.
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const apply = () => { setIsDesktop(mq.matches); if (mq.matches) setMobileOpen(false); };
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
   }, []);
 
   const toggleCollapsed = useCallback(() => {
@@ -142,6 +153,8 @@ export function AppSidebar() {
   const aiEnabled = !!firm?.aiModeEnabled;
   const inAiMode = aiEnabled && pathname.startsWith("/ai-employee");
   const groups = inAiMode ? aiNavGroups : navGroups;
+  // Visual compact state = collapsed preference, but only on desktop.
+  const compact = collapsed && isDesktop;
   const userInitials = session?.user?.name
     ? session.user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "U";
@@ -184,7 +197,7 @@ export function AppSidebar() {
 
       <aside
         id="app-sidebar"
-        className={`lf-sidebar ${collapsed ? "is-collapsed" : ""} ${mobileOpen ? "is-open" : ""}`}
+        className={`lf-sidebar ${compact ? "is-collapsed" : ""} ${mobileOpen ? "is-open" : ""}`}
         aria-label="Primary"
       >
         {/* Logo + collapse toggle */}
@@ -193,7 +206,7 @@ export function AppSidebar() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ background: "var(--gold)" }}>
               <Scale style={{ width: 18, height: 18, color: "#fff" }} />
             </div>
-            {!collapsed && (
+            {!compact && (
               <span className="text-lg font-bold text-white truncate" style={{ fontFamily: "var(--font-heading)" }}>Linos Legal</span>
             )}
           </Link>
@@ -219,7 +232,7 @@ export function AppSidebar() {
         </div>
 
         {/* Workspace switcher */}
-        {aiEnabled && !collapsed && (
+        {aiEnabled && !compact && (
           <div className="mx-3 mt-3" style={{ display: "flex", gap: 3, padding: 3, borderRadius: 10, background: "rgba(255,255,255,0.06)" }}>
             {[
               { key: "practice", label: "Practice", icon: Briefcase, active: !inAiMode, href: "/dashboard" },
@@ -244,7 +257,7 @@ export function AppSidebar() {
         )}
 
         {/* Deadline banner */}
-        {deadlineAlerts > 0 && !collapsed && (
+        {deadlineAlerts > 0 && !compact && (
           <div className="mx-3 mt-4 mb-1">
             <button
               onClick={() => router.push("/deadlines")}
@@ -261,7 +274,7 @@ export function AppSidebar() {
         <nav className="lf-sidebar-nav" aria-label="Main navigation">
           {groups.map((group) => (
             <div key={group.label} className="mb-4">
-              {!collapsed && (
+              {!compact && (
                 <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
                   {group.label}
                 </p>
@@ -274,20 +287,20 @@ export function AppSidebar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`lf-nav-link ${active ? "is-active" : ""} ${collapsed ? "is-collapsed" : ""}`}
+                    className={`lf-nav-link ${active ? "is-active" : ""} ${compact ? "is-collapsed" : ""}`}
                     aria-current={active ? "page" : undefined}
-                    aria-label={collapsed ? item.label : undefined}
-                    title={collapsed ? item.label : undefined}
+                    aria-label={compact ? item.label : undefined}
+                    title={compact ? item.label : undefined}
                     onClick={() => setMobileOpen(false)}
                   >
                     <Icon className="lf-nav-icon" style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden />
-                    {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                    {!compact && <span className="flex-1 truncate">{item.label}</span>}
                     {badge ? (
                       <span
-                        className={collapsed ? "lf-nav-dot" : "lf-nav-badge"}
-                        aria-label={collapsed ? `${badge} alerts` : undefined}
+                        className={compact ? "lf-nav-dot" : "lf-nav-badge"}
+                        aria-label={compact ? `${badge} alerts` : undefined}
                       >
-                        {collapsed ? "" : badge}
+                        {compact ? "" : badge}
                       </span>
                     ) : null}
                   </Link>
@@ -309,14 +322,14 @@ export function AppSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`lf-nav-link ${active ? "is-active" : ""} ${collapsed ? "is-collapsed" : ""}`}
+                className={`lf-nav-link ${active ? "is-active" : ""} ${compact ? "is-collapsed" : ""}`}
                 aria-current={active ? "page" : undefined}
-                aria-label={collapsed ? item.label : undefined}
-                title={collapsed ? item.label : undefined}
+                    aria-label={compact ? item.label : undefined}
+                    title={compact ? item.label : undefined}
                 onClick={() => setMobileOpen(false)}
               >
                 <Icon className="lf-nav-icon" style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden />
-                {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                {!compact && <span className="flex-1 truncate">{item.label}</span>}
               </Link>
             );
           })}
@@ -335,7 +348,7 @@ export function AppSidebar() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white flex-shrink-0" style={{ background: "var(--navy-muted)" }}>
                 {userInitials}
               </div>
-              {!collapsed && (
+              {!compact && (
                 <>
                   <div className="flex-1 text-left min-w-0">
                     <p className="truncate font-medium text-sm text-white">{session?.user?.name || "User"}</p>
