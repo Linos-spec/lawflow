@@ -6,6 +6,7 @@ import { Loader2, Plus, Copy, Check, Link2, X } from "lucide-react";
 import { toast } from "sonner";
 import { CASE_TYPE_LABELS } from "@/lib/constants";
 import { conflictBadge, SOURCE_LABELS, STAGE_LABELS } from "@/lib/lead-badges";
+import { IntakeInbox } from "@/components/intake/intake-inbox";
 
 interface LeadRow {
   id: string;
@@ -24,6 +25,7 @@ export default function LeadsPage() {
   const router = useRouter();
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [intakeLink, setIntakeLink] = useState<string | null>(null);
+  const [intakeEmail, setIntakeEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -43,6 +45,7 @@ export default function LeadsPage() {
       if (json.success) {
         setLeads(json.data);
         setIntakeLink(json.intakeLink);
+        setIntakeEmail(json.intakeEmail);
       }
     } catch {
       toast.error("Failed to load leads");
@@ -86,6 +89,9 @@ export default function LeadsPage() {
           </button>
         </div>
       )}
+
+      {/* Intake inbox — email channel */}
+      <IntakeInbox address={intakeEmail} onLogged={() => load()} />
 
       {loading ? (
         <div style={{ textAlign: "center", padding: "3rem" }}>

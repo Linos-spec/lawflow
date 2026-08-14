@@ -178,6 +178,7 @@ enum LeadSource {
   REFERRAL
   GOOGLE
   WALK_IN
+  EMAIL
   OTHER
 }
 

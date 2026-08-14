@@ -3,7 +3,7 @@ import {
 } from "lucide-react";
 
 export const SOURCE_LABELS: Record<string, string> = {
-  PHONE: "Phone", WEBSITE: "Website", REFERRAL: "Referral", GOOGLE: "Google", WALK_IN: "Walk-in", OTHER: "Other",
+  PHONE: "Phone", WEBSITE: "Website", REFERRAL: "Referral", GOOGLE: "Google", WALK_IN: "Walk-in", EMAIL: "Email", OTHER: "Other",
 };
 
 export const STAGE_LABELS: Record<string, string> = {

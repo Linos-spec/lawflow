@@ -5,6 +5,7 @@ import { successResponse, errorResponse } from "@/lib/api/response";
 import { createLeadSchema } from "@/lib/validators/lead.schema";
 import { createLeadFromIntake } from "@/lib/intake-pipeline";
 import { publicBaseUrl } from "@/lib/base-url";
+import { firmIntakeAddress } from "@/lib/intake-email";
 
 export async function GET(request: NextRequest) {
   const ctx = await getOrgFirmIds();
@@ -36,11 +37,13 @@ export async function GET(request: NextRequest) {
   // Build the shareable public intake link from the configured public URL
   // (request origin is the internal proxy address in production).
   const intakeLink = firm ? `${publicBaseUrl(request)}/consult/${firm.publicId}` : null;
+  const intakeEmail = firm ? firmIntakeAddress(firm.publicId) : null;
 
   return Response.json({
     success: true,
     data: leads,
     intakeLink,
+    intakeEmail,
     pagination: { total, page, limit, totalPages: Math.ceil(total / limit) },
   });
 }
