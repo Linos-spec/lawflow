@@ -219,7 +219,7 @@ export default function CasesPage() {
                         ))}
                       </div>
                     </div>
-                    <span style={{ fontSize: "0.75rem", color: "var(--gold)", fontWeight: 600, flexShrink: 0 }}>Open →</span>
+                    <span style={{ fontSize: "0.75rem", color: "#b45309", fontWeight: 600, flexShrink: 0 }}>Open →</span>
                   </div>
                 ))}
               </div>

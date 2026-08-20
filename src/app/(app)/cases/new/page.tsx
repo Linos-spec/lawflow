@@ -8,6 +8,7 @@ import {
   AlertTriangle, UserPlus, Users, Building2, User as UserIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { track } from "@/lib/analytics";
 import { PRACTICE_AREAS_BY_GROUP, practiceAreaLabel } from "@/lib/practice-areas/catalog";
 
 const DRAFT_KEY = "lf:new-case-draft:v1";
@@ -137,8 +138,9 @@ export default function NewCaseWizard() {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
       const j = await res.json();
-      if (!res.ok || !j.success) { toast.error(j.error || "Could not create the case"); return; }
+      if (!res.ok || !j.success) { track("case_create_failed", { reason: "api" }); toast.error(j.error || "Could not create the case"); return; }
       const caseId = j.data.id;
+      track("case_create_completed", { caseType: form.caseType, withDeadline: !!form.nextDeadlineDate });
 
       // Optional first deadline.
       if (form.nextDeadlineDate) {
@@ -155,7 +157,7 @@ export default function NewCaseWizard() {
       toast.success("Case created");
       router.push(`/cases/${caseId}`);
       if (withDocuments) toast("Upload documents from the case page.");
-    } catch { toast.error("Could not create the case"); }
+    } catch { track("case_create_failed", { reason: "network" }); toast.error("Could not create the case"); }
     finally { setBusy(false); }
   };
 

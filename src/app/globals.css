@@ -158,10 +158,10 @@
 .lf-card {
   background: var(--bg-card);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-default);
   padding: 1.5rem;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
 }
 .lf-card:hover {
   box-shadow: var(--shadow-lg);
@@ -885,3 +885,19 @@
   padding: 24px;
 }
 @media (prefers-reduced-motion: reduce) { .lf-modal-scrim { animation: none; } }
+
+/* Global reduced-motion: neutralize transitions and one-shot animations for
+   users who ask for it, but keep looping loading spinners visibly spinning so
+   "busy" state is still communicated. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-spin, [class*="spin"] {
+    animation-duration: 0.8s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
