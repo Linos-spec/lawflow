@@ -322,8 +322,32 @@ model Firm {
   relatedContacts RelatedContact[]
   tasks           Task[]
   workflowTemplates WorkflowTemplate[]
+  portalMessages  PortalMessage[]
 
   @@index([organizationId])
+}
+
+enum PortalSender {
+  CLIENT
+  FIRM
+}
+
+/** A message in a matter's client-portal thread (client ⇄ firm). */
+model PortalMessage {
+  id        String       @id @default(cuid())
+  caseId    String
+  case      Case         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  firmId    String
+  firm      Firm         @relation(fields: [firmId], references: [id], onDelete: Cascade)
+  sender    PortalSender
+  authorName String?     // firm author's display name for FIRM messages
+  body      String
+  readByFirm   Boolean   @default(false)
+  readByClient Boolean   @default(false)
+  createdAt DateTime     @default(now())
+
+  @@index([caseId])
+  @@index([firmId])
 }
 
 // ─── BUSINESS ENTITIES ─────────────────────────────
@@ -525,6 +549,9 @@ model Case {
   // the column is non-destructive (prod applies schema via `db push` on boot).
   portalToken   String?  @unique
   portalEnabled Boolean  @default(false)
+  // Optional access PIN (sha256 of token:pin) and link expiry for portal hardening.
+  portalPinHash   String?
+  portalExpiresAt DateTime?
 
   deadlines      Deadline[]
   billingRecords BillingRecord[]
@@ -532,6 +559,7 @@ model Case {
   documents      Document[]
   deliveryRequests DeliveryRequest[]
   tasks          Task[]
+  portalMessages PortalMessage[]
 
   @@unique([firmId, caseNumber])
   @@index([firmId])

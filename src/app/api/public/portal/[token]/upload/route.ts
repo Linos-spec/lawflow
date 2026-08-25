@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { createDocument } from "@/lib/document-pipeline";
 import { MAX_FILE_BYTES } from "@/lib/storage";
 import { PORTAL_CLIENT_UPLOADER } from "@/lib/portal";
+import { resolvePortalAccess } from "@/lib/portal-access";
 
 export const runtime = "nodejs";
 
@@ -11,11 +11,9 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
 
-  const matter = await prisma.case.findFirst({
-    where: { portalToken: token, portalEnabled: true },
-    select: { id: true, firmId: true },
-  });
-  if (!matter) return errorResponse("This portal link is not active", 404);
+  const access = await resolvePortalAccess(token, request.headers.get("x-portal-pin"));
+  if (!access.ok) return errorResponse("This portal link is not active", 403);
+  const matter = access.matter;
 
   let form: FormData;
   try {
