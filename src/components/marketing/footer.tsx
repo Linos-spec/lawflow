@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Scale, Mail } from "lucide-react";
+import { Scale, Mail, MapPin } from "lucide-react";
 
 const productLinks = [
   { label: "Features", href: "/features" },
@@ -80,7 +80,7 @@ export function MarketingFooter() {
                       color: "#fff",
                     }}
                   >
-                    Linos Legal
+                    Linoscore Legal
                   </span>
                 </Link>
 
@@ -92,14 +92,14 @@ export function MarketingFooter() {
                     lineHeight: 1.7,
                   }}
                 >
-                  Modern practice management for forward-thinking law firms.
+                  The AI employee for law firms — intake, conflict checks, deadlines, billing, and court filing, alongside the tools you already use.
                 </p>
 
                 <p
                   className="text-xs"
                   style={{ color: "rgba(255, 255, 255, 0.35)" }}
                 >
-                  &copy; {currentYear} Linos Legal. All rights reserved.
+                  &copy; {currentYear} Linoscore Legal. All rights reserved.
                 </p>
               </div>
 
@@ -205,6 +205,14 @@ export function MarketingFooter() {
                     <Mail style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} />
                     support@linoscore.com
                   </a>
+
+                  <div
+                    className="flex items-center gap-2.5 text-sm"
+                    style={{ color: "rgba(255, 255, 255, 0.6)" }}
+                  >
+                    <MapPin style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} />
+                    Allen, Texas
+                  </div>
 
                   <p
                     className="text-sm leading-relaxed"

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { POLICIES, POLICY_ORDER } from "@/lib/policies";
+import { POLICIES, POLICY_ORDER, POLICY_EFFECTIVE_DATE } from "@/lib/policies";
 
 export function generateStaticParams() {
   return POLICY_ORDER.map((slug) => ({ slug }));
@@ -18,13 +18,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
 
         <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, color: "var(--navy)", marginTop: "1rem" }}>{policy.title}</h1>
         <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>{policy.summary}</p>
-
-        {/* Template notice */}
-        <div style={{ marginTop: "1.5rem", background: "#fef3c7", border: "1px solid #fcd34d", borderRadius: 12, padding: "0.9rem 1.1rem" }}>
-          <p style={{ fontSize: "0.85rem", color: "#92400e", lineHeight: 1.5 }}>
-            <strong>Template — not legal advice.</strong> This document is a starting point provided for convenience. Review and adapt it with qualified counsel to fit your jurisdiction and practice before you rely on or publish it.
-          </p>
-        </div>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>Effective {POLICY_EFFECTIVE_DATE} · Operated by Linoscore Legal</p>
 
         {/* Policy nav */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "1.5rem" }}>

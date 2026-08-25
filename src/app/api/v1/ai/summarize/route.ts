@@ -54,7 +54,7 @@ ${caseData.billingRecords.map((b) => `  - ${b.invoiceNumber}: $${Number(b.totalA
   try {
     const text = await anthropicComplete({
       maxTokens: 1600,
-      system: `You are a senior legal assistant for a practice-management system called Linos Legal. Write a concise, professional case brief with these markdown sections:
+      system: `You are a senior legal assistant for a practice-management system called Linoscore Legal. Write a concise, professional case brief with these markdown sections:
 
 ## Case Overview
 2-3 sentences.

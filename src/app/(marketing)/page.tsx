@@ -124,14 +124,20 @@ function MockDashboard() {
           }}
         />
         <div style={{ flex: 1 }} />
-        <div
+        <span
           style={{
-            width: 120,
-            height: 8,
-            borderRadius: 4,
+            fontSize: "0.62rem",
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--text-muted)",
             background: "var(--border-light)",
+            padding: "0.15rem 0.5rem",
+            borderRadius: 999,
           }}
-        />
+        >
+          Sample
+        </span>
       </div>
 
       {/* Stat cards row */}
@@ -369,8 +375,8 @@ export default function LandingPage() {
                 animationDelay: "100ms",
               }}
             >
-              Linos Legal handles the work that buries your firm — client
-              intake, conflict checks, document organization, and follow-up —
+              Linoscore Legal handles the work that buries your firm — client
+              intake, conflict checks, deadline tracking, and billing —
               so your team can focus on practicing law.
             </p>
 
@@ -622,6 +628,36 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Security & confidentiality ───────────────────────── */}
+      <section style={{ paddingTop: 72, paddingBottom: 72, background: "var(--bg-card)", borderTop: "1px solid var(--border-default)" }}>
+        <div className="mx-auto px-6 lg:px-8" style={{ maxWidth: 1080 }}>
+          <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--gold)" }}>Security &amp; confidentiality</div>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--navy)", marginTop: "0.5rem" }}>
+              Built for a profession that runs on confidentiality
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { t: "Your matters never train shared AI", d: "We do not use client matter content to train shared AI models. AI features are decision-support only." },
+              { t: "Role-based access control", d: "Admin, Partner, Associate, and Paralegal roles govern sensitive actions — in your firm's own vocabulary." },
+              { t: "Immutable audit log", d: "A firm-scoped, tamper-evident log records who did what and when — creation, deletion, exports, and permission changes." },
+              { t: "Tenant isolation", d: "Every firm's data is isolated by tenant, so one firm can never see another's." },
+              { t: "Encrypted in transit & at rest", d: "All traffic is encrypted with TLS; data is encrypted at rest by our managed database and storage providers." },
+              { t: "You stay in control", d: "Nothing the AI produces reaches a client without an attorney's approval. Export or delete your data anytime." },
+            ].map((f) => (
+              <div key={f.t} className="lf-card" style={{ padding: "1.25rem" }}>
+                <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: "0.35rem", fontSize: "0.95rem" }}>{f.t}</div>
+                <p style={{ fontSize: "0.87rem", color: "var(--text-secondary)", lineHeight: 1.55 }}>{f.d}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: "1.75rem" }}>
+            <Link href="/legal/security" style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--brand)", textDecoration: "none" }}>Read our Security Overview →</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── CTA Banner ───────────────────────── */}
       <section
         style={{
@@ -671,8 +707,8 @@ export default function LandingPage() {
               marginBottom: "2rem",
             }}
           >
-            Join 500+ law firms already using Linos Legal to save time and grow
-            revenue.
+            Built for immigration and small firms that want to save time and
+            grow revenue — start with intake in minutes.
           </p>
           <Link
             href="/register"

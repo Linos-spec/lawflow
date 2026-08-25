@@ -1,8 +1,9 @@
 /**
- * Policy page templates. These are STARTING POINTS, not legal advice — every
- * firm must review and adapt them with counsel before publishing. The page
- * renders a prominent notice to that effect.
+ * Public policy content for Linoscore Legal. Governing-law clause and the formal
+ * operating-entity/formation details are intentionally pending until confirmed.
  */
+
+export const POLICY_EFFECTIVE_DATE = "August 25, 2026";
 
 export type Policy = {
   slug: string;
@@ -15,11 +16,11 @@ export const POLICIES: Record<string, Policy> = {
   privacy: {
     slug: "privacy",
     title: "Privacy Policy",
-    summary: "How Linoscore collects, uses, and protects personal information.",
+    summary: "How Linoscore Legal collects, uses, and protects personal information.",
     sections: [
       { heading: "Information we process", body: [
         "Account data you provide (name, email, firm details) to create and manage your account.",
-        "Client and matter data your firm enters, including the personal data of your clients and opposing parties. Your firm is the controller of this data; Linoscore processes it on your instructions.",
+        "Client and matter data your firm enters, including the personal data of your clients and opposing parties. Your firm is the controller of this data; Linoscore Legal processes it on your instructions.",
         "Usage and device data (log data, IP address, browser type) collected automatically to operate and secure the service.",
       ]},
       { heading: "How we use information", body: [
@@ -42,10 +43,10 @@ export const POLICIES: Record<string, Policy> = {
   terms: {
     slug: "terms",
     title: "Terms of Service",
-    summary: "The agreement governing use of the Linoscore platform.",
+    summary: "The agreement governing use of the Linoscore Legal platform.",
     sections: [
       { heading: "The service", body: [
-        "Linoscore provides practice-management software. We grant you a non-exclusive, non-transferable right to use it in accordance with these terms and your subscription.",
+        "Linoscore Legal provides practice-management software. We grant you a non-exclusive, non-transferable right to use it in accordance with these terms and your subscription.",
       ]},
       { heading: "Your responsibilities", body: [
         "You are responsible for the accuracy and lawfulness of the data you enter, for maintaining professional and ethical obligations to your clients, and for reviewing any AI-generated output before relying on it.",
@@ -55,7 +56,7 @@ export const POLICIES: Record<string, Policy> = {
         "Fees are described in your subscription. The agreement continues until terminated as described here. You can export your data before termination.",
       ]},
       { heading: "Disclaimers & liability", body: [
-        "The service is provided “as is.” To the fullest extent permitted by law, Linoscore disclaims implied warranties and limits liability as set out in your subscription agreement.",
+        "The service is provided “as is.” To the fullest extent permitted by law, Linoscore Legal disclaims implied warranties and limits its liability for the service.",
       ]},
     ],
   },
@@ -65,7 +66,7 @@ export const POLICIES: Record<string, Policy> = {
     summary: "Terms for processing personal data on your firm's behalf (GDPR/CCPA).",
     sections: [
       { heading: "Roles", body: [
-        "Your firm is the controller (or business) of client personal data; Linoscore is the processor (or service provider) and processes it only on your documented instructions.",
+        "Your firm is the controller (or business) of client personal data; Linoscore Legal is the processor (or service provider) and processes it only on your documented instructions.",
       ]},
       { heading: "Processing details", body: [
         "Subject matter: provision of the practice-management service. Duration: the term of your subscription. Categories of data subjects: your clients, prospective clients, and opposing parties. Categories of data: contact details, matter information, documents, and billing records.",
@@ -84,7 +85,7 @@ export const POLICIES: Record<string, Policy> = {
   security: {
     slug: "security",
     title: "Security Overview",
-    summary: "How Linoscore protects your firm's and clients' data.",
+    summary: "How Linoscore Legal protects your firm's and clients' data.",
     sections: [
       { heading: "Encryption", body: [
         "All traffic is encrypted in transit with TLS. Data is encrypted at rest by our managed database and storage providers.",

@@ -69,7 +69,7 @@ ${c.deadlines.map((d) => `  - ${d.title} | Due ${d.dueDate.toISOString().split("
   try {
     const { text } = await generateText({
       model: aiModel,
-      system: `You are a senior legal drafting assistant for Linos Legal. Draft a complete, professional "${input.title}" for the matter below.${input.guidance ? ` Purpose/context: ${input.guidance}.` : ""}
+      system: `You are a senior legal drafting assistant for Linoscore Legal. Draft a complete, professional "${input.title}" for the matter below.${input.guidance ? ` Purpose/context: ${input.guidance}.` : ""}
 Rules:
 - Produce a full working draft, properly formatted for the document type.
 - Use [BRACKETED PLACEHOLDERS] for anything requiring attorney input or facts not provided.

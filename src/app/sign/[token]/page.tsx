@@ -60,7 +60,7 @@ export default function SignPage() {
       <div style={wrap}>
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.25rem", color: "var(--navy)" }}>{info.firmName}</div>
-          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Secure document signing · powered by Linos Legal</div>
+          <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Secure document signing · powered by Linoscore Legal</div>
         </div>
 
         <div style={card}>

@@ -30,7 +30,7 @@ export async function generateMatterPlan(input: { caseType: string; description:
     const { object } = await generateObject({
       model: aiModel,
       schema: matterPlanSchema,
-      system: `You are a senior legal paralegal for Linos Legal. For a new ${input.caseType} matter, list the initial deadlines and tasks a competent firm opens on day one. Be specific to the matter type. These are SUGGESTIONS the supervising attorney must verify against jurisdiction rules — never present them as authoritative filing dates.`,
+      system: `You are a senior legal paralegal for Linoscore Legal. For a new ${input.caseType} matter, list the initial deadlines and tasks a competent firm opens on day one. Be specific to the matter type. These are SUGGESTIONS the supervising attorney must verify against jurisdiction rules — never present them as authoritative filing dates.`,
       prompt: `Matter type: ${input.caseType}\nDescription: ${input.description || "Not provided"}`,
     });
     return object.deadlines;

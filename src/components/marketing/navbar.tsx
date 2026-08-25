@@ -75,7 +75,7 @@ export function MarketingNavbar() {
               transition: "color 0.3s ease",
             }}
           >
-            Linos Legal
+            Linoscore Legal
           </span>
         </Link>
 

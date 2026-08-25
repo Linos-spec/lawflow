@@ -37,7 +37,7 @@ Deadlines (${c.deadlines.length}): ${c.deadlines.map((d) => `${d.title} (${d.sta
     const { object } = await generateObject({
       model: aiModel,
       schema: caseIntelligenceSchema,
-      system: `You are a senior litigation strategist AI for Linos Legal. Analyze the matter and produce a candid strategic assessment for the supervising attorney.
+      system: `You are a senior litigation strategist AI for Linoscore Legal. Analyze the matter and produce a candid strategic assessment for the supervising attorney.
 
 Rules:
 - Be specific to THIS matter's facts and type; avoid generic filler.

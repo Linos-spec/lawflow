@@ -25,7 +25,7 @@ export type DeliveryPriority = "Standard" | "Expedited" | "Rush" | "SameDay";
 
 export interface CreateDeliveryPayload {
   recipientName: string;
-  reference?: string;            // the Linos Legal matter number
+  reference?: string;            // the Linoscore Legal matter number
   pickupAddress: DeliveryAddress;
   dropoffAddress: DeliveryAddress;
   priority?: DeliveryPriority;

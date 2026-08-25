@@ -248,7 +248,7 @@ export default function ClientPortalPage() {
           {!data.firmEmail && !data.firmPhone && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Use the messages above and your firm will be glad to help.</span>}
         </div>
 
-        <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "1.5rem" }}>Powered by Linos Legal</p>
+        <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "1.5rem" }}>Powered by Linoscore Legal</p>
       </div>
     </div>
   );

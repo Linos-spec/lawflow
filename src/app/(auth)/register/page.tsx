@@ -11,12 +11,15 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [firmName, setFirmName] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (!acceptTerms) { setError("Please accept the Terms of Service and DPA to continue."); return; }
+    if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     setLoading(true);
 
     try {
@@ -77,7 +80,7 @@ export default function RegisterPage() {
               marginTop: "1rem",
             }}
           >
-            Linos Legal
+            Linoscore Legal
           </h1>
           <p
             style={{
@@ -186,22 +189,43 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="lf-input"
-                placeholder="Min. 8 characters"
+                placeholder="At least 8 characters"
                 minLength={8}
                 required
               />
+              <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.4rem" }}>
+                Use at least 8 characters. Longer passphrases are stronger.
+              </p>
             </div>
+
+            {/* Terms & DPA acceptance */}
+            <label htmlFor="acceptTerms" style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "0.82rem", color: "var(--text-secondary)", lineHeight: 1.5, cursor: "pointer" }}>
+              <input
+                id="acceptTerms"
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                required
+                style={{ marginTop: 2, width: 16, height: 16, flexShrink: 0, accentColor: "var(--gold)" }}
+              />
+              <span>
+                I agree to the{" "}
+                <Link href="/legal/terms" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Terms of Service</Link>{" "}
+                and{" "}
+                <Link href="/legal/dpa" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Data Processing Addendum</Link>.
+              </span>
+            </label>
 
             {/* Submit */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptTerms}
               className="lf-btn lf-btn-gold"
               style={{
                 width: "100%",
                 padding: "0.75rem 1rem",
                 fontSize: "0.9375rem",
-                opacity: loading ? 0.6 : 1,
+                opacity: loading || !acceptTerms ? 0.6 : 1,
                 pointerEvents: loading ? "none" : "auto",
               }}
             >
@@ -250,7 +274,7 @@ export default function RegisterPage() {
               textDecoration: "none",
             }}
           >
-            &larr; Back to Linos Legal
+            &larr; Back to Linoscore Legal
           </Link>
         </p>
       </div>

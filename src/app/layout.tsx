@@ -3,8 +3,8 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Linos Legal — The AI employee every lawyer wishes they had",
-  description: "Linos Legal handles client intake, conflict checks, document organization, and follow-up so your firm can focus on practicing law. Part of the Linoscore suite.",
+  title: "Linoscore Legal — The AI employee every lawyer wishes they had",
+  description: "Linoscore Legal handles client intake, conflict checks, document organization, and follow-up so your firm can focus on practicing law. Part of the Linoscore suite.",
 };
 
 export default function RootLayout({

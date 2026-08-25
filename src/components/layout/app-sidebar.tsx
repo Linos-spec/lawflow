@@ -180,7 +180,7 @@ export function AppSidebar() {
           <div className="flex h-7 w-7 items-center justify-center rounded-lg" style={{ background: "var(--gold)" }}>
             <Scale style={{ width: 16, height: 16, color: "#fff" }} />
           </div>
-          <span className="font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>Linos Legal</span>
+          <span className="font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}>Linoscore Legal</span>
         </div>
         <span style={{ width: 40 }} aria-hidden />
       </div>
@@ -202,12 +202,12 @@ export function AppSidebar() {
       >
         {/* Logo + collapse toggle */}
         <div className="lf-sidebar-head">
-          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0" aria-label="Linos Legal — Dashboard">
+          <Link href="/dashboard" className="flex items-center gap-2.5 min-w-0" aria-label="Linoscore Legal — Dashboard">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0" style={{ background: "var(--gold)" }}>
               <Scale style={{ width: 18, height: 18, color: "#fff" }} />
             </div>
             {!compact && (
-              <span className="text-lg font-bold text-white truncate" style={{ fontFamily: "var(--font-heading)" }}>Linos Legal</span>
+              <span className="text-lg font-bold text-white truncate" style={{ fontFamily: "var(--font-heading)" }}>Linoscore Legal</span>
             )}
           </Link>
           {/* Desktop collapse toggle */}

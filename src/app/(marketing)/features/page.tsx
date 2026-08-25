@@ -492,7 +492,7 @@ const featureSections = [
     title: "Case Management",
     subtitle: "Complete case lifecycle management",
     description:
-      "Track every case from intake to resolution. Linos Legal provides a centralized hub for all case-related information, ensuring nothing falls through the cracks as your practice grows.",
+      "Track every case from intake to resolution. Linoscore Legal provides a centralized hub for all case-related information, ensuring nothing falls through the cracks as your practice grows.",
     bullets: [
       "Track case status from open to closed",
       "Associate clients, deadlines, and billing records",
@@ -508,7 +508,7 @@ const featureSections = [
     title: "Deadline & Calendar",
     subtitle: "Never miss a critical date",
     description:
-      "Court dates, filing deadlines, and discovery windows are the lifeblood of legal practice. Linos Legal keeps every critical date visible, prioritized, and linked to the right case.",
+      "Court dates, filing deadlines, and discovery windows are the lifeblood of legal practice. Linoscore Legal keeps every critical date visible, prioritized, and linked to the right case.",
     bullets: [
       "Filing deadlines, court appearances, discovery dates",
       "Priority levels with visual indicators",
@@ -618,8 +618,8 @@ export default function FeaturesPage() {
               marginBottom: "1.25rem",
             }}
           >
-            Everything your firm needs,{" "}
-            <span style={{ color: "var(--gold-light)" }}>in one place</span>
+            An AI employee,{" "}
+            <span style={{ color: "var(--gold-light)" }}>on a foundation your firm can trust</span>
           </h1>
           <p
             className="animate-fade-in-up"
@@ -628,13 +628,47 @@ export default function FeaturesPage() {
               color: "rgba(255, 255, 255, 0.75)",
               lineHeight: 1.7,
               animationDelay: "100ms",
-              maxWidth: 640,
+              maxWidth: 660,
               margin: "0 auto",
             }}
           >
-            Linos Legal combines case management, billing, deadlines, and client
-            intake into a single platform designed exclusively for legal
-            professionals.
+            Linoscore Legal is an AI layer — 24/7 intake, conflict checks, retainer
+            recommendations, engagement letters, case intelligence, and court filing
+            with proof — running on top of a complete practice-management foundation.
+            Start with intake only, and keep the tools you already use.
+          </p>
+        </div>
+      </section>
+
+      {/* ── The AI layer ─────────────────────── */}
+      <section style={{ paddingTop: 64, paddingBottom: 40, background: "var(--bg-base)" }}>
+        <div className="mx-auto px-6 lg:px-8" style={{ maxWidth: 1080 }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--gold)" }}>The AI layer</div>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--navy)", marginTop: "0.5rem" }}>
+              The work that buries your firm, handled
+            </h2>
+            <p style={{ color: "var(--text-secondary)", maxWidth: 620, margin: "0.6rem auto 0", lineHeight: 1.6 }}>
+              These six modules are what make Linoscore Legal more than another case database — and they sit on top of the foundation below.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { t: "24/7 AI Intake", d: "Answers prospective clients any hour, captures the matter, and routes it to your team." },
+              { t: "Automated Conflict Checks", d: "Screens every new intake against your existing clients and adverse parties before you engage." },
+              { t: "AI Qualification & Retainer", d: "Scores the matter and recommends a fee structure and retainer range for the attorney to approve." },
+              { t: "Automatic Engagement Letters", d: "Drafts the engagement letter the moment a matter is opened — you review and send." },
+              { t: "AI Case Intelligence", d: "Summarizes a matter, surfaces risks, and flags what needs attention across your caseload." },
+              { t: "Court Filing with Proof", d: "Files with the court and brings the stamped confirmation back onto the matter." },
+            ].map((m) => (
+              <div key={m.t} className="lf-card" style={{ padding: "1.25rem" }}>
+                <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: "0.35rem", fontSize: "0.95rem" }}>{m.t}</div>
+                <p style={{ fontSize: "0.87rem", color: "var(--text-secondary)", lineHeight: 1.55 }}>{m.d}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: "center", color: "var(--text-muted)", fontSize: "0.9rem", marginTop: "2rem" }}>
+            Every AI action is decision-support — nothing reaches a client until an attorney approves it. Below is the practice-management foundation it runs on.
           </p>
         </div>
       </section>
@@ -781,6 +815,33 @@ export default function FeaturesPage() {
         );
       })}
 
+      {/* ── Works alongside what you already use ─────────────── */}
+      <section style={{ paddingTop: 72, paddingBottom: 72, background: "var(--bg-card)", borderTop: "1px solid var(--border-default)" }}>
+        <div className="mx-auto px-6 lg:px-8" style={{ maxWidth: 960 }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <div style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--gold)" }}>No rip-and-replace</div>
+            <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 700, color: "var(--navy)", marginTop: "0.5rem" }}>
+              Works alongside what you already use
+            </h2>
+            <p style={{ color: "var(--text-secondary)", maxWidth: 640, margin: "0.6rem auto 0", lineHeight: 1.6 }}>
+              Already on Clio, MyCase, or PracticePanther? You don&apos;t have to migrate. Add Linoscore Legal as the AI layer and start with intake only.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { t: "Start with intake only", d: "Point new prospects at your Linoscore intake link. Conflicts, qualification, and engagement letters run here — your existing system stays your system of record until you're ready." },
+              { t: "Bring matters in by CSV", d: "Import your matters and clients from a spreadsheet export, with column mapping and a validated preview before anything is created. No forced data migration." },
+              { t: "Keep your current tools", d: "Run Linoscore Legal next to what you have. Adopt more modules on your timeline — or keep it as intake-plus-filing indefinitely." },
+            ].map((c) => (
+              <div key={c.t} className="lf-card" style={{ padding: "1.35rem" }}>
+                <div style={{ fontWeight: 700, color: "var(--navy)", marginBottom: "0.4rem" }}>{c.t}</div>
+                <p style={{ fontSize: "0.88rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Bottom CTA ───────────────────────── */}
       <section
         style={{
@@ -831,8 +892,8 @@ export default function FeaturesPage() {
               marginBottom: "2rem",
             }}
           >
-            Join hundreds of law firms that have simplified their operations
-            with Linos Legal.
+            Start with intake in minutes — no migration, no credit card, and
+            keep the tools you already use.
           </p>
           <Link
             href="/register"

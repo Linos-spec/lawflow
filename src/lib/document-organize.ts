@@ -21,7 +21,7 @@ export async function organizeDocument(input: {
     const { object } = await generateObject({
       model: aiModel,
       schema: documentAnalysisSchema,
-      system: `You are a legal document classifier for Linos Legal. Analyze the document text and organize it: determine its type, propose a consistent professional title, list the parties, and add useful tags. Be concise and accurate.`,
+      system: `You are a legal document classifier for Linoscore Legal. Analyze the document text and organize it: determine its type, propose a consistent professional title, list the parties, and add useful tags. Be concise and accurate.`,
       prompt: `Original file name: ${input.originalName}\n\nDocument text (may be truncated):\n${text.slice(0, 12_000)}`,
     });
     return object;
