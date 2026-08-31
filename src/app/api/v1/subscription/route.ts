@@ -32,11 +32,5 @@ export async function GET() {
     pricePerSeat: SEAT_PRICE_USD,
     monthlyTotal: seats * SEAT_PRICE_USD,
     isAdmin: ctx.role === "ADMIN",
-    // TEMP diagnostic (admin only) — coded prefix, no secrets leaked.
-    _diag: ctx.role === "ADMIN" ? (() => {
-      const raw = (process.env.STRIPE_SECRET_KEY || "").trim();
-      const kind = raw.startsWith("sk_") ? "STANDARD" : raw.startsWith("rk_") ? "RESTRICTED" : raw.startsWith("pk_") ? "PUBLISHABLE_WRONG" : raw ? "UNKNOWN" : "EMPTY";
-      return { keyKind: kind, keyLen: raw.length, priceOk: (process.env.STRIPE_PRICE_ID || "").trim().startsWith("price_"), webhookSet: !!process.env.STRIPE_WEBHOOK_SECRET };
-    })() : undefined,
   });
 }
