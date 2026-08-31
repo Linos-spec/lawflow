@@ -1,5 +1,6 @@
 import { anthropicComplete, aiConfigured } from "@/lib/ai-rest";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
+import { entitledOr402 } from "@/lib/entitlement";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -50,6 +51,7 @@ Use formal legal motion format and appropriate citations placeholders.`,
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  const _billBlock = await entitledOr402(ctx.firmId); if (_billBlock) return _billBlock;
 
   // 200 JSON (never 5xx) so DigitalOcean/Cloudflare doesn't swallow the body.
   if (!aiConfigured()) {

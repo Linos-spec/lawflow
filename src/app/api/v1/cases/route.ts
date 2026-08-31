@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
+import { entitledOr402 } from "@/lib/entitlement";
 import { successResponse, errorResponse, paginatedResponse } from "@/lib/api/response";
 import { createCaseSchema, normalizeCaseInput } from "@/lib/validators/case.schema";
 import { logAudit } from "@/lib/audit";
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  const _billBlock = await entitledOr402(ctx.firmId); if (_billBlock) return _billBlock;
 
   try {
     const body = await request.json();

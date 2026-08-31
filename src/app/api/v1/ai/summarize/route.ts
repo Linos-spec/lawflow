@@ -1,5 +1,6 @@
 import { anthropicComplete, aiConfigured } from "@/lib/ai-rest";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
+import { entitledOr402 } from "@/lib/entitlement";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -7,6 +8,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  const _billBlock = await entitledOr402(ctx.firmId); if (_billBlock) return _billBlock;
 
   // NOTE: DigitalOcean/Cloudflare intercepts 5xx and serves its own html error
   // page (client sees an opaque 504), so all AI states below use 200 JSON with

@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse } from "@/lib/api/response";
 import { stripeConfigured, seatCount, SEAT_PRICE_USD } from "@/lib/stripe";
+import { computeEntitlement } from "@/lib/entitlement";
 
 export const runtime = "nodejs";
 
@@ -19,12 +20,12 @@ export async function GET() {
   const now = Date.now();
   const trialEnds = firm?.trialEndsAt ? firm.trialEndsAt.getTime() : null;
   const trialDaysLeft = trialEnds ? Math.max(0, Math.ceil((trialEnds - now) / 86_400_000)) : null;
-  const status = firm?.subscriptionStatus
-    || (trialEnds && trialEnds > now ? "trialing" : (trialEnds ? "trial_expired" : "none"));
+  const ent = computeEntitlement({ trialEndsAt: firm?.trialEndsAt ?? null, subscriptionStatus: firm?.subscriptionStatus ?? null });
 
   return successResponse({
     configured: stripeConfigured(),
-    status,                                   // trialing | trial_expired | active | past_due | canceled | none
+    status: ent.status,                       // trialing | trial_expired | active | past_due | canceled | none
+    locked: ent.locked,                       // true → access blocked until they subscribe
     hasSubscription: !!firm?.stripeSubscriptionId,
     trialEndsAt: firm?.trialEndsAt ? firm.trialEndsAt.toISOString() : null,
     trialDaysLeft,

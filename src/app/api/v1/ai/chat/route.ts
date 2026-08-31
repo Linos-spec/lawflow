@@ -2,6 +2,7 @@ import { streamText, tool, convertToModelMessages } from "ai";
 import { aiModel, aiConfigured } from "@/lib/ai";
 import { z } from "zod";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
+import { entitledOr402 } from "@/lib/entitlement";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -9,6 +10,7 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  const _billBlock = await entitledOr402(ctx.firmId); if (_billBlock) return _billBlock;
 
   // 400 (not 5xx) so DigitalOcean/Cloudflare forwards the body; the chat client
   // surfaces this as an honest error instead of an opaque 504.
