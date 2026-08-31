@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
         data: {
           name: firmName,
           organizationId: organization.id,
+          // 14-day free trial starts at signup.
+          trialEndsAt: new Date(Date.now() + 14 * 86_400_000),
         },
       });
 

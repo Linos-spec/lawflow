@@ -7,6 +7,7 @@ import { useFirm } from "@/components/providers/firm-provider";
 import { DeliveryConnectionCard } from "@/components/delivery/delivery-connection-card";
 import { AuditLogViewer } from "@/components/settings/audit-log-viewer";
 import { TeamRoles } from "@/components/settings/team-roles";
+import { BillingPanel } from "@/components/settings/billing-panel";
 import {
   User,
   Users,
@@ -347,73 +348,7 @@ export default function SettingsPage() {
         )}
 
         {/* ── Plan & Billing ── */}
-        {activeTab === "billing" && (
-          <div className="space-y-6 max-w-3xl">
-            {/* Current plan */}
-            <div
-              className="lf-card flex items-center justify-between"
-              style={{ borderLeft: "4px solid var(--gold)" }}
-            >
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
-                  Current Plan
-                </p>
-                <p
-                  className="text-xl font-bold mt-1"
-                  style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}
-                >
-                  Professional
-                </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--text-secondary)" }}>
-                  $49/month &middot; Up to 5 team members &middot; Unlimited cases
-                </p>
-              </div>
-              <button className="lf-btn lf-btn-outline" type="button">
-                Upgrade Plan
-              </button>
-            </div>
-
-            {/* Invoice history */}
-            <div className="lf-card" style={{ padding: 0, overflow: "hidden" }}>
-              <div className="px-6 py-4" style={{ borderBottom: "1px solid var(--border-light)" }}>
-                <h3
-                  className="text-base font-bold"
-                  style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}
-                >
-                  Invoice History
-                </h3>
-              </div>
-              <table className="lf-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Description</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { date: "Mar 1, 2026", desc: "Professional Plan — March", amount: "$49.00", status: "Paid" },
-                    { date: "Feb 1, 2026", desc: "Professional Plan — February", amount: "$49.00", status: "Paid" },
-                    { date: "Jan 1, 2026", desc: "Professional Plan — January", amount: "$49.00", status: "Paid" },
-                  ].map((inv, i) => (
-                    <tr key={i}>
-                      <td className="text-sm">{inv.date}</td>
-                      <td className="text-sm">{inv.desc}</td>
-                      <td className="text-sm font-semibold" style={{ color: "var(--navy)" }}>
-                        {inv.amount}
-                      </td>
-                      <td>
-                        <span className="lf-badge lf-badge-green">{inv.status}</span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        {activeTab === "billing" && <BillingPanel />}
 
         {activeTab === "ai" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>

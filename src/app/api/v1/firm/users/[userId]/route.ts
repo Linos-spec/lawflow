@@ -4,6 +4,7 @@ import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { logAudit } from "@/lib/audit";
 import { can, ROLE_LABELS, type Role } from "@/lib/rbac";
+import { syncSeatQuantity } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -66,5 +67,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     entity: "User", entityId: userId, entityLabel: target.name,
     details: `Removed ${target.name} (${ROLE_LABELS[target.role as Role]})`,
   });
+  await syncSeatQuantity(ctx.firmId); // free the seat on the subscription
   return successResponse({ removed: true });
 }

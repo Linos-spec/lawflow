@@ -5,6 +5,7 @@ import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { logAudit } from "@/lib/audit";
 import { can, ROLE_LABELS, type Role } from "@/lib/rbac";
+import { syncSeatQuantity } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -57,6 +58,8 @@ export async function POST(req: NextRequest) {
     entity: "User", entityId: user.id, entityLabel: user.name,
     details: `Added ${name} (${email}) as ${ROLE_LABELS[role]}`,
   });
+
+  await syncSeatQuantity(ctx.firmId); // keep the subscription quantity in step
 
   return successResponse(user, 201);
 }
