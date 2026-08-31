@@ -8,64 +8,22 @@ import { Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 /*  Data                                      */
 /* ────────────────────────────────────────── */
 
-const tiers = [
-  {
-    name: "Starter",
-    description: "For solo practitioners",
-    monthlyPrice: 49,
-    annualPrice: 39,
-    features: [
-      "Up to 25 active cases",
-      "1 user",
-      "Client management",
-      "Deadline tracking",
-      "Basic reporting",
-      "Email support",
-    ],
-    cta: "Start Free Trial",
-    href: "/register",
-    style: "outline" as const,
-    highlighted: false,
-  },
-  {
-    name: "Professional",
-    description: "For growing firms",
-    monthlyPrice: 99,
-    annualPrice: 79,
-    features: [
-      "Unlimited cases",
-      "Up to 10 users",
-      "Everything in Starter",
-      "Billing & invoicing",
-      "Client intake forms",
-      "Priority support",
-      "Custom case numbering",
-    ],
-    cta: "Start Free Trial",
-    href: "/register",
-    style: "gold" as const,
-    highlighted: true,
-  },
-  {
-    name: "Enterprise",
-    description: "For large practices",
-    monthlyPrice: 199,
-    annualPrice: 159,
-    features: [
-      "Everything in Professional",
-      "Unlimited users",
-      "Advanced reporting",
-      "API access",
-      "Dedicated account manager",
-      "Custom integrations",
-      "SLA guarantee",
-    ],
-    cta: "Contact Sales",
-    href: "mailto:sales@linoscore.com",
-    style: "navy" as const,
-    highlighted: false,
-  },
-];
+// One simple per-seat plan — everything included.
+const plan = {
+  monthlyPrice: 29,
+  annualPrice: 23, // ~20% off
+  features: [
+    "AI intake, conflict checks & qualification",
+    "AI case summaries & document drafting",
+    "Unlimited cases & clients",
+    "Deadlines, billing & invoicing",
+    "Client portal — secure messaging & e-signature",
+    "Court filing via Linoscore Delivery",
+    "CSV import — start with intake only, no migration",
+    "Audit log, role-based access & data export",
+    "Email support",
+  ],
+};
 
 const faqs = [
   {
@@ -73,12 +31,12 @@ const faqs = [
     a: "Yes! Every plan includes a 14-day free trial with full access to all features. No credit card required to get started.",
   },
   {
-    q: "Can I switch plans?",
-    a: "Absolutely. Upgrade or downgrade anytime from your account settings. Changes take effect immediately and billing is prorated.",
+    q: "Can I add or remove users?",
+    a: "Anytime. Add a seat when someone joins or remove one when they leave, right from your account settings. Billing is prorated, so you only pay for the seats you use.",
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit cards including Visa, Mastercard, and American Express. Invoicing is available for annual Enterprise plans.",
+    a: "We accept all major credit cards including Visa, Mastercard, and American Express. Invoicing is available for annual plans.",
   },
   {
     q: "Do you offer discounts for annual billing?",
@@ -212,196 +170,78 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* ── Pricing Cards ── */}
+      {/* ── Single plan card ── */}
       <section
         style={{
-          maxWidth: 1140,
+          maxWidth: 460,
           margin: "0 auto",
-          padding: "0 1.5rem 5rem",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "1.5rem",
-          alignItems: "center",
+          padding: "0 1.5rem 2rem",
         }}
       >
-        {tiers.map((tier) => {
-          const price = annual ? tier.annualPrice : tier.monthlyPrice;
+        <div
+          className="lf-card"
+          style={{
+            position: "relative",
+            display: "flex",
+            flexDirection: "column",
+            padding: "2.5rem 2rem",
+            borderColor: "var(--gold)",
+            borderWidth: 2,
+          }}
+        >
+          <span
+            className="lf-badge lf-badge-gold"
+            style={{
+              position: "absolute", top: "-0.75rem", left: "50%", transform: "translateX(-50%)",
+              display: "inline-flex", alignItems: "center", gap: 4, padding: "0.25rem 0.875rem", fontSize: "0.75rem",
+            }}
+          >
+            <Sparkles style={{ width: 12, height: 12 }} />
+            Everything included
+          </span>
 
-          return (
-            <div
-              key={tier.name}
-              className="lf-card"
-              style={{
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                padding: tier.highlighted ? "2.5rem 2rem" : "2rem",
-                borderColor: tier.highlighted ? "var(--gold)" : undefined,
-                borderWidth: tier.highlighted ? 2 : undefined,
-                transform: tier.highlighted ? "scale(1.04)" : undefined,
-                zIndex: tier.highlighted ? 1 : 0,
-              }}
-            >
-              {/* Most Popular badge */}
-              {tier.highlighted && (
-                <span
-                  className="lf-badge lf-badge-gold"
-                  style={{
-                    position: "absolute",
-                    top: "-0.75rem",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    padding: "0.25rem 0.875rem",
-                    fontSize: "0.75rem",
-                  }}
-                >
-                  <Sparkles style={{ width: 12, height: 12 }} />
-                  Most Popular
-                </span>
-              )}
+          <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.25rem", fontWeight: 700, color: "var(--navy)", marginBottom: "0.25rem" }}>
+            Linoscore Legal
+          </h3>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+            One plan. Every feature. Add a seat for each team member.
+          </p>
 
-              {/* Tier heading */}
-              <h3
-                style={{
-                  fontFamily: "var(--font-heading)",
-                  fontSize: "1.25rem",
-                  fontWeight: 700,
-                  color: "var(--navy)",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {tier.name}
-              </h3>
-              <p
-                style={{
-                  fontFamily: "var(--font-body)",
-                  fontSize: "0.875rem",
-                  color: "var(--text-secondary)",
-                  marginBottom: "1.5rem",
-                }}
-              >
-                {tier.description}
-              </p>
+          {/* Price */}
+          <div style={{ marginBottom: "1.5rem" }}>
+            <span style={{ fontFamily: "var(--font-heading)", fontSize: "2.75rem", fontWeight: 700, color: "var(--navy)", lineHeight: 1 }}>
+              ${annual ? plan.annualPrice : plan.monthlyPrice}
+            </span>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)", marginLeft: 4 }}>
+              /user /mo
+            </span>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: 4 }}>
+              {annual ? `billed annually · $${plan.monthlyPrice}/user month-to-month` : "billed monthly · save 20% annually"}
+            </p>
+          </div>
 
-              {/* Price */}
-              <div style={{ marginBottom: "1.5rem" }}>
-                <span
-                  style={{
-                    fontFamily: "var(--font-heading)",
-                    fontSize: "2.75rem",
-                    fontWeight: 700,
-                    color: "var(--navy)",
-                    lineHeight: 1,
-                  }}
-                >
-                  ${price}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "var(--font-body)",
-                    fontSize: "0.9375rem",
-                    color: "var(--text-muted)",
-                    marginLeft: 4,
-                  }}
-                >
-                  /mo
-                </span>
-                {annual && (
-                  <p
-                    style={{
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.8125rem",
-                      color: "var(--text-muted)",
-                      marginTop: 4,
-                    }}
-                  >
-                    billed annually
-                  </p>
-                )}
-              </div>
+          {/* Features */}
+          <ul style={{ listStyle: "none", padding: 0, margin: "0 0 2rem", display: "flex", flexDirection: "column", gap: "0.75rem", flex: 1 }}>
+            {plan.features.map((f) => (
+              <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-primary)" }}>
+                <Check style={{ width: 18, height: 18, color: "var(--success)", flexShrink: 0, marginTop: 2 }} />
+                {f}
+              </li>
+            ))}
+          </ul>
 
-              {/* Features */}
-              <ul
-                style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: "0 0 2rem",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.75rem",
-                  flex: 1,
-                }}
-              >
-                {tier.features.map((f) => (
-                  <li
-                    key={f}
-                    style={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      gap: "0.5rem",
-                      fontFamily: "var(--font-body)",
-                      fontSize: "0.9375rem",
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    <Check
-                      style={{
-                        width: 18,
-                        height: 18,
-                        color: "var(--success)",
-                        flexShrink: 0,
-                        marginTop: 2,
-                      }}
-                    />
-                    {f}
-                  </li>
-                ))}
-              </ul>
+          <Link href="/register" className="lf-btn lf-btn-gold" style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.9375rem", justifyContent: "center" }}>
+            Start free trial
+          </Link>
+          <p style={{ textAlign: "center", fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "0.75rem" }}>
+            14 days free · no credit card required
+          </p>
+        </div>
 
-              {/* CTA */}
-              {tier.href.startsWith("mailto:") ? (
-                <a
-                  href={tier.href}
-                  className={`lf-btn ${
-                    tier.style === "gold"
-                      ? "lf-btn-gold"
-                      : tier.style === "navy"
-                      ? "lf-btn-primary"
-                      : "lf-btn-outline"
-                  }`}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem 1rem",
-                    fontSize: "0.9375rem",
-                  }}
-                >
-                  {tier.cta}
-                </a>
-              ) : (
-                <Link
-                  href={tier.href}
-                  className={`lf-btn ${
-                    tier.style === "gold"
-                      ? "lf-btn-gold"
-                      : tier.style === "navy"
-                      ? "lf-btn-primary"
-                      : "lf-btn-outline"
-                  }`}
-                  style={{
-                    width: "100%",
-                    padding: "0.75rem 1rem",
-                    fontSize: "0.9375rem",
-                  }}
-                >
-                  {tier.cta}
-                </Link>
-              )}
-            </div>
-          );
-        })}
+        <p style={{ textAlign: "center", fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "1.5rem" }}>
+          Larger team or need volume pricing?{" "}
+          <a href="mailto:sales@linoscore.com" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Talk to us</a>.
+        </p>
       </section>
 
       {/* ── FAQ ── */}
