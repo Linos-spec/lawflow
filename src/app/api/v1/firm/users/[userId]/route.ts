@@ -38,3 +38,33 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   });
   return successResponse({ role });
 }
+
+/** Remove a team member (frees the seat) — admin only, self/last-admin protected. */
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  const ctx = await getOrgFirmIds();
+  if (!ctx || !ctx.firmId) return unauthorizedResponse();
+  if (!can(ctx.role, "team.manage")) return errorResponse("Only an admin can remove users.", 403);
+
+  const { userId } = await params;
+  if (userId === ctx.userId) return errorResponse("You can't remove your own account.", 400);
+
+  const target = await prisma.user.findFirst({ where: { id: userId, firmId: ctx.firmId }, select: { id: true, name: true, role: true } });
+  if (!target) return errorResponse("Team member not found", 404);
+
+  if (target.role === "ADMIN") {
+    const admins = await prisma.user.count({ where: { firmId: ctx.firmId, role: "ADMIN" } });
+    if (admins <= 1) return errorResponse("Your firm must keep at least one admin.", 400);
+  }
+
+  // Don't orphan recorded work — block if the user has logged time.
+  const timeEntries = await prisma.timeEntry.count({ where: { userId } });
+  if (timeEntries > 0) return errorResponse("This user has recorded time entries. Reassign or keep the account to preserve billing history.", 400);
+
+  await prisma.user.delete({ where: { id: userId } });
+  await logAudit({
+    firmId: ctx.firmId, userId: ctx.userId, action: "user.remove", category: "access",
+    entity: "User", entityId: userId, entityLabel: target.name,
+    details: `Removed ${target.name} (${ROLE_LABELS[target.role as Role]})`,
+  });
+  return successResponse({ removed: true });
+}
