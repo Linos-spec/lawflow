@@ -9,17 +9,20 @@ import { prisma } from "@/lib/prisma";
  *   STRIPE_WEBHOOK_SECRET — whsec_… for the webhook route
  */
 
-export const SEAT_PRICE_ID = process.env.STRIPE_PRICE_ID || "";
+// Trim so an accidentally pasted space/newline/quote doesn't silently disable billing.
+const clean = (v?: string) => (v || "").trim().replace(/^["']|["']$/g, "");
+
+export const SEAT_PRICE_ID = clean(process.env.STRIPE_PRICE_ID);
 export const SEAT_PRICE_USD = 29;
 
 export function stripeConfigured(): boolean {
-  const k = process.env.STRIPE_SECRET_KEY;
-  return !!k && k.startsWith("sk_") && !!SEAT_PRICE_ID;
+  const k = clean(process.env.STRIPE_SECRET_KEY);
+  return k.startsWith("sk_") && SEAT_PRICE_ID.startsWith("price_");
 }
 
 let _stripe: Stripe | null = null;
 export function stripe(): Stripe {
-  if (!_stripe) _stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
+  if (!_stripe) _stripe = new Stripe(clean(process.env.STRIPE_SECRET_KEY));
   return _stripe;
 }
 
