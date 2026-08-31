@@ -17,7 +17,8 @@ export const SEAT_PRICE_USD = 29;
 
 export function stripeConfigured(): boolean {
   const k = clean(process.env.STRIPE_SECRET_KEY);
-  return k.startsWith("sk_") && SEAT_PRICE_ID.startsWith("price_");
+  // Accept standard secret keys (sk_) and restricted keys (rk_); reject pk_ (publishable).
+  return (k.startsWith("sk_") || k.startsWith("rk_")) && SEAT_PRICE_ID.startsWith("price_");
 }
 
 let _stripe: Stripe | null = null;
