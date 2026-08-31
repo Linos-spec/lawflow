@@ -64,7 +64,9 @@ export const config = {
      * - /_next/static (static files)
      * - /_next/image (image optimization)
      * - /favicon.ico, /sitemap.xml, /robots.txt (metadata files)
+     * - PWA assets: /manifest.webmanifest, /sw.js, /offline.html, /icons/*
+     *   (must be publicly fetchable or the app can't be installed)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|manifest.webmanifest|sw.js|offline.html|icons/).*)",
   ],
 };
