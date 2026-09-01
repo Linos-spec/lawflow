@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { createDocument } from "@/lib/document-pipeline";
+import { logAudit } from "@/lib/audit";
 import { MAX_FILE_BYTES } from "@/lib/storage";
 import type { Prisma } from "@prisma/client";
 
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
       clientId,
       uploadedBy: ctx.userId,
     });
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "document.create", category: "data", entity: "Document", entityId: doc.id, entityLabel: doc.title, details: "Document uploaded" });
     return successResponse(doc, 201);
   } catch (error) {
     console.error("Document upload error:", error);

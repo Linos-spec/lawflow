@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { createDeliveryClient, DeliveryError, type ServiceLevel, type DeliveryPriority } from "@/lib/delivery-client";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -105,6 +106,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         lastSyncedAt: new Date(),
       },
     });
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "delivery.create", category: "data", entity: "DeliveryRequest", entityId: record.id, entityLabel: `${matter.caseNumber} → ${input.recipientName}`, details: `Courier dispatched${input.isCourtFiling ? " (court filing)" : ""} · tracking ${record.trackingNumber || "pending"}` });
     return successResponse(record, 201);
   } catch (err) {
     if (err instanceof DeliveryError) return errorResponse(`Delivery service: ${err.message}`, 502);

@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { verifyTotp, hashBackupCode } from "@/lib/mfa";
+import { logAudit } from "@/lib/audit";
 
 declare module "next-auth" {
   interface User {
@@ -42,10 +43,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
         token: { label: "Two-factor code", type: "text" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
+        const ip = ((request?.headers?.get("x-forwarded-for") || "").split(",")[0].trim()) || "unknown";
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
@@ -77,8 +79,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               });
             }
           }
-          if (!passed) return null;
+          if (!passed) {
+            if (user.firmId) await logAudit({ firmId: user.firmId, userId: user.id, action: "auth.login_failed", category: "auth", entity: "User", entityId: user.id, entityLabel: user.name, details: `Failed sign-in (incorrect two-factor code) from ${ip}` }).catch(() => {});
+            return null;
+          }
         }
+
+        if (user.firmId) await logAudit({ firmId: user.firmId, userId: user.id, action: "auth.login", category: "auth", entity: "User", entityId: user.id, entityLabel: user.name, details: `Signed in from ${ip}` }).catch(() => {});
 
         return {
           id: user.id,

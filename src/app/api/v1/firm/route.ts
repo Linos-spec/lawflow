@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse, forbiddenResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
+import { logAudit } from "@/lib/audit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -45,6 +46,7 @@ export async function PATCH(request: NextRequest) {
       data: input,
       select: { id: true, name: true, aiModeEnabled: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true },
     });
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "firm.update", category: "config", entity: "Firm", entityId: ctx.firmId, entityLabel: firm.name, details: `Firm settings updated: ${Object.keys(input).join(", ")}` });
     return successResponse(firm);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") return errorResponse("Validation failed", 400);

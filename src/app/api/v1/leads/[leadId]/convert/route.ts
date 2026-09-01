@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { orchestrateConversion } from "@/lib/orchestrator";
+import { logAudit } from "@/lib/audit";
 
 export const runtime = "nodejs";
 
@@ -21,6 +22,8 @@ export async function POST(
 
   try {
     const result = await orchestrateConversion(leadId, ctx.firmId);
+    const r = result as { case?: { id?: string; caseNumber?: string; title?: string } };
+    await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "lead.convert", category: "data", entity: "Lead", entityId: leadId, entityLabel: r.case?.title || r.case?.caseNumber || "New matter", details: "Lead converted to a client + matter" });
     return successResponse(result, 201);
   } catch (err) {
     if (err && typeof err === "object" && "code" in err && "message" in err) {
