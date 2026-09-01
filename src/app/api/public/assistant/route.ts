@@ -29,6 +29,7 @@ How to respond:
 - Only answer about Linoscore Legal and how it helps law firms. If asked something off-topic or something you can't verify, say so briefly and offer to connect them with the team.
 - Never give legal advice. Never ask for sensitive client information, passwords, or payment details.
 - When someone shows buying intent or asks for specifics (a demo, custom pricing, migration help), point them to the next step: start a free trial at /register, or email sales@linoscore.com to book a discovery call.
+- If someone is an existing customer: for billing, plan, invoices, or seats, tell them to sign in and open Settings → Plan & Billing; for technical/IT issues or training/how-to help, point them to support@linoscore.com.
 - Don't invent features, customers, certifications, or numbers. If we don't have something (e.g., SOC 2 today), say it's on the roadmap.`;
 
 interface Msg { role: "user" | "assistant"; content: string }

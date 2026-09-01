@@ -5,24 +5,40 @@ import Link from "next/link";
 import { Bot, Send, X, Loader2, Sparkles } from "lucide-react";
 
 interface Msg { role: "user" | "assistant"; content: string }
+type Chip = { label: string; prompt?: string; reply?: string; next?: Chip[]; back?: boolean; link?: string; href?: string; primary?: boolean };
 
 const GREETING: Msg = {
   role: "assistant",
-  content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. Ask me anything about how Linoscore Legal helps your firm — intake, conflicts, deadlines, billing, court filing, pricing, or security.",
+  content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. How can I help you today — or ask me anything about the product.",
 };
 
-type Chip = { label: string; prompt?: string; link?: string; href?: string; primary?: boolean };
-const CHIPS: Chip[] = [
+// Customer (existing-firm) support branch
+const SUPPORT_MENU: Chip[] = [
+  { label: "Billing & account", reply: "For your plan, invoices, or seats: sign in and open Settings → Plan & Billing. Need a hand with billing? Email support@linoscore.com and we'll help." },
+  { label: "Technical / IT support", reply: "Sorry you're hitting a snag. Email support@linoscore.com with a short description (a screenshot helps) and our team will help you sort it out. If it's urgent, mention that in the subject." },
+  { label: "Training & how-to", reply: "Happy to help you get the most out of Linoscore Legal. Email support@linoscore.com to set up a walkthrough — or just ask me a how-to question right here." },
+  { label: "← Back", back: true },
+];
+
+// Prospect / exploring branch
+const EXPLORE_MENU: Chip[] = [
   { label: "What can the AI do?", prompt: "What can Linoscore Legal's AI actually do for my firm?" },
-  { label: "How's it different from MyCase?", prompt: "How is Linoscore Legal different from MyCase or Clio?" },
   { label: "See pricing", prompt: "How much does Linoscore Legal cost?" },
-  { label: "Book a discovery call", href: "mailto:sales@linoscore.com?subject=Linoscore%20Legal%20discovery%20call" },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email sales@linoscore.com to book a discovery call — a rep usually replies within one business day. Prefer to try it first? Start a free 14-day trial, no credit card required." },
   { label: "Start free trial", link: "/register", primary: true },
+  { label: "← Back", back: true },
+];
+
+const ROOT_MENU: Chip[] = [
+  { label: "I'm a customer (billing, IT & training)", next: SUPPORT_MENU },
+  { label: "I'm exploring Linoscore Legal", next: EXPLORE_MENU },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email sales@linoscore.com to book a discovery call — a rep usually replies within one business day. Or start a free 14-day trial (no credit card) to explore on your own." },
 ];
 
 export function SalesAssistant() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
+  const [menu, setMenu] = useState<Chip[]>(ROOT_MENU);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -48,8 +64,12 @@ export function SalesAssistant() {
     } finally { setBusy(false); }
   };
 
-  // Turn any /path or email the model returns into something readable (no links in text).
-  const renderText = (t: string) => t;
+  const clickChip = (c: Chip) => {
+    if (c.back) { setMenu(ROOT_MENU); return; }
+    if (c.next) { setMenu(c.next); return; }
+    if (c.reply) { setMessages((m) => [...m, { role: "user", content: c.label }, { role: "assistant", content: c.reply! }]); return; }
+    if (c.prompt) { send(c.prompt); return; }
+  };
 
   if (!open) {
     return (
@@ -83,7 +103,7 @@ export function SalesAssistant() {
               background: m.role === "user" ? "var(--navy)" : "var(--bg-base)",
               color: m.role === "user" ? "#fff" : "var(--navy)",
               border: m.role === "user" ? "none" : "1px solid var(--border-default)",
-            }}>{renderText(m.content)}</div>
+            }}>{m.content}</div>
           </div>
         ))}
         {busy && (
@@ -91,19 +111,19 @@ export function SalesAssistant() {
             <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite", color: "var(--text-muted)" }} />
           </div>
         )}
-
-        {/* Quick chips (only before the first user message) */}
-        {messages.length === 1 && !busy && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "0.25rem" }}>
-            {CHIPS.map((c) => {
-              const style = c.primary ? { background: "var(--gold)", color: "#422006", borderColor: "var(--gold)", fontWeight: 700 } : undefined;
-              if (c.prompt) return <button key={c.label} onClick={() => send(c.prompt!)} className="lf-sales-chip" style={style}>{c.label}</button>;
-              if (c.link) return <Link key={c.label} href={c.link} className="lf-sales-chip" style={style}>{c.primary && <Sparkles style={{ width: 12, height: 12 }} />}{c.label}</Link>;
-              return <a key={c.label} href={c.href} className="lf-sales-chip" style={style}>{c.label}</a>;
-            })}
-          </div>
-        )}
       </div>
+
+      {/* Router chips (persistent) */}
+      {!busy && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, padding: "0 0.9rem 0.6rem" }}>
+          {menu.map((c) => {
+            const style = c.primary ? { background: "var(--gold)", color: "#422006", borderColor: "var(--gold)", fontWeight: 700 } : undefined;
+            if (c.link) return <Link key={c.label} href={c.link} className="lf-sales-chip" style={style}>{c.primary && <Sparkles style={{ width: 12, height: 12 }} />}{c.label}</Link>;
+            if (c.href) return <a key={c.label} href={c.href} className="lf-sales-chip" style={style}>{c.label}</a>;
+            return <button key={c.label} onClick={() => clickChip(c)} className="lf-sales-chip" style={style}>{c.label}</button>;
+          })}
+        </div>
+      )}
 
       {/* Input */}
       <form onSubmit={(e) => { e.preventDefault(); send(input); }} style={{ display: "flex", gap: 8, padding: "0.75rem 0.9rem", borderTop: "1px solid var(--border-light)" }}>
