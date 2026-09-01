@@ -1,0 +1,120 @@
+"use client";
+
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { Bot, Send, X, Loader2, Sparkles } from "lucide-react";
+
+interface Msg { role: "user" | "assistant"; content: string }
+
+const GREETING: Msg = {
+  role: "assistant",
+  content: "Hi there! I'm Lina, the Linoscore Legal AI assistant. Ask me anything about how Linoscore Legal helps your firm — intake, conflicts, deadlines, billing, court filing, pricing, or security.",
+};
+
+const CHIPS = [
+  { label: "How does it work?", prompt: "How does Linoscore Legal work?" },
+  { label: "Pricing", prompt: "How much does Linoscore Legal cost?" },
+  { label: "Is my client data safe?", prompt: "How do you keep privileged client data secure?" },
+];
+
+export function SalesAssistant() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<Msg[]>([GREETING]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const threadRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => { threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight, behavior: "smooth" }); }, [messages, busy, open]);
+
+  const send = async (text: string) => {
+    const content = text.trim();
+    if (!content || busy) return;
+    const next = [...messages, { role: "user" as const, content }];
+    setMessages(next);
+    setInput("");
+    setBusy(true);
+    try {
+      const res = await fetch("/api/public/assistant", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+      });
+      const j = await res.json().catch(() => ({}));
+      setMessages((m) => [...m, { role: "assistant", content: j.reply || "Sorry, could you try again?" }]);
+    } catch {
+      setMessages((m) => [...m, { role: "assistant", content: "I hit a snag. Email sales@linoscore.com or start a free trial." }]);
+    } finally { setBusy(false); }
+  };
+
+  // Turn any /path or email the model returns into something readable (no links in text).
+  const renderText = (t: string) => t;
+
+  if (!open) {
+    return (
+      <button onClick={() => setOpen(true)} aria-label="Chat with Lina, the Linoscore Legal assistant" className="lf-sales-fab">
+        <Bot style={{ width: 22, height: 22 }} />
+        <span className="lf-sales-fab-label">Ask Lina</span>
+      </button>
+    );
+  }
+
+  return (
+    <div className="lf-sales-panel" role="dialog" aria-label="Linoscore Legal assistant">
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "0.9rem 1rem", borderBottom: "1px solid var(--border-light)" }}>
+        <div style={{ width: 38, height: 38, borderRadius: "50%", background: "var(--gold)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Bot style={{ width: 20, height: 20, color: "#fff" }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, color: "var(--navy)", fontFamily: "var(--font-heading)" }}>Lina</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Linoscore Legal AI assistant</div>
+        </div>
+        <button onClick={() => setOpen(false)} aria-label="Close" className="lf-icon-btn"><X style={{ width: 18, height: 18 }} /></button>
+      </div>
+
+      {/* Thread */}
+      <div ref={threadRef} style={{ flex: 1, overflowY: "auto", padding: "1rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ alignSelf: m.role === "user" ? "flex-end" : "flex-start", maxWidth: "88%" }}>
+            <div style={{
+              padding: "0.55rem 0.75rem", borderRadius: 14, fontSize: "0.9rem", lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word",
+              background: m.role === "user" ? "var(--navy)" : "var(--bg-base)",
+              color: m.role === "user" ? "#fff" : "var(--navy)",
+              border: m.role === "user" ? "none" : "1px solid var(--border-default)",
+            }}>{renderText(m.content)}</div>
+          </div>
+        ))}
+        {busy && (
+          <div style={{ alignSelf: "flex-start", padding: "0.55rem 0.75rem", borderRadius: 14, background: "var(--bg-base)", border: "1px solid var(--border-default)" }}>
+            <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite", color: "var(--text-muted)" }} />
+          </div>
+        )}
+
+        {/* Quick chips (only before the first user message) */}
+        {messages.length === 1 && !busy && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "0.25rem" }}>
+            {CHIPS.map((c) => (
+              <button key={c.label} onClick={() => send(c.prompt)} className="lf-sales-chip">{c.label}</button>
+            ))}
+            <Link href="/register" className="lf-sales-chip" style={{ background: "var(--gold)", color: "#422006", borderColor: "var(--gold)", fontWeight: 700 }}>
+              <Sparkles style={{ width: 12, height: 12 }} /> Start free trial
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Input */}
+      <form onSubmit={(e) => { e.preventDefault(); send(input); }} style={{ display: "flex", gap: 8, padding: "0.75rem 0.9rem", borderTop: "1px solid var(--border-light)" }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask a question…" aria-label="Ask a question"
+          style={{ flex: 1, padding: "0.55rem 0.7rem", borderRadius: 10, border: "1px solid var(--border-default)", fontSize: "0.9rem", background: "var(--bg-base)", color: "var(--navy)" }} />
+        <button type="submit" disabled={busy || !input.trim()} className="lf-btn lf-btn-gold" style={{ padding: "0.55rem 0.7rem" }} aria-label="Send">
+          <Send style={{ width: 16, height: 16 }} />
+        </button>
+      </form>
+
+      <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", padding: "0 0.9rem 0.75rem", lineHeight: 1.4 }}>
+        Chats may be recorded by Linos LLC and its service providers. Don&apos;t share confidential client details here.{" "}
+        <Link href="/legal/privacy" style={{ color: "var(--text-muted)", textDecoration: "underline" }}>Privacy Policy</Link>
+      </p>
+    </div>
+  );
+}

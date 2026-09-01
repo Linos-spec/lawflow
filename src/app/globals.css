@@ -901,3 +901,35 @@
     animation-iteration-count: infinite !important;
   }
 }
+
+/* ── Marketing sales assistant ("Lina") ─────────────────────────── */
+.lf-sales-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 60;
+  height: 52px; padding: 0 20px 0 16px; border-radius: 999px;
+  background: var(--gold); color: #422006; font-weight: 700; font-size: 0.95rem;
+  border: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+  box-shadow: var(--shadow-xl); transition: transform 0.15s, box-shadow 0.15s;
+}
+.lf-sales-fab:hover { transform: translateY(-1px); }
+.lf-sales-fab-label { white-space: nowrap; }
+.lf-sales-panel {
+  position: fixed; bottom: 24px; right: 24px; z-index: 60;
+  width: 380px; max-width: calc(100vw - 32px); height: 560px; max-height: calc(100vh - 48px);
+  background: var(--bg-card); border: 1px solid var(--border-default); border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(15,27,51,0.28); display: flex; flex-direction: column; overflow: hidden;
+  animation: lf-sales-in 0.18s ease;
+}
+@keyframes lf-sales-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.lf-sales-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 0.4rem 0.7rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+  background: var(--bg-base); color: var(--brand, var(--navy)); border: 1px solid var(--border-default);
+  cursor: pointer; text-decoration: none;
+}
+.lf-sales-chip:hover { border-color: var(--gold); }
+@media (max-width: 640px) {
+  .lf-sales-fab { padding: 0; width: 54px; height: 54px; justify-content: center; }
+  .lf-sales-fab-label { display: none; }
+  .lf-sales-panel { bottom: 12px; right: 12px; height: calc(100vh - 24px); }
+}
+@media (prefers-reduced-motion: reduce) { .lf-sales-panel { animation: none; } .lf-sales-fab { transition: none; } }
