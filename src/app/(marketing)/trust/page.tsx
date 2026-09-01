@@ -32,6 +32,12 @@ export default function TrustPage() {
           Linoscore Legal holds privileged client material, so this page answers the questions that matter: <b>who can access it, where it travels, how long it&apos;s retained, and what happens if something goes wrong.</b> Operated by {POLICY_ENTITY}, {POLICY_ENTITY_LOCATION}.
         </p>
 
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", marginTop: "1.25rem" }}>
+          <Link href="/trust/faq" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Security FAQ</Link>
+          <Link href="/trust/questionnaire" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Completed security questionnaire</Link>
+          <a href="mailto:security@linoscore.com" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Request a security call</a>
+        </div>
+
         <Section id="residency" title="Where your data lives">
           <p>Your firm&apos;s data — clients, matters, documents, and messages — is hosted on managed cloud infrastructure in the <b>United States (New York)</b>. The application and its PostgreSQL database run in DigitalOcean&apos;s US-East region. <b>Client data does not leave the United States.</b></p>
         </Section>
