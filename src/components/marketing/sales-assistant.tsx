@@ -5,11 +5,11 @@ import Link from "next/link";
 import { Bot, Send, X, Loader2, Sparkles } from "lucide-react";
 
 interface Msg { role: "user" | "assistant"; content: string }
-type Chip = { label: string; prompt?: string; reply?: string; next?: Chip[]; back?: boolean; link?: string; href?: string; primary?: boolean };
+type Chip = { label: string; prompt?: string; reply?: string; next?: Chip[]; intro?: string; back?: boolean; link?: string; href?: string; primary?: boolean };
 
 const GREETING: Msg = {
   role: "assistant",
-  content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. How can I help you today — or ask me anything about the product.",
+  content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. 👋\n\nWhether you're exploring Linoscore Legal or already a customer, I can point you in the right direction — pick an option below, or just ask me anything.",
 };
 
 // Customer (existing-firm) support branch
@@ -30,8 +30,8 @@ const EXPLORE_MENU: Chip[] = [
 ];
 
 const ROOT_MENU: Chip[] = [
-  { label: "I'm a customer (billing, IT & training)", next: SUPPORT_MENU },
-  { label: "I'm exploring Linoscore Legal", next: EXPLORE_MENU },
+  { label: "I'm a customer (billing, IT & training)", next: SUPPORT_MENU, intro: "Happy to help — what do you need a hand with?" },
+  { label: "I'm exploring Linoscore Legal", next: EXPLORE_MENU, intro: "Great — what would you like to know?" },
   { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email sales@linoscore.com to book a discovery call — a rep usually replies within one business day. Or start a free 14-day trial (no credit card) to explore on your own." },
 ];
 
@@ -66,7 +66,11 @@ export function SalesAssistant() {
 
   const clickChip = (c: Chip) => {
     if (c.back) { setMenu(ROOT_MENU); return; }
-    if (c.next) { setMenu(c.next); return; }
+    if (c.next) {
+      setMessages((m) => [...m, { role: "user", content: c.label }, ...(c.intro ? [{ role: "assistant" as const, content: c.intro }] : [])]);
+      setMenu(c.next);
+      return;
+    }
     if (c.reply) { setMessages((m) => [...m, { role: "user", content: c.label }, { role: "assistant", content: c.reply! }]); return; }
     if (c.prompt) { send(c.prompt); return; }
   };
@@ -89,7 +93,9 @@ export function SalesAssistant() {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 700, color: "var(--navy)", fontFamily: "var(--font-heading)" }}>Wilson</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Linoscore Legal AI assistant</div>
+          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--success)", flexShrink: 0 }} aria-hidden /> Online · Linoscore Legal AI assistant
+          </div>
         </div>
         <button onClick={() => setOpen(false)} aria-label="Close" className="lf-icon-btn"><X style={{ width: 18, height: 18 }} /></button>
       </div>
