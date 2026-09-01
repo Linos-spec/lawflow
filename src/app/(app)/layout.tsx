@@ -3,11 +3,13 @@ import { FirmProvider } from "@/components/providers/firm-provider";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { AiChatWrapper } from "@/components/ai/chat-wrapper";
 import { BillingGate } from "@/components/billing/billing-gate";
+import { MfaGate } from "@/components/mfa/mfa-gate";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <FirmProvider>
+        <MfaGate>
         <BillingGate>
           <div className="flex h-screen" style={{ background: "var(--bg-base)" }}>
             <AppSidebar />
@@ -24,6 +26,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <AiChatWrapper />
           </div>
         </BillingGate>
+        </MfaGate>
       </FirmProvider>
     </SessionProvider>
   );

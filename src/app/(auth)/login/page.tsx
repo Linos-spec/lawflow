@@ -21,27 +21,39 @@ function LoginForm() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
+  const [mfaStep, setMfaStep] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const finish = (result: { error?: string } | undefined, badMsg: string) => {
+    if (result?.error) { setError(badMsg); setLoading(false); }
+    else { router.push("/dashboard"); router.refresh(); }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("Invalid email or password");
-      setLoading(false);
-    } else {
-      router.push("/dashboard");
-      router.refresh();
+    // Step 2: submit the 2FA code.
+    if (mfaStep) {
+      const result = await signIn("credentials", { email, password, token, redirect: false });
+      finish(result, "That code didn't match. Try again.");
+      return;
     }
+
+    // Step 1: verify password and check whether a second factor is required.
+    const pc = await fetch("/api/v1/auth/precheck", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    }).then((r) => r.json()).catch(() => ({ valid: false }));
+
+    if (!pc.valid) { setError("Invalid email or password"); setLoading(false); return; }
+    if (pc.mfaRequired) { setMfaStep(true); setLoading(false); return; }
+
+    const result = await signIn("credentials", { email, password, redirect: false });
+    finish(result, "Invalid email or password");
   };
 
   return (
@@ -139,53 +151,44 @@ function LoginForm() {
               </div>
             )}
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="lf-label">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="lf-input"
-                placeholder="you@lawfirm.com"
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="lf-label">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="lf-input"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
+            {!mfaStep ? (
+              <>
+                {/* Email */}
+                <div>
+                  <label htmlFor="email" className="lf-label">Email</label>
+                  <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="lf-input" placeholder="you@lawfirm.com" required />
+                </div>
+                {/* Password */}
+                <div>
+                  <label htmlFor="password" className="lf-label">Password</label>
+                  <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="lf-input" placeholder="Enter your password" required />
+                </div>
+              </>
+            ) : (
+              /* Step 2 — two-factor code */
+              <div>
+                <label htmlFor="token" className="lf-label">Two-factor code</label>
+                <input
+                  id="token" value={token} onChange={(e) => setToken(e.target.value.replace(/\s/g, "").slice(0, 10))}
+                  className="lf-input" placeholder="6-digit code" inputMode="numeric" autoFocus autoComplete="one-time-code"
+                  style={{ textAlign: "center", letterSpacing: "0.3em", fontSize: "1.1rem" }} required
+                />
+                <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.4rem" }}>
+                  Enter the code from your authenticator app, or a backup code.{" "}
+                  <button type="button" onClick={() => { setMfaStep(false); setToken(""); setError(""); }} style={{ background: "none", border: "none", color: "var(--gold)", cursor: "pointer", fontWeight: 600, padding: 0 }}>Use a different account</button>
+                </p>
+              </div>
+            )}
 
             {/* Submit */}
             <button
               type="submit"
               disabled={loading}
               className="lf-btn lf-btn-gold"
-              style={{
-                width: "100%",
-                padding: "0.75rem 1rem",
-                fontSize: "0.9375rem",
-                opacity: loading ? 0.6 : 1,
-                pointerEvents: loading ? "none" : "auto",
-              }}
+              style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.9375rem", opacity: loading ? 0.6 : 1, pointerEvents: loading ? "none" : "auto" }}
             >
               {loading && <Loader2 style={{ width: 18, height: 18, animation: "spin 1s linear infinite" }} />}
-              Sign In
+              {mfaStep ? "Verify code" : "Sign In"}
             </button>
           </form>
 

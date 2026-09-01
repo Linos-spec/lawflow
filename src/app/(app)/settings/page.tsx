@@ -8,6 +8,7 @@ import { DeliveryConnectionCard } from "@/components/delivery/delivery-connectio
 import { AuditLogViewer } from "@/components/settings/audit-log-viewer";
 import { TeamRoles } from "@/components/settings/team-roles";
 import { BillingPanel } from "@/components/settings/billing-panel";
+import { TwoFactorCard } from "@/components/settings/two-factor";
 import {
   User,
   Users,
@@ -80,9 +81,6 @@ export default function SettingsPage() {
     invoicePaid: false,
     weeklyDigest: true,
   });
-
-  // 2FA toggle
-  const [twoFA, setTwoFA] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -310,30 +308,7 @@ export default function SettingsPage() {
             </div>
 
             {/* 2FA */}
-            <div className="lf-card">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3
-                    className="text-base font-bold"
-                    style={{ fontFamily: "var(--font-heading)", color: "var(--navy)" }}
-                  >
-                    Two-Factor Authentication
-                  </h3>
-                  <p className="text-xs mt-1" style={{ color: "var(--text-secondary)" }}>
-                    Add an extra layer of security to your account
-                  </p>
-                </div>
-                <Toggle active={twoFA} onToggle={() => setTwoFA(!twoFA)} />
-              </div>
-              {twoFA && (
-                <div
-                  className="mt-4 rounded-lg p-3 text-sm"
-                  style={{ background: "var(--success-bg)", color: "var(--success)" }}
-                >
-                  Two-factor authentication is enabled. You&apos;ll be prompted for a code on each sign-in.
-                </div>
-              )}
-            </div>
+            <TwoFactorCard />
           </div>
         )}
 
