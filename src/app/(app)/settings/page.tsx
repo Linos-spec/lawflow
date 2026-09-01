@@ -9,6 +9,7 @@ import { AuditLogViewer } from "@/components/settings/audit-log-viewer";
 import { TeamRoles } from "@/components/settings/team-roles";
 import { BillingPanel } from "@/components/settings/billing-panel";
 import { TwoFactorCard } from "@/components/settings/two-factor";
+import { DataAccountCard } from "@/components/settings/data-account";
 import {
   User,
   Users,
@@ -309,6 +310,9 @@ export default function SettingsPage() {
 
             {/* 2FA */}
             <TwoFactorCard />
+
+            {/* Data export & account closure (admin) */}
+            {isAdmin && <DataAccountCard />}
           </div>
         )}
 

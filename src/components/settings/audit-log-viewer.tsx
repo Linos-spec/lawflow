@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Loader2, Search, ScrollText } from "lucide-react";
+import { Loader2, Search, ScrollText, Download } from "lucide-react";
 
 interface AuditEntry {
   id: string; action: string; category: string; entity: string;
@@ -45,9 +45,14 @@ export function AuditLogViewer() {
 
   return (
     <div className="lf-card">
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: "0.25rem" }}>
-        <ScrollText style={{ width: 18, height: 18, color: "var(--navy)" }} />
-        <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1.05rem", fontWeight: 700, color: "var(--navy)" }}>Audit log</h2>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: "0.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <ScrollText style={{ width: 18, height: 18, color: "var(--navy)" }} />
+          <h2 style={{ fontFamily: "var(--font-heading)", fontSize: "1.05rem", fontWeight: 700, color: "var(--navy)" }}>Audit log</h2>
+        </div>
+        <a href="/api/v1/audit-logs/export" className="lf-btn lf-btn-outline" style={{ padding: "0.4rem 0.75rem", fontSize: "0.82rem" }}>
+          <Download style={{ width: 14, height: 14 }} /> Export CSV
+        </a>
       </div>
       <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "1rem" }}>
         Immutable record of activity across your firm — who did what, and when. Read-only.
