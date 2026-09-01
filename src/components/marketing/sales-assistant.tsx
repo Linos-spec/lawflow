@@ -8,7 +8,7 @@ interface Msg { role: "user" | "assistant"; content: string }
 
 const GREETING: Msg = {
   role: "assistant",
-  content: "Hi there! I'm Lina, the Linoscore Legal AI assistant. Ask me anything about how Linoscore Legal helps your firm — intake, conflicts, deadlines, billing, court filing, pricing, or security.",
+  content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. Ask me anything about how Linoscore Legal helps your firm — intake, conflicts, deadlines, billing, court filing, pricing, or security.",
 };
 
 const CHIPS = [
@@ -50,9 +50,9 @@ export function SalesAssistant() {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} aria-label="Chat with Lina, the Linoscore Legal assistant" className="lf-sales-fab">
+      <button onClick={() => setOpen(true)} aria-label="Chat with Wilson, the Linoscore Legal assistant" className="lf-sales-fab">
         <Bot style={{ width: 22, height: 22 }} />
-        <span className="lf-sales-fab-label">Ask Lina</span>
+        <span className="lf-sales-fab-label">Ask Wilson</span>
       </button>
     );
   }
@@ -65,7 +65,7 @@ export function SalesAssistant() {
           <Bot style={{ width: 20, height: 20, color: "#fff" }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 700, color: "var(--navy)", fontFamily: "var(--font-heading)" }}>Lina</div>
+          <div style={{ fontWeight: 700, color: "var(--navy)", fontFamily: "var(--font-heading)" }}>Wilson</div>
           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Linoscore Legal AI assistant</div>
         </div>
         <button onClick={() => setOpen(false)} aria-label="Close" className="lf-icon-btn"><X style={{ width: 18, height: 18 }} /></button>

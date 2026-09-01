@@ -4,13 +4,13 @@ import { anthropicComplete, aiConfigured } from "@/lib/ai-rest";
 export const runtime = "nodejs";
 
 /**
- * Public marketing / discovery assistant ("Lina"). Answers prospective-customer
+ * Public marketing / discovery assistant ("Wilson"). Answers prospective-customer
  * questions about Linoscore Legal and routes them to a trial, demo, or sales.
  * Unauthenticated and product-scoped — it never touches firm data. (MVP: add
  * per-IP rate limiting before heavy production use — it spends AI tokens.)
  */
 
-const SYSTEM = `You are Lina, the friendly AI assistant on the marketing website of Linoscore Legal.
+const SYSTEM = `You are Wilson, the friendly AI assistant on the marketing website of Linoscore Legal.
 Linoscore Legal is AI-powered legal practice-management software for law firms (focused on immigration and small firms), operated by Linos LLC (Allen, Texas). It's positioned as "the AI employee for law firms."
 
 What it does:
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Flatten the short transcript into a single prompt for the assistant's next turn.
-  const transcript = messages.map((m) => `${m.role === "user" ? "Prospect" : "Lina"}: ${m.content}`).join("\n");
-  const prompt = `${transcript}\nLina:`;
+  const transcript = messages.map((m) => `${m.role === "user" ? "Prospect" : "Wilson"}: ${m.content}`).join("\n");
+  const prompt = `${transcript}\nWilson:`;
 
   try {
     const reply = await anthropicComplete({ system: SYSTEM, prompt, maxTokens: 400 });
