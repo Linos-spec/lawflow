@@ -11,10 +11,13 @@ const GREETING: Msg = {
   content: "Hi there! I'm Wilson, the Linoscore Legal AI assistant. Ask me anything about how Linoscore Legal helps your firm — intake, conflicts, deadlines, billing, court filing, pricing, or security.",
 };
 
-const CHIPS = [
-  { label: "How does it work?", prompt: "How does Linoscore Legal work?" },
-  { label: "Pricing", prompt: "How much does Linoscore Legal cost?" },
-  { label: "Is my client data safe?", prompt: "How do you keep privileged client data secure?" },
+type Chip = { label: string; prompt?: string; link?: string; href?: string; primary?: boolean };
+const CHIPS: Chip[] = [
+  { label: "What can the AI do?", prompt: "What can Linoscore Legal's AI actually do for my firm?" },
+  { label: "How's it different from MyCase?", prompt: "How is Linoscore Legal different from MyCase or Clio?" },
+  { label: "See pricing", prompt: "How much does Linoscore Legal cost?" },
+  { label: "Book a discovery call", href: "mailto:sales@linoscore.com?subject=Linoscore%20Legal%20discovery%20call" },
+  { label: "Start free trial", link: "/register", primary: true },
 ];
 
 export function SalesAssistant() {
@@ -92,12 +95,12 @@ export function SalesAssistant() {
         {/* Quick chips (only before the first user message) */}
         {messages.length === 1 && !busy && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: "0.25rem" }}>
-            {CHIPS.map((c) => (
-              <button key={c.label} onClick={() => send(c.prompt)} className="lf-sales-chip">{c.label}</button>
-            ))}
-            <Link href="/register" className="lf-sales-chip" style={{ background: "var(--gold)", color: "#422006", borderColor: "var(--gold)", fontWeight: 700 }}>
-              <Sparkles style={{ width: 12, height: 12 }} /> Start free trial
-            </Link>
+            {CHIPS.map((c) => {
+              const style = c.primary ? { background: "var(--gold)", color: "#422006", borderColor: "var(--gold)", fontWeight: 700 } : undefined;
+              if (c.prompt) return <button key={c.label} onClick={() => send(c.prompt!)} className="lf-sales-chip" style={style}>{c.label}</button>;
+              if (c.link) return <Link key={c.label} href={c.link} className="lf-sales-chip" style={style}>{c.primary && <Sparkles style={{ width: 12, height: 12 }} />}{c.label}</Link>;
+              return <a key={c.label} href={c.href} className="lf-sales-chip" style={style}>{c.label}</a>;
+            })}
           </div>
         )}
       </div>
