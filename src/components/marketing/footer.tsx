@@ -99,7 +99,7 @@ export function MarketingFooter() {
                   className="text-xs"
                   style={{ color: "rgba(255, 255, 255, 0.35)" }}
                 >
-                  &copy; {currentYear} Linoscore Legal. All rights reserved.
+                  &copy; {currentYear} Linos LLC. Linoscore Legal is a product of Linos LLC. All rights reserved.
                 </p>
               </div>
 

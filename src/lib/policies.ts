@@ -1,9 +1,12 @@
 /**
- * Public policy content for Linoscore Legal. Governing-law clause and the formal
- * operating-entity/formation details are intentionally pending until confirmed.
+ * Public policy content for Linoscore Legal — the legal practice-management
+ * product operated by Linos LLC (a Texas limited liability company), Allen, Texas.
+ * "Linoscore Legal" is the Service; "Linos LLC" / "we" is the operating entity.
  */
 
 export const POLICY_EFFECTIVE_DATE = "August 25, 2026";
+export const POLICY_ENTITY = "Linos LLC";
+export const POLICY_ENTITY_LOCATION = "Allen, Texas";
 
 export type Policy = {
   slug: string;
@@ -20,7 +23,7 @@ export const POLICIES: Record<string, Policy> = {
     sections: [
       { heading: "Information we process", body: [
         "Account data you provide (name, email, firm details) to create and manage your account.",
-        "Client and matter data your firm enters, including the personal data of your clients and opposing parties. Your firm is the controller of this data; Linoscore Legal processes it on your instructions.",
+        "Client and matter data your firm enters, including the personal data of your clients and opposing parties. Your firm is the controller of this data; Linos LLC processes it on your instructions.",
         "Usage and device data (log data, IP address, browser type) collected automatically to operate and secure the service.",
       ]},
       { heading: "How we use information", body: [
@@ -46,7 +49,7 @@ export const POLICIES: Record<string, Policy> = {
     summary: "The agreement governing use of the Linoscore Legal platform.",
     sections: [
       { heading: "The service", body: [
-        "Linoscore Legal provides practice-management software. We grant you a non-exclusive, non-transferable right to use it in accordance with these terms and your subscription.",
+        "Linoscore Legal is a legal practice-management product operated by Linos LLC, a Texas limited liability company (“Linos”, “we”, “us”). We grant you a non-exclusive, non-transferable right to use it in accordance with these terms and your subscription.",
       ]},
       { heading: "Your responsibilities", body: [
         "You are responsible for the accuracy and lawfulness of the data you enter, for maintaining professional and ethical obligations to your clients, and for reviewing any AI-generated output before relying on it.",
@@ -56,7 +59,10 @@ export const POLICIES: Record<string, Policy> = {
         "Fees are described in your subscription. The agreement continues until terminated as described here. You can export your data before termination.",
       ]},
       { heading: "Disclaimers & liability", body: [
-        "The service is provided “as is.” To the fullest extent permitted by law, Linoscore Legal disclaims implied warranties and limits its liability for the service.",
+        "The service is provided “as is.” To the fullest extent permitted by law, Linos LLC disclaims implied warranties and limits its liability for the service.",
+      ]},
+      { heading: "Governing law & disputes", body: [
+        "These terms are governed by the laws of the State of Texas, without regard to its conflict-of-law rules. The exclusive venue for any dispute arising out of or relating to these terms or the service is the state and federal courts located in Collin County, Texas, and you and Linos LLC consent to the personal jurisdiction of those courts.",
       ]},
     ],
   },
@@ -66,7 +72,7 @@ export const POLICIES: Record<string, Policy> = {
     summary: "Terms for processing personal data on your firm's behalf (GDPR/CCPA).",
     sections: [
       { heading: "Roles", body: [
-        "Your firm is the controller (or business) of client personal data; Linoscore Legal is the processor (or service provider) and processes it only on your documented instructions.",
+        "Your firm is the controller (or business) of client personal data; Linos LLC (which operates Linoscore Legal) is the processor (or service provider) and processes it only on your documented instructions.",
       ]},
       { heading: "Processing details", body: [
         "Subject matter: provision of the practice-management service. Duration: the term of your subscription. Categories of data subjects: your clients, prospective clients, and opposing parties. Categories of data: contact details, matter information, documents, and billing records.",

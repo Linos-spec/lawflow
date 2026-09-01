@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { POLICIES, POLICY_ORDER, POLICY_EFFECTIVE_DATE } from "@/lib/policies";
+import { POLICIES, POLICY_ORDER, POLICY_EFFECTIVE_DATE, POLICY_ENTITY, POLICY_ENTITY_LOCATION } from "@/lib/policies";
 
 export function generateStaticParams() {
   return POLICY_ORDER.map((slug) => ({ slug }));
@@ -18,7 +18,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
 
         <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, color: "var(--navy)", marginTop: "1rem" }}>{policy.title}</h1>
         <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginTop: "0.35rem" }}>{policy.summary}</p>
-        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>Effective {POLICY_EFFECTIVE_DATE} · Operated by Linoscore Legal</p>
+        <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>Effective {POLICY_EFFECTIVE_DATE} · Operated by {POLICY_ENTITY} · {POLICY_ENTITY_LOCATION}</p>
 
         {/* Policy nav */}
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "1.5rem" }}>
@@ -45,7 +45,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
         </div>
 
         <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "3rem", borderTop: "1px solid var(--border-light)", paddingTop: "1rem" }}>
-          Questions? Contact privacy@linoscore.com. Linoscore provides software, not legal services.
+          Questions? Contact privacy@linoscore.com. {POLICY_ENTITY} provides software, not legal services.
         </p>
       </div>
     </div>
