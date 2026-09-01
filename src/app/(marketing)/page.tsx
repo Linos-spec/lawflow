@@ -653,7 +653,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div style={{ textAlign: "center", marginTop: "1.75rem" }}>
-            <Link href="/legal/security" style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--brand)", textDecoration: "none" }}>Read our Security Overview →</Link>
+            <Link href="/trust" style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--brand)", textDecoration: "none" }}>Visit our Trust &amp; Security center →</Link>
           </div>
         </div>
       </section>

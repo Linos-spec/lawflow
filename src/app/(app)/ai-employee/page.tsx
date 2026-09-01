@@ -49,10 +49,10 @@ export default function AiEmployeePage() {
 
   const s = board?.stats;
   const stats = [
-    { label: "In intake", value: s?.intake ?? 0, icon: Inbox, color: "var(--brand)" },
-    { label: "Awaiting review", value: s?.reviewQueue ?? 0, icon: ShieldCheck, color: (s?.reviewQueue ?? 0) > 0 ? "var(--warning)" : "var(--success)" },
-    { label: "Active matters", value: s?.activeCases ?? 0, icon: Briefcase, color: "var(--navy)" },
-    { label: "Docs to sign", value: s?.pendingDocs ?? 0, icon: FileText, color: "var(--brand)" },
+    { label: "In intake", value: s?.intake ?? 0, icon: Inbox, color: "var(--brand)", href: "/leads" },
+    { label: "Awaiting review", value: s?.reviewQueue ?? 0, icon: ShieldCheck, color: (s?.reviewQueue ?? 0) > 0 ? "var(--warning)" : "var(--success)", href: "/ai-employee/review" },
+    { label: "Active matters", value: s?.activeCases ?? 0, icon: Briefcase, color: "var(--navy)", href: "/cases?status=ACTIVE" },
+    { label: "Docs to sign", value: s?.pendingDocs ?? 0, icon: FileText, color: "var(--brand)", href: "/documents" },
   ];
 
   return (
@@ -71,12 +71,15 @@ export default function AiEmployeePage() {
       {/* Stat strip */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem", margin: "1.25rem 0" }}>
         {stats.map((st) => (
-          <div key={st.label} className="lf-card" style={{ padding: "0.9rem 1.1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
-              <st.icon style={{ width: 14, height: 14, color: st.color }} /> {st.label}
+          <Link key={st.label} href={st.href} className="lf-card lf-card-interactive" style={{ padding: "0.9rem 1.1rem", display: "block", textDecoration: "none" }} aria-label={`${st.label}: ${st.value}`}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--text-muted)", fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 600 }}>
+                <st.icon style={{ width: 14, height: 14, color: st.color }} /> {st.label}
+              </div>
+              <ArrowRight style={{ width: 13, height: 13, color: "var(--text-muted)", flexShrink: 0 }} aria-hidden />
             </div>
             <div style={{ fontSize: "1.7rem", fontWeight: 800, color: "var(--navy)", marginTop: 2, fontFamily: "var(--font-heading)" }}>{st.value}</div>
-          </div>
+          </Link>
         ))}
       </div>
 

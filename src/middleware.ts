@@ -16,6 +16,8 @@ const publicRoutes = [
   "/portal",
   // Public policy pages (privacy, terms, DPA, security overview).
   "/legal",
+  // Public trust & security center.
+  "/trust",
 ];
 
 export default auth((req) => {

@@ -11,6 +11,7 @@ const productLinks = [
 ];
 
 const legalLinks = [
+  { label: "Trust & Security", href: "/trust" },
   { label: "Privacy Policy", href: "/legal/privacy" },
   { label: "Terms of Service", href: "/legal/terms" },
   { label: "Data Processing (DPA)", href: "/legal/dpa" },
