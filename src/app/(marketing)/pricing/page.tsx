@@ -105,7 +105,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 /* ────────────────────────────────────────── */
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(true);
+  const [annual, setAnnual] = useState(false); // default to the monthly $29 headline; annual ($23) via toggle
 
   return (
     <div style={{ background: "var(--bg-base)" }}>
