@@ -361,8 +361,8 @@ export default function LandingPage() {
               }}
             >
               The{" "}
-              <span style={{ color: "var(--gold-light)" }}>AI employee</span>{" "}
-              every lawyer wishes they had
+              <span style={{ color: "var(--gold-light)" }}>operating system</span>{" "}
+              for modern law firms
             </h1>
 
             <p

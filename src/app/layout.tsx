@@ -4,7 +4,7 @@ import "./globals.css";
 import { PwaClient } from "@/components/pwa/pwa-client";
 
 export const metadata: Metadata = {
-  title: "Linoscore Legal — The AI employee every lawyer wishes they had",
+  title: "Linoscore Legal — The operating system for modern law firms",
   description: "Linoscore Legal handles client intake, conflict checks, document organization, and follow-up so your firm can focus on practicing law. Part of the Linoscore suite.",
   applicationName: "Linoscore Legal",
   manifest: "/manifest.webmanifest",
