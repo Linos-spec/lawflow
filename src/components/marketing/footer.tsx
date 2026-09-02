@@ -190,7 +190,7 @@ export function MarketingFooter() {
                 </h4>
                 <div className="space-y-4">
                   <a
-                    href="mailto:support@linoscore.com"
+                    href="mailto:info@linosconsulting.com"
                     className="flex items-center gap-2.5 text-sm transition-colors duration-200"
                     style={{
                       color: "rgba(255, 255, 255, 0.6)",
@@ -204,7 +204,7 @@ export function MarketingFooter() {
                     }}
                   >
                     <Mail style={{ width: 16, height: 16, flexShrink: 0, opacity: 0.7 }} />
-                    support@linoscore.com
+                    info@linosconsulting.com
                   </a>
 
                   <div

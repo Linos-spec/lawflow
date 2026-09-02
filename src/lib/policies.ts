@@ -36,7 +36,7 @@ export const POLICIES: Record<string, Policy> = {
       ]},
       { heading: "Retention & your choices", body: [
         "We retain data for as long as your account is active or as needed to provide the service and meet legal obligations. Your firm can export or delete client data at any time from within the app.",
-        "Individuals may exercise access, correction, and deletion rights by contacting the firm that controls their data, or us at privacy@linoscore.com.",
+        "Individuals may exercise access, correction, and deletion rights by contacting the firm that controls their data, or us at info@linosconsulting.com.",
       ]},
       { heading: "Security", body: [
         "Data is encrypted in transit (TLS) and at rest. Access is role-restricted and audit-logged. See our Security Overview for details.",
@@ -106,7 +106,7 @@ export const POLICIES: Record<string, Policy> = {
         "The platform runs on managed cloud infrastructure with automated backups. Changes are version-controlled and reviewed before release.",
       ]},
       { heading: "Reporting", body: [
-        "To report a security concern, contact security@linoscore.com.",
+        "To report a security concern, contact info@linosconsulting.com.",
       ]},
     ],
   },

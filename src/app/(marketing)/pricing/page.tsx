@@ -217,7 +217,7 @@ export default function PricingPage() {
 
         <p style={{ textAlign: "center", fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--text-secondary)", marginTop: "1.5rem" }}>
           Larger team or need volume pricing?{" "}
-          <a href="mailto:sales@linoscore.com" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Talk to us</a>.
+          <a href="mailto:info@linosconsulting.com" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Talk to us</a>.
         </p>
       </section>
 

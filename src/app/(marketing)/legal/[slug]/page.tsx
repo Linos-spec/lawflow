@@ -45,7 +45,7 @@ export default async function PolicyPage({ params }: { params: Promise<{ slug: s
         </div>
 
         <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "3rem", borderTop: "1px solid var(--border-light)", paddingTop: "1rem" }}>
-          Questions? Contact privacy@linoscore.com. {POLICY_ENTITY} provides software, not legal services.
+          Questions? Contact info@linosconsulting.com. {POLICY_ENTITY} provides software, not legal services.
         </p>
       </div>
     </div>

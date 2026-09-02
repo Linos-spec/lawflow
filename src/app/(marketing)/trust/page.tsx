@@ -35,7 +35,7 @@ export default function TrustPage() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", marginTop: "1.25rem" }}>
           <Link href="/trust/faq" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Security FAQ</Link>
           <Link href="/trust/questionnaire" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Completed security questionnaire</Link>
-          <a href="mailto:security@linoscore.com" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Request a security call</a>
+          <a href="mailto:info@linosconsulting.com" className="lf-btn lf-btn-outline" style={{ padding: "0.5rem 0.9rem" }}>Request a security call</a>
         </div>
 
         <Section id="residency" title="Where your data lives">
@@ -103,7 +103,7 @@ export default function TrustPage() {
         </Section>
 
         <Section id="incident" title="Incident response">
-          <p>We maintain an incident-response process for security events. If a confirmed incident affects your firm&apos;s data, we will notify you <b>without undue delay — and within 72 hours of confirming the incident</b> — with what we know, what we&apos;re doing, and what (if anything) you should do. Report a concern any time to <a href="mailto:security@linoscore.com" style={{ color: "var(--brand)" }}>security@linoscore.com</a>.</p>
+          <p>We maintain an incident-response process for security events. If a confirmed incident affects your firm&apos;s data, we will notify you <b>without undue delay — and within 72 hours of confirming the incident</b> — with what we know, what we&apos;re doing, and what (if anything) you should do. Report a concern any time to <a href="mailto:info@linosconsulting.com" style={{ color: "var(--brand)" }}>info@linosconsulting.com</a>.</p>
         </Section>
 
         <Section id="responsibility" title="Professional-responsibility safeguards">
@@ -115,7 +115,7 @@ export default function TrustPage() {
         </Section>
 
         <Section id="agreements" title="Agreements">
-          <p>Our <Link href="/legal/terms" style={{ color: "var(--brand)" }}>Terms of Service</Link>, <Link href="/legal/privacy" style={{ color: "var(--brand)" }}>Privacy Policy</Link>, and <Link href="/legal/dpa" style={{ color: "var(--brand)" }}>Data Processing Addendum</Link> are published in full. A countersigned DPA and a Master Services Agreement are available on request for firms that require them before onboarding — contact <a href="mailto:security@linoscore.com" style={{ color: "var(--brand)" }}>security@linoscore.com</a>.</p>
+          <p>Our <Link href="/legal/terms" style={{ color: "var(--brand)" }}>Terms of Service</Link>, <Link href="/legal/privacy" style={{ color: "var(--brand)" }}>Privacy Policy</Link>, and <Link href="/legal/dpa" style={{ color: "var(--brand)" }}>Data Processing Addendum</Link> are published in full. A countersigned DPA and a Master Services Agreement are available on request for firms that require them before onboarding — contact <a href="mailto:info@linosconsulting.com" style={{ color: "var(--brand)" }}>info@linosconsulting.com</a>.</p>
         </Section>
 
         <Section id="roadmap" title="What we&apos;re working toward">
@@ -128,7 +128,7 @@ export default function TrustPage() {
         </Section>
 
         <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2.5rem", borderTop: "1px solid var(--border-light)", paddingTop: "1rem" }}>
-          Questions from your security or compliance team? Email <a href="mailto:security@linoscore.com" style={{ color: "var(--brand)" }}>security@linoscore.com</a> and we&apos;ll set up a call. {POLICY_ENTITY} provides software, not legal services.
+          Questions from your security or compliance team? Email <a href="mailto:info@linosconsulting.com" style={{ color: "var(--brand)" }}>info@linosconsulting.com</a> and we&apos;ll set up a call. {POLICY_ENTITY} provides software, not legal services.
         </p>
       </div>
     </div>

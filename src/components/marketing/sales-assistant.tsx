@@ -14,9 +14,9 @@ const GREETING: Msg = {
 
 // Customer (existing-firm) support branch
 const SUPPORT_MENU: Chip[] = [
-  { label: "Billing & account", reply: "For your plan, invoices, or seats: sign in and open Settings → Plan & Billing. Need a hand with billing? Email support@linoscore.com and we'll help." },
-  { label: "Technical / IT support", reply: "Sorry you're hitting a snag. Email support@linoscore.com with a short description (a screenshot helps) and our team will help you sort it out. If it's urgent, mention that in the subject." },
-  { label: "Training & how-to", reply: "Happy to help you get the most out of Linoscore Legal. Email support@linoscore.com to set up a walkthrough — or just ask me a how-to question right here." },
+  { label: "Billing & account", reply: "For your plan, invoices, or seats: sign in and open Settings → Plan & Billing. Need a hand with billing? Email info@linosconsulting.com and we'll help." },
+  { label: "Technical / IT support", reply: "Sorry you're hitting a snag. Email info@linosconsulting.com with a short description (a screenshot helps) and our team will help you sort it out. If it's urgent, mention that in the subject." },
+  { label: "Training & how-to", reply: "Happy to help you get the most out of Linoscore Legal. Email info@linosconsulting.com to set up a walkthrough — or just ask me a how-to question right here." },
   { label: "← Back", back: true },
 ];
 
@@ -24,7 +24,7 @@ const SUPPORT_MENU: Chip[] = [
 const EXPLORE_MENU: Chip[] = [
   { label: "What can the AI do?", prompt: "What can Linoscore Legal's AI actually do for my firm?" },
   { label: "See pricing", prompt: "How much does Linoscore Legal cost?" },
-  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email sales@linoscore.com to book a discovery call — a rep usually replies within one business day. Prefer to try it first? Start a free 14-day trial, no credit card required." },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Prefer to try it first? Start a free 14-day trial, no credit card required." },
   { label: "Start free trial", link: "/register", primary: true },
   { label: "← Back", back: true },
 ];
@@ -32,7 +32,7 @@ const EXPLORE_MENU: Chip[] = [
 const ROOT_MENU: Chip[] = [
   { label: "I'm a customer (billing, IT & training)", next: SUPPORT_MENU, intro: "Happy to help — what do you need a hand with?" },
   { label: "I'm exploring Linoscore Legal", next: EXPLORE_MENU, intro: "Great — what would you like to know?" },
-  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email sales@linoscore.com to book a discovery call — a rep usually replies within one business day. Or start a free 14-day trial (no credit card) to explore on your own." },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Or start a free 14-day trial (no credit card) to explore on your own." },
 ];
 
 export function SalesAssistant() {
@@ -60,7 +60,7 @@ export function SalesAssistant() {
       const j = await res.json().catch(() => ({}));
       setMessages((m) => [...m, { role: "assistant", content: j.reply || "Sorry, could you try again?" }]);
     } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "I hit a snag. Email sales@linoscore.com or start a free trial." }]);
+      setMessages((m) => [...m, { role: "assistant", content: "I hit a snag. Email info@linosconsulting.com or start a free trial." }]);
     } finally { setBusy(false); }
   };
 

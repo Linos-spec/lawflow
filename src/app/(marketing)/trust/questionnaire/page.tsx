@@ -56,7 +56,7 @@ const SECTIONS: { title: string; items: QA[] }[] = [
   {
     title: "Incident response",
     items: [
-      { q: "What is your breach-notification commitment?", a: "We maintain an incident-response process. If a confirmed incident affects a firm's data, we notify the firm without undue delay and within 72 hours of confirming the incident, with what we know, what we're doing, and any action needed. Concerns: security@linoscore.com." },
+      { q: "What is your breach-notification commitment?", a: "We maintain an incident-response process. If a confirmed incident affects a firm's data, we notify the firm without undue delay and within 72 hours of confirming the incident, with what we know, what we're doing, and any action needed. Concerns: info@linosconsulting.com." },
     ],
   },
   {
@@ -69,7 +69,7 @@ const SECTIONS: { title: string; items: QA[] }[] = [
     title: "Compliance & agreements",
     items: [
       { q: "Do you hold SOC 2 or other certifications?", a: "Not currently, and we do not claim any we do not hold. An independent penetration test and SOC 2 readiness are on our roadmap; a pentest summary will be available to firms under NDA once completed." },
-      { q: "Can we sign a DPA and a Master Services Agreement?", a: "Yes. Our Terms, Privacy Policy, and Data Processing Addendum are published in full, and a countersigned DPA and MSA are available on request before onboarding. Contact security@linoscore.com." },
+      { q: "Can we sign a DPA and a Master Services Agreement?", a: "Yes. Our Terms, Privacy Policy, and Data Processing Addendum are published in full, and a countersigned DPA and MSA are available on request before onboarding. Contact info@linosconsulting.com." },
     ],
   },
 ];
@@ -81,7 +81,7 @@ export default function QuestionnairePage() {
         <Link href="/trust" style={{ fontSize: "0.85rem", color: "var(--brand)", textDecoration: "none" }}>← Trust &amp; Security</Link>
         <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "2rem", fontWeight: 800, color: "var(--navy)", marginTop: "1rem" }}>Security questionnaire</h1>
         <p style={{ fontSize: "1rem", color: "var(--text-secondary)", marginTop: "0.5rem", lineHeight: 1.6 }}>
-          A completed questionnaire covering the questions security and compliance teams ask before entrusting privileged client data. Current as of the effective date on our <Link href="/trust" style={{ color: "var(--brand)" }}>Trust Center</Link>. For a version signed and returned on your own template, email <a href="mailto:security@linoscore.com" style={{ color: "var(--brand)" }}>security@linoscore.com</a>.
+          A completed questionnaire covering the questions security and compliance teams ask before entrusting privileged client data. Current as of the effective date on our <Link href="/trust" style={{ color: "var(--brand)" }}>Trust Center</Link>. For a version signed and returned on your own template, email <a href="mailto:info@linosconsulting.com" style={{ color: "var(--brand)" }}>info@linosconsulting.com</a>.
         </p>
 
         {SECTIONS.map((sec) => (
@@ -99,7 +99,7 @@ export default function QuestionnairePage() {
         ))}
 
         <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "2.5rem", borderTop: "1px solid var(--border-light)", paddingTop: "1rem" }}>
-          {POLICY_ENTITY} provides software, not legal services. Questions? <a href="mailto:security@linoscore.com" style={{ color: "var(--brand)" }}>security@linoscore.com</a>.
+          {POLICY_ENTITY} provides software, not legal services. Questions? <a href="mailto:info@linosconsulting.com" style={{ color: "var(--brand)" }}>info@linosconsulting.com</a>.
         </p>
       </div>
     </div>
