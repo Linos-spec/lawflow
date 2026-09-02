@@ -8,10 +8,10 @@ import { Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 /*  Data                                      */
 /* ────────────────────────────────────────── */
 
-// One simple per-seat plan — everything included.
+// One simple per-seat plan — everything included. Introductory pricing for new firms.
 const plan = {
-  monthlyPrice: 29,
-  annualPrice: 23, // ~20% off
+  introPrice: 29,     // new firms, first 6 months
+  regularPrice: 49,   // thereafter
   features: [
     "AI intake, conflict checks & qualification",
     "AI case summaries & document drafting",
@@ -36,11 +36,11 @@ const faqs = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept all major credit cards including Visa, Mastercard, and American Express. Invoicing is available for annual plans.",
+    a: "We accept all major credit cards including Visa, Mastercard, and American Express. Invoicing is available on request.",
   },
   {
-    q: "Do you offer discounts for annual billing?",
-    a: "Yes, save up to 20% with annual billing compared to monthly pricing. The discount is applied automatically when you choose an annual plan.",
+    q: "Is the $29 price permanent?",
+    a: "$29 per user/month is an introductory rate for new firms — it applies for your first 6 months. After that, the standard price is $49 per user/month. There's no long-term contract; you can cancel anytime.",
   },
   {
     q: "Can I cancel anytime?",
@@ -105,7 +105,6 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 /* ────────────────────────────────────────── */
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(false); // default to the monthly $29 headline; annual ($23) via toggle
 
   return (
     <div style={{ background: "var(--bg-base)" }}>
@@ -141,32 +140,9 @@ export default function PricingPage() {
           No hidden fees. No long-term contracts. Cancel anytime.
         </p>
 
-        {/* Toggle */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            fontFamily: "var(--font-body)",
-            fontSize: "0.9375rem",
-            fontWeight: 500,
-          }}
-        >
-          <span style={{ color: !annual ? "var(--navy)" : "var(--text-muted)" }}>Monthly</span>
-          <button
-            aria-label="Toggle annual billing"
-            onClick={() => setAnnual(!annual)}
-            className={`lf-toggle ${annual ? "active" : ""}`}
-          />
-          <span style={{ color: annual ? "var(--navy)" : "var(--text-muted)" }}>Annual</span>
-          {annual && (
-            <span
-              className="lf-badge lf-badge-green"
-              style={{ marginLeft: 4 }}
-            >
-              Save 20%
-            </span>
-          )}
+        {/* Introductory offer */}
+        <div className="lf-badge lf-badge-green" style={{ padding: "0.35rem 0.9rem", fontSize: "0.85rem" }}>
+          🎉 Introductory pricing for new firms — lock in $29/user for 6 months
         </div>
       </section>
 
@@ -209,14 +185,15 @@ export default function PricingPage() {
 
           {/* Price */}
           <div style={{ marginBottom: "1.5rem" }}>
-            <span style={{ fontFamily: "var(--font-heading)", fontSize: "2.75rem", fontWeight: 700, color: "var(--navy)", lineHeight: 1 }}>
-              ${annual ? plan.annualPrice : plan.monthlyPrice}
-            </span>
-            <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)", marginLeft: 4 }}>
-              /user /mo
-            </span>
-            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: 4 }}>
-              {annual ? `billed annually · $${plan.monthlyPrice}/user month-to-month` : "billed monthly · save 20% annually"}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span style={{ fontFamily: "var(--font-heading)", fontSize: "2.75rem", fontWeight: 700, color: "var(--navy)", lineHeight: 1 }}>
+                ${plan.introPrice}
+              </span>
+              <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)" }}>/user /mo</span>
+              <span style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", color: "var(--text-muted)", textDecoration: "line-through" }}>${plan.regularPrice}</span>
+            </div>
+            <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: 6 }}>
+              Introductory rate for new firms — your first 6 months. <b style={{ color: "var(--text-secondary)" }}>${plan.regularPrice}/user/mo</b> thereafter.
             </p>
           </div>
 

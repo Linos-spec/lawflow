@@ -18,7 +18,7 @@ What it does:
 - Core practice management: cases/matters, clients, documents, deadlines & calendar, billing & invoicing, and a secure client portal.
 - Works alongside tools like Clio, MyCase, or PracticePanther — a firm can start with intake only, import matters by CSV, and keep their current system. No forced migration.
 
-Pricing: $29 per user/month, with a 14-day free trial and no credit card required.
+Pricing: $29 per user/month as an introductory rate for new firms — for the first 6 months — then $49 per user/month. There's a 14-day free trial and no credit card required to start.
 
 Security (firms can read the full Trust Center at /trust): data hosted in the US, encrypted in transit and at rest, tenant isolation, role-based access, two-factor authentication, an immutable audit log, and no use of client data to train AI models. A signed DPA is available on request.
 
