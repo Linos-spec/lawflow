@@ -8,10 +8,9 @@ import { Check, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 /*  Data                                      */
 /* ────────────────────────────────────────── */
 
-// One simple per-seat plan — everything included. Introductory pricing for new firms.
+// One simple per-seat plan — everything included. Introductory pricing.
 const plan = {
-  introPrice: 29,     // new firms, first 6 months
-  regularPrice: 49,   // thereafter
+  price: 29,   // flat introductory rate
   features: [
     "AI intake, conflict checks & qualification",
     "AI case summaries & document drafting",
@@ -40,7 +39,7 @@ const faqs = [
   },
   {
     q: "Is the $29 price permanent?",
-    a: "$29 per user/month is an introductory rate for new firms — it applies for your first 6 months. After that, the standard price is $49 per user/month. There's no long-term contract; you can cancel anytime.",
+    a: "$29 per user/month is our introductory rate. We may adjust pricing in the future, but there's no long-term contract — you can cancel anytime, and we'll give existing firms notice of any change.",
   },
   {
     q: "Can I cancel anytime?",
@@ -142,7 +141,7 @@ export default function PricingPage() {
 
         {/* Introductory offer */}
         <div className="lf-badge lf-badge-green" style={{ padding: "0.35rem 0.9rem", fontSize: "0.85rem" }}>
-          🎉 Introductory pricing for new firms — lock in $29/user for 6 months
+          🎉 Introductory pricing — $29/user, everything included
         </div>
       </section>
 
@@ -185,15 +184,12 @@ export default function PricingPage() {
 
           {/* Price */}
           <div style={{ marginBottom: "1.5rem" }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-heading)", fontSize: "2.75rem", fontWeight: 700, color: "var(--navy)", lineHeight: 1 }}>
-                ${plan.introPrice}
-              </span>
-              <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)" }}>/user /mo</span>
-              <span style={{ fontFamily: "var(--font-heading)", fontSize: "1.1rem", color: "var(--text-muted)", textDecoration: "line-through" }}>${plan.regularPrice}</span>
-            </div>
+            <span style={{ fontFamily: "var(--font-heading)", fontSize: "2.75rem", fontWeight: 700, color: "var(--navy)", lineHeight: 1 }}>
+              ${plan.price}
+            </span>
+            <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)", marginLeft: 4 }}>/user /mo</span>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: 6 }}>
-              Introductory rate for new firms — your first 6 months. <b style={{ color: "var(--text-secondary)" }}>${plan.regularPrice}/user/mo</b> thereafter.
+              Introductory rate — one plan, every feature, no long-term contract.
             </p>
           </div>
 

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse } from "@/lib/api/response";
-import { stripeConfigured, seatCount, SEAT_PRICE_USD, SEAT_INTRO_USD, INTRO_MONTHS } from "@/lib/stripe";
+import { stripeConfigured, seatCount, SEAT_PRICE_USD } from "@/lib/stripe";
 import { computeEntitlement } from "@/lib/entitlement";
 
 export const runtime = "nodejs";
@@ -30,10 +30,8 @@ export async function GET() {
     trialEndsAt: firm?.trialEndsAt ? firm.trialEndsAt.toISOString() : null,
     trialDaysLeft,
     seats,
-    pricePerSeat: SEAT_INTRO_USD,              // what a new firm pays now (intro)
-    regularPricePerSeat: SEAT_PRICE_USD,        // after the intro period
-    introMonths: INTRO_MONTHS,
-    monthlyTotal: seats * SEAT_INTRO_USD,
+    pricePerSeat: SEAT_PRICE_USD,
+    monthlyTotal: seats * SEAT_PRICE_USD,
     isAdmin: ctx.role === "ADMIN",
   });
 }

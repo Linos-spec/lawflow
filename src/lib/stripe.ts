@@ -13,39 +13,12 @@ import { prisma } from "@/lib/prisma";
 const clean = (v?: string) => (v || "").trim().replace(/^["']|["']$/g, "");
 
 export const SEAT_PRICE_ID = clean(process.env.STRIPE_PRICE_ID);
-// Base Stripe price is the REGULAR $49; new firms get a 6-month intro discount
-// (a repeating coupon) that Stripe removes automatically → $29 for 6 months, then $49.
-export const SEAT_PRICE_USD = 49;         // regular
-export const SEAT_INTRO_USD = 29;         // introductory (first 6 months)
-export const INTRO_MONTHS = 6;
-export const INTRO_COUPON_ID = "linoscore-intro-6mo";
-// Percent off $49 that yields $29 (Stripe rounds the per-line discount to cents).
-const INTRO_PERCENT_OFF = Number((((SEAT_PRICE_USD - SEAT_INTRO_USD) / SEAT_PRICE_USD) * 100).toFixed(4)); // 40.8163
+export const SEAT_PRICE_USD = 29;   // flat introductory rate (may change later)
 
 export function stripeConfigured(): boolean {
   const k = clean(process.env.STRIPE_SECRET_KEY);
   // Accept standard secret keys (sk_) and restricted keys (rk_); reject pk_ (publishable).
   return (k.startsWith("sk_") || k.startsWith("rk_")) && SEAT_PRICE_ID.startsWith("price_");
-}
-
-/**
- * Ensure the 6-month introductory coupon exists, and return its id. Idempotent —
- * created once with a fixed id, reused thereafter. Applied at checkout so new
- * firms pay $29/seat for 6 months, then Stripe automatically bills the full $49.
- */
-export async function ensureIntroCoupon(): Promise<string> {
-  try {
-    await stripe().coupons.retrieve(INTRO_COUPON_ID);
-  } catch {
-    await stripe().coupons.create({
-      id: INTRO_COUPON_ID,
-      name: "New-firm intro (6 months)",
-      percent_off: INTRO_PERCENT_OFF,
-      duration: "repeating",
-      duration_in_months: INTRO_MONTHS,
-    }).catch(() => {});
-  }
-  return INTRO_COUPON_ID;
 }
 
 let _stripe: Stripe | null = null;

@@ -12,8 +12,6 @@ interface Sub {
   trialDaysLeft: number | null;
   seats: number;
   pricePerSeat: number;
-  regularPricePerSeat?: number;
-  introMonths?: number;
   monthlyTotal: number;
   isAdmin: boolean;
 }
@@ -132,7 +130,7 @@ export function BillingPanel() {
       <div className="lf-card">
         <h3 className="text-base font-bold" style={{ fontFamily: "var(--font-heading)", color: "var(--navy)", marginBottom: "0.5rem" }}>How billing works</h3>
         <ul style={{ fontSize: "0.875rem", color: "var(--text-secondary)", lineHeight: 1.8, paddingLeft: "1.1rem" }}>
-          <li>You pay <b>{money(sub.pricePerSeat)} per user, per month</b>{sub.regularPricePerSeat && sub.introMonths ? <> — an introductory rate for your first {sub.introMonths} months, then {money(sub.regularPricePerSeat)}/user/mo</> : null}. Your current total is <b>{money(sub.monthlyTotal)}/mo</b> for {sub.seats} {sub.seats === 1 ? "seat" : "seats"}.</li>
+          <li>You pay <b>{money(sub.pricePerSeat)} per user, per month</b> (introductory rate). Your current total is <b>{money(sub.monthlyTotal)}/mo</b> for {sub.seats} {sub.seats === 1 ? "seat" : "seats"}.</li>
           <li>Add or remove team members in <b>Team &amp; Roles</b> — your bill adjusts automatically, prorated.</li>
           <li>Every plan starts with a <b>14-day free trial</b>. Cancel anytime from Manage billing.</li>
         </ul>

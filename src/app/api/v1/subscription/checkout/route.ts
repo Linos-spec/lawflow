@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { publicBaseUrl } from "@/lib/base-url";
-import { stripe, stripeConfigured, ensureCustomer, seatCount, SEAT_PRICE_ID, ensureIntroCoupon } from "@/lib/stripe";
+import { stripe, stripeConfigured, ensureCustomer, seatCount, SEAT_PRICE_ID } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
@@ -24,13 +24,11 @@ export async function POST(req: NextRequest) {
     : undefined;
 
   try {
-    // 6-month intro discount → $29/seat for 6 months, then Stripe auto-bills $49.
-    const coupon = await ensureIntroCoupon();
     const session = await stripe().checkout.sessions.create({
       mode: "subscription",
       customer,
       line_items: [{ price: SEAT_PRICE_ID, quantity: Math.max(1, seats) }],
-      discounts: [{ coupon }],
+      allow_promotion_codes: true,
       subscription_data: {
         metadata: { firmId: ctx.firmId },
         ...(trialEnd ? { trial_end: trialEnd } : {}),
