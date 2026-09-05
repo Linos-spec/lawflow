@@ -189,7 +189,7 @@ export default function PricingPage() {
             </span>
             <span style={{ fontFamily: "var(--font-body)", fontSize: "0.9375rem", color: "var(--text-muted)", marginLeft: 4 }}>/user /mo</span>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: 6 }}>
-              Introductory rate — one plan, every feature, no long-term contract.
+              Introductory rate — billed monthly per active user.
             </p>
           </div>
 
