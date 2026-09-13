@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cas
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
   const { caseId } = await params;
-  const c = await prisma.case.findFirst({ where: { id: caseId, firmId: ctx.firmId }, select: { id: true } });
+  const c = await prisma.case.findFirst({ where: { id: caseId, firmId: ctx.firmId }, select: { id: true, firm: { select: { calendlyUrl: true } } } });
   if (!c) return errorResponse("Matter not found", 404);
 
   const messages = await prisma.portalMessage.findMany({
@@ -26,6 +26,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cas
   }).catch(() => {});
 
   return successResponse({
+    calendlyUrl: c.firm.calendlyUrl ?? null,
     messages: messages.map((m) => ({
       id: m.id, fromClient: m.sender === "CLIENT", authorName: m.authorName,
       body: m.body, createdAt: m.createdAt.toISOString(),

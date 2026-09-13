@@ -9,6 +9,7 @@ export interface Firm {
   phone: string | null;
   website: string | null;
   address: string | null;
+  calendlyUrl?: string | null;
   aiModeEnabled: boolean;
   aiAutoCreateMatter: boolean;
   aiAutoGenerateTasks: boolean;

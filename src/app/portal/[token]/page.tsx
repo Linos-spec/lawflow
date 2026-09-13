@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
-import { Loader2, CheckCircle2, Circle, FileText, PenLine, Phone, Mail, Upload, Lock, Clock, Send, MessagesSquare } from "lucide-react";
+import { Loader2, CheckCircle2, Circle, FileText, PenLine, Phone, Mail, Upload, Lock, Clock, Send, MessagesSquare, CalendarClock } from "lucide-react";
 
 interface Stage { key: string; label: string; done: boolean; current: boolean }
 interface Doc { id: string; title: string; documentType: string; signatureStatus: string; uploadedByClient?: boolean }
 interface Msg { id: string; fromClient: boolean; authorName?: string | null; body: string; createdAt: string }
 interface Portal {
-  firmName: string; firmEmail: string | null; firmPhone: string | null;
+  firmName: string; firmEmail: string | null; firmPhone: string | null; calendlyUrl?: string | null;
   clientName: string; matterTitle: string; matterNumber: string;
   progress: Stage[]; currentLabel: string; closed: boolean;
   outstandingBalance: number; documents: Doc[]; messages: Msg[];
@@ -245,7 +245,12 @@ export default function ClientPortalPage() {
           <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Questions about your case?</span>
           {data.firmEmail && <a href={`mailto:${data.firmEmail}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "var(--brand)", fontSize: "0.88rem", textDecoration: "none" }}><Mail style={{ width: 15, height: 15 }} />{data.firmEmail}</a>}
           {data.firmPhone && <a href={`tel:${data.firmPhone}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "var(--brand)", fontSize: "0.88rem", textDecoration: "none" }}><Phone style={{ width: 15, height: 15 }} />{data.firmPhone}</a>}
-          {!data.firmEmail && !data.firmPhone && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Use the messages above and your firm will be glad to help.</span>}
+          {!data.firmEmail && !data.firmPhone && !data.calendlyUrl && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Use the messages above and your firm will be glad to help.</span>}
+          {data.calendlyUrl && (
+            <a href={data.calendlyUrl} target="_blank" rel="noreferrer" className="lf-btn lf-btn-gold" style={{ marginLeft: "auto", padding: "0.5rem 0.9rem", fontSize: "0.85rem", textDecoration: "none" }}>
+              <CalendarClock style={{ width: 15, height: 15 }} /> Schedule a meeting
+            </a>
+          )}
         </div>
 
         <p style={{ textAlign: "center", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "1.5rem" }}>Powered by Linoscore Legal</p>

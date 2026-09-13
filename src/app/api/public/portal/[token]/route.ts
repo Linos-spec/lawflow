@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     where: { id: access.matter.id },
     select: {
       id: true, title: true, caseNumber: true, firmId: true,
-      firm: { select: { name: true, email: true, phone: true } },
+      firm: { select: { name: true, email: true, phone: true, calendlyUrl: true } },
       client: { select: { name: true } },
     },
   });
@@ -75,6 +75,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     firmName: matter.firm.name,
     firmEmail: matter.firm.email,
     firmPhone: matter.firm.phone,
+    calendlyUrl: matter.firm.calendlyUrl ?? null,
     clientName: matter.client.name,
     matterTitle: matter.title,
     matterNumber: matter.caseNumber,

@@ -310,6 +310,10 @@ model Firm {
   // Require all firm users to set up two-factor authentication.
   mfaRequired          Boolean @default(false)
 
+  // Calendly scheduling link — when set, clients can self-book from the portal and
+  // the firm can send the booking link in response to a detected meeting request.
+  calendlyUrl          String?
+
   // ── Terms/DPA click-through acceptance (recorded at signup for enforceability) ──
   termsAcceptedAt      DateTime?   // when the admin accepted the Terms + DPA
   termsVersion         String?     // POLICY_VERSION accepted

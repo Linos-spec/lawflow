@@ -14,7 +14,7 @@ export async function GET() {
 
   const firm = await prisma.firm.findFirst({
     where: { id: ctx.firmId },
-    select: { id: true, name: true, email: true, phone: true, website: true, address: true, aiModeEnabled: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true,
+    select: { id: true, name: true, email: true, phone: true, website: true, address: true, calendlyUrl: true, aiModeEnabled: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true,
       deliveryConnected: true, deliveryApiEmail: true, deliveryPickupLine1: true, deliveryPickupLine2: true, deliveryPickupCity: true, deliveryPickupState: true, deliveryPickupPostal: true },
   });
   if (!firm) return errorResponse("Firm not found", 404);
@@ -31,6 +31,15 @@ const updateSchema = z.object({
   phone: z.string().nullable().optional(),
   website: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
+  // Calendly link: accept a bare or full URL; empty string clears it. Must be a
+  // calendly.com link so we never post an arbitrary URL to clients.
+  calendlyUrl: z
+    .string()
+    .trim()
+    .transform((s) => (s === "" ? null : s.startsWith("http") ? s : `https://${s}`))
+    .refine((s) => s === null || /^https:\/\/([a-z0-9-]+\.)?calendly\.com\//i.test(s), "Enter a valid Calendly link (calendly.com/…)")
+    .nullable()
+    .optional(),
 });
 
 /** Update firm settings — admin only (e.g. enabling AI Employee mode). */

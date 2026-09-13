@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
@@ -21,6 +21,8 @@ import {
   Check,
   Bot,
   ScrollText,
+  CalendarClock,
+  ExternalLink,
 } from "lucide-react";
 
 const tabs = [
@@ -74,6 +76,25 @@ export default function SettingsPage() {
   }
   const toggleAiMode = () =>
     patchFirm({ aiModeEnabled: !firm?.aiModeEnabled }, !firm?.aiModeEnabled ? "AI Employee mode enabled for your firm" : "AI Employee mode disabled");
+
+  // Calendly scheduling link (self-service client booking).
+  const [calendly, setCalendly] = useState("");
+  const [savingCal, setSavingCal] = useState(false);
+  useEffect(() => { if (firm) setCalendly(firm.calendlyUrl || ""); }, [firm]);
+  async function saveCalendly() {
+    if (!isAdmin || savingCal) return;
+    setSavingCal(true);
+    try {
+      const res = await fetch("/api/v1/firm", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calendlyUrl: calendly.trim() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(json.error || "Couldn't save the scheduling link"); return; }
+      await refresh();
+      toast.success(calendly.trim() ? "Scheduling link saved" : "Scheduling link removed");
+    } finally { setSavingCal(false); }
+  }
 
   // Notification toggles
   const [notifs, setNotifs] = useState({
@@ -220,6 +241,39 @@ export default function SettingsPage() {
                 <Check style={{ width: 16, height: 16 }} />
                 Save Changes
               </button>
+            </div>
+
+            {/* Client scheduling (Calendly) — functional */}
+            <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "1.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <CalendarClock style={{ width: 16, height: 16, color: "var(--gold)" }} />
+                <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "var(--navy)", fontSize: "0.95rem" }}>Client scheduling</h3>
+              </div>
+              <p className="text-sm" style={{ color: "var(--text-secondary)", marginBottom: 12 }}>
+                Add your Calendly link so clients can self-book from their portal, and so your team can send a booking link when the AI detects a meeting request in a client message. Calendly handles availability, time zones, reminders, and syncs to your real calendar.
+              </p>
+              <label className="lf-label">Calendly link</label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type="url"
+                  className="lf-input"
+                  style={{ flex: 1, minWidth: 240 }}
+                  placeholder="https://calendly.com/your-firm/consultation"
+                  value={calendly}
+                  onChange={(e) => setCalendly(e.target.value)}
+                  disabled={!isAdmin}
+                />
+                <button className="lf-btn lf-btn-gold" type="button" onClick={saveCalendly} disabled={!isAdmin || savingCal}>
+                  <Check style={{ width: 16, height: 16 }} />
+                  {savingCal ? "Saving…" : "Save link"}
+                </button>
+              </div>
+              {firm?.calendlyUrl && (
+                <a href={firm.calendlyUrl} target="_blank" rel="noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 8, fontSize: "0.8rem", color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>
+                  <ExternalLink style={{ width: 13, height: 13 }} /> Preview your booking page
+                </a>
+              )}
+              {!isAdmin && <p className="text-xs" style={{ color: "var(--text-muted)", marginTop: 8 }}>Only an admin can change the scheduling link.</p>}
             </div>
           </div>
         )}

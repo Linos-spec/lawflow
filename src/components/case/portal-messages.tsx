@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Send, Loader2, MessagesSquare, CalendarPlus, CalendarCheck } from "lucide-react";
+import { Send, Loader2, MessagesSquare, CalendarPlus, CalendarCheck, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
 
 interface MeetingProposal { title?: string; startsAt?: string; durationMins?: number; note?: string }
@@ -19,6 +19,7 @@ const fmtMeeting = (iso: string) =>
 /** Firm-side portal message thread for a matter (client ⇄ firm). */
 export function PortalMessages({ caseId }: { caseId: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [calendlyUrl, setCalendlyUrl] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -29,7 +30,7 @@ export function PortalMessages({ caseId }: { caseId: string }) {
     try {
       const res = await fetch(`/api/v1/cases/${caseId}/portal/messages`);
       const json = await res.json();
-      if (json.success) setMessages(json.data.messages);
+      if (json.success) { setMessages(json.data.messages); setCalendlyUrl(json.data.calendlyUrl ?? null); }
     } finally { setLoading(false); }
   }, [caseId]);
   useEffect(() => { load(); }, [load]);
@@ -59,6 +60,22 @@ export function PortalMessages({ caseId }: { caseId: string }) {
       if (!res.ok || !json.success) { toast.error(json.error || "Couldn't add to calendar"); return; }
       toast.success(`Added to calendar — ${fmtMeeting(json.data.deadline.dueDate)}`);
       setMessages((prev) => prev.map((x) => x.id === m.id ? { ...x, meetingScheduled: true, meetingProposal: null } : x));
+    } finally { setScheduling(null); }
+  };
+
+  // Reply into the thread with the firm's Calendly link so the client self-books.
+  const sendBookingLink = async (m: Msg) => {
+    if (!calendlyUrl) return;
+    setScheduling(m.id);
+    try {
+      const body = `You can pick a time that works for you here: ${calendlyUrl}`;
+      const res = await fetch(`/api/v1/cases/${caseId}/portal/messages`, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: body }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) { toast.error(json.error || "Couldn't send the link"); return; }
+      setMessages((prev) => [...prev, json.data.message]);
+      toast.success("Booking link sent to your client");
     } finally { setScheduling(null); }
   };
 
@@ -99,17 +116,32 @@ export function PortalMessages({ caseId }: { caseId: string }) {
                   <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>
                     {fmtMeeting(m.meetingProposal.startsAt)}{m.meetingProposal.durationMins ? ` · ${m.meetingProposal.durationMins} min` : ""}
                   </div>
-                  <button
-                    onClick={() => addToCalendar(m)}
-                    disabled={scheduling === m.id}
-                    className="lf-btn lf-btn-gold"
-                    style={{ marginTop: 6, padding: "0.35rem 0.7rem", fontSize: "0.78rem" }}
-                  >
-                    {scheduling === m.id ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} /> : <CalendarPlus style={{ width: 13, height: 13 }} />}
-                    Add to calendar
-                  </button>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
+                    {calendlyUrl && (
+                      <button
+                        onClick={() => sendBookingLink(m)}
+                        disabled={scheduling === m.id}
+                        className="lf-btn lf-btn-gold"
+                        style={{ padding: "0.35rem 0.7rem", fontSize: "0.78rem" }}
+                      >
+                        {scheduling === m.id ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} /> : <CalendarClock style={{ width: 13, height: 13 }} />}
+                        Send booking link
+                      </button>
+                    )}
+                    <button
+                      onClick={() => addToCalendar(m)}
+                      disabled={scheduling === m.id}
+                      className={calendlyUrl ? "lf-btn lf-btn-outline" : "lf-btn lf-btn-gold"}
+                      style={{ padding: "0.35rem 0.7rem", fontSize: "0.78rem" }}
+                    >
+                      {scheduling === m.id ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} /> : <CalendarPlus style={{ width: 13, height: 13 }} />}
+                      Add to calendar
+                    </button>
+                  </div>
                   <p style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 5, lineHeight: 1.4 }}>
-                    AI suggestion — review before confirming. Adding creates a calendar entry; it does not notify the client.
+                    {calendlyUrl
+                      ? "Send booking link lets the client self-book via Calendly. Add to calendar books it directly (does not notify the client). Review before confirming."
+                      : "AI suggestion — review before confirming. Add a Calendly link in Settings → Firm Details to let clients self-book instead."}
                   </p>
                 </div>
               )}
