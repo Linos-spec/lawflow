@@ -1,8 +1,10 @@
 import { NextRequest } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { successResponse } from "@/lib/api/response";
 import { computeMatterProgress } from "@/lib/matter-progress";
 import { resolvePortalAccess } from "@/lib/portal-access";
+import { looksLikeScheduling, detectMeetingRequest } from "@/lib/meeting-detect";
 
 export const runtime = "nodejs";
 
@@ -112,5 +114,26 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ tok
     data: { caseId: access.matter.id, firmId: access.matter.firmId, sender: "CLIENT", body: text.slice(0, 4000), readByFirm: false, readByClient: true },
     select: { id: true, body: true, createdAt: true },
   });
+
+  // Attorney-gated meeting detection: if this looks like a scheduling request,
+  // extract a proposed calendar entry for the firm to review. Runs in the
+  // background so the client's send stays instant; the AI never books anything.
+  if (looksLikeScheduling(text)) {
+    void detectAndAttachMeeting(created.id, text, access.matter.id);
+  }
+
   return successResponse({ sent: true, message: { id: created.id, fromClient: true, body: created.body, createdAt: created.createdAt.toISOString() } }, 201);
+}
+
+async function detectAndAttachMeeting(messageId: string, text: string, caseId: string) {
+  try {
+    const matter = await prisma.case.findUnique({ where: { id: caseId }, select: { client: { select: { name: true } } } });
+    const proposal = await detectMeetingRequest(text, { clientName: matter?.client?.name ?? null });
+    await prisma.portalMessage.update({
+      where: { id: messageId },
+      data: { meetingChecked: true, ...(proposal ? { meetingProposal: proposal as unknown as Prisma.InputJsonValue } : {}) },
+    });
+  } catch (err) {
+    console.error("Meeting detection failed:", err);
+  }
 }

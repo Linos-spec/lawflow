@@ -367,6 +367,13 @@ model PortalMessage {
   readByClient Boolean   @default(false)
   createdAt DateTime     @default(now())
 
+  // ── AI meeting detection (attorney-gated) ──
+  // Set on inbound CLIENT messages that look like a scheduling request. The firm
+  // sees a suggested calendar entry and confirms it — the AI never books directly.
+  meetingChecked   Boolean  @default(false)  // detection has run (don't re-run)
+  meetingProposal  Json?    // { title, startsAt (ISO), durationMins, note, confidence }
+  meetingDeadlineId String? // set once the firm creates the calendar entry (prevents dupes)
+
   @@index([caseId])
   @@index([firmId])
 }

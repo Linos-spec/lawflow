@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Send, Loader2, MessagesSquare } from "lucide-react";
+import { Send, Loader2, MessagesSquare, CalendarPlus, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 
-interface Msg { id: string; fromClient: boolean; authorName?: string | null; body: string; createdAt: string }
+interface MeetingProposal { title?: string; startsAt?: string; durationMins?: number; note?: string }
+interface Msg {
+  id: string; fromClient: boolean; authorName?: string | null; body: string; createdAt: string;
+  meetingProposal?: MeetingProposal | null; meetingScheduled?: boolean;
+}
 
 const fmt = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+const fmtMeeting = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
 /** Firm-side portal message thread for a matter (client ⇄ firm). */
 export function PortalMessages({ caseId }: { caseId: string }) {
@@ -15,6 +22,7 @@ export function PortalMessages({ caseId }: { caseId: string }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [scheduling, setScheduling] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -43,6 +51,17 @@ export function PortalMessages({ caseId }: { caseId: string }) {
     } finally { setSending(false); }
   };
 
+  const addToCalendar = async (m: Msg) => {
+    setScheduling(m.id);
+    try {
+      const res = await fetch(`/api/v1/cases/${caseId}/portal/messages/${m.id}/schedule`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok || !json.success) { toast.error(json.error || "Couldn't add to calendar"); return; }
+      toast.success(`Added to calendar — ${fmtMeeting(json.data.deadline.dueDate)}`);
+      setMessages((prev) => prev.map((x) => x.id === m.id ? { ...x, meetingScheduled: true, meetingProposal: null } : x));
+    } finally { setScheduling(null); }
+  };
+
   return (
     <div style={{ marginTop: "1rem", padding: "0.85rem", borderRadius: 10, border: "1px solid var(--border-default)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-muted)", fontWeight: 700, marginBottom: "0.6rem" }}>
@@ -67,6 +86,38 @@ export function PortalMessages({ caseId }: { caseId: string }) {
               <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", marginTop: 2, textAlign: m.fromClient ? "left" : "right" }}>
                 {m.fromClient ? "Client" : (m.authorName || "You")} · {fmt(m.createdAt)}
               </div>
+
+              {/* AI meeting suggestion — attorney reviews & confirms; never auto-booked. */}
+              {m.fromClient && m.meetingProposal?.startsAt && !m.meetingScheduled && (
+                <div style={{ marginTop: 6, padding: "0.55rem 0.65rem", borderRadius: 10, background: "var(--warning-bg, #fdf6e3)", border: "1px solid var(--gold)", maxWidth: 320 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: "0.72rem", fontWeight: 700, color: "var(--navy)" }}>
+                    <CalendarPlus style={{ width: 13, height: 13, color: "var(--gold)" }} /> Meeting request detected
+                  </div>
+                  <div style={{ fontSize: "0.82rem", color: "var(--navy)", fontWeight: 600, marginTop: 3 }}>
+                    {m.meetingProposal.title || "Client meeting"}
+                  </div>
+                  <div style={{ fontSize: "0.78rem", color: "var(--text-secondary)" }}>
+                    {fmtMeeting(m.meetingProposal.startsAt)}{m.meetingProposal.durationMins ? ` · ${m.meetingProposal.durationMins} min` : ""}
+                  </div>
+                  <button
+                    onClick={() => addToCalendar(m)}
+                    disabled={scheduling === m.id}
+                    className="lf-btn lf-btn-gold"
+                    style={{ marginTop: 6, padding: "0.35rem 0.7rem", fontSize: "0.78rem" }}
+                  >
+                    {scheduling === m.id ? <Loader2 style={{ width: 13, height: 13, animation: "spin 1s linear infinite" }} /> : <CalendarPlus style={{ width: 13, height: 13 }} />}
+                    Add to calendar
+                  </button>
+                  <p style={{ fontSize: "0.66rem", color: "var(--text-muted)", marginTop: 5, lineHeight: 1.4 }}>
+                    AI suggestion — review before confirming. Adding creates a calendar entry; it does not notify the client.
+                  </p>
+                </div>
+              )}
+              {m.fromClient && m.meetingScheduled && (
+                <div style={{ marginTop: 6, display: "inline-flex", alignItems: "center", gap: 5, fontSize: "0.72rem", color: "var(--success, #2e7d5b)", fontWeight: 600 }}>
+                  <CalendarCheck style={{ width: 13, height: 13 }} /> Added to calendar
+                </div>
+              )}
             </div>
           ))
         )}

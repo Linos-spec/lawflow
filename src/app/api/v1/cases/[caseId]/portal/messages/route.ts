@@ -17,7 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cas
     where: { caseId },
     orderBy: { createdAt: "asc" },
     take: 200,
-    select: { id: true, sender: true, authorName: true, body: true, createdAt: true, readByFirm: true },
+    select: { id: true, sender: true, authorName: true, body: true, createdAt: true, readByFirm: true, meetingProposal: true, meetingDeadlineId: true },
   });
 
   await prisma.portalMessage.updateMany({
@@ -29,6 +29,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ cas
     messages: messages.map((m) => ({
       id: m.id, fromClient: m.sender === "CLIENT", authorName: m.authorName,
       body: m.body, createdAt: m.createdAt.toISOString(),
+      // Attorney-gated meeting suggestion (null unless the client proposed a time).
+      meetingProposal: m.meetingDeadlineId ? null : (m.meetingProposal ?? null),
+      meetingScheduled: !!m.meetingDeadlineId,
     })),
   });
 }
