@@ -310,6 +310,12 @@ model Firm {
   // Require all firm users to set up two-factor authentication.
   mfaRequired          Boolean @default(false)
 
+  // ── Terms/DPA click-through acceptance (recorded at signup for enforceability) ──
+  termsAcceptedAt      DateTime?   // when the admin accepted the Terms + DPA
+  termsVersion         String?     // POLICY_VERSION accepted
+  termsAcceptedByEmail String?     // who accepted (the registering admin)
+  termsAcceptedIp      String?     // source IP at acceptance
+
   // ── Billing (Stripe per-seat subscription) ──
   trialEndsAt          DateTime?   // 14-day trial from firm creation
   stripeCustomerId     String?     @unique

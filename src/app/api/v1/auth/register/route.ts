@@ -2,11 +2,12 @@ import { NextRequest } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { successResponse, errorResponse } from "@/lib/api/response";
+import { POLICY_VERSION } from "@/lib/policies";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, firmName, password } = body;
+    const { name, email, firmName, password, acceptedTerms } = body;
 
     if (!name || !email || !firmName || !password) {
       return errorResponse("All fields are required", 400);
@@ -15,6 +16,16 @@ export async function POST(request: NextRequest) {
     if (password.length < 8) {
       return errorResponse("Password must be at least 8 characters", 400);
     }
+
+    // Enforceable, auditable click-through: the account cannot be created without it.
+    if (acceptedTerms !== true) {
+      return errorResponse("You must accept the Terms of Service and Data Processing Addendum to create an account.", 400);
+    }
+
+    const acceptedIp =
+      request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+      request.headers.get("x-real-ip") ||
+      null;
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -37,6 +48,11 @@ export async function POST(request: NextRequest) {
           organizationId: organization.id,
           // 14-day free trial starts at signup.
           trialEndsAt: new Date(Date.now() + 14 * 86_400_000),
+          // Record the Terms/DPA acceptance for enforceability & audit.
+          termsAcceptedAt: new Date(),
+          termsVersion: POLICY_VERSION,
+          termsAcceptedByEmail: email,
+          termsAcceptedIp: acceptedIp,
         },
       });
 

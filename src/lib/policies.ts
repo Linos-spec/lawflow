@@ -8,6 +8,18 @@ export const POLICY_EFFECTIVE_DATE = "August 25, 2026";
 export const POLICY_ENTITY = "Linos LLC";
 export const POLICY_ENTITY_LOCATION = "Allen, Texas";
 
+// Version string recorded against each firm's click-through acceptance at signup.
+// Bump this whenever the Terms or DPA change materially so acceptance is auditable.
+export const POLICY_VERSION = "2026-08-25";
+
+// Current third-party subprocessors, named in the DPA so firms can diligence them
+// up front (rather than "on request"). All process data in the United States.
+export const SUBPROCESSORS: { name: string; purpose: string; location: string }[] = [
+  { name: "DigitalOcean, LLC", purpose: "Application hosting, managed database & storage", location: "United States (New York)" },
+  { name: "Anthropic, PBC", purpose: "AI features (Claude) — zero data retention, no model training", location: "United States" },
+  { name: "OpenAI, L.L.C.", purpose: "Text embeddings for search — no model training on API content", location: "United States" },
+];
+
 export type Policy = {
   slug: string;
   title: string;
@@ -53,13 +65,20 @@ export const POLICIES: Record<string, Policy> = {
       ]},
       { heading: "Your responsibilities", body: [
         "You are responsible for the accuracy and lawfulness of the data you enter, for maintaining professional and ethical obligations to your clients, and for reviewing any AI-generated output before relying on it.",
-        "AI features are decision-support tools, not legal advice, and may be incomplete or incorrect. You remain responsible for all professional judgments.",
+        "AI features are decision-support tools, not legal advice, and may be incomplete or incorrect. You remain responsible for all professional judgments, including verifying scope of representation and that any fee structure (hourly, flat, or contingency) is permitted for the matter under the rules of your jurisdiction.",
+        "You are solely responsible for your own client trust accounting and IOLTA obligations. The service records fees and invoices for your convenience but is not a trust-accounting system and does not hold, move, or reconcile client funds.",
+      ]},
+      { heading: "Your data & ownership", body: [
+        "As between you and Linos LLC, your firm owns all client and matter data it enters (“Firm Data”). We claim no ownership of it and use it only to provide and secure the service on your instructions.",
+        "You can export your Firm Data at any time from within the app. After termination or cancellation, you may retrieve your Firm Data for 60 days; after that window we delete or de-identify it in the ordinary course, except where retention is required by law.",
       ]},
       { heading: "Fees & term", body: [
-        "Fees are described in your subscription. The agreement continues until terminated as described here. You can export your data before termination.",
+        "Fees are described in your subscription. The agreement continues until terminated as described here. Termination for non-payment does not remove your 60-day data-retrieval window described above.",
       ]},
       { heading: "Disclaimers & liability", body: [
-        "The service is provided “as is.” To the fullest extent permitted by law, Linos LLC disclaims implied warranties and limits its liability for the service.",
+        "The service is provided “as is,” and to the fullest extent permitted by law Linos LLC disclaims implied warranties, including merchantability and fitness for a particular purpose.",
+        "Except for the excluded claims below, Linos LLC’s total liability arising out of or relating to the service is capped at the fees you paid for the service in the twelve (12) months before the event giving rise to the claim, and neither party is liable for indirect, incidental, or consequential damages.",
+        "That cap and the “as is” disclaimer do not apply to Linos LLC’s breach of its confidentiality and data-security obligations, its indemnification obligations, or liability that cannot be limited under applicable law.",
       ]},
       { heading: "Governing law & disputes", body: [
         "These terms are governed by the laws of the State of Texas, without regard to its conflict-of-law rules. The exclusive venue for any dispute arising out of or relating to these terms or the service is the state and federal courts located in Collin County, Texas, and you and Linos LLC consent to the personal jurisdiction of those courts.",
@@ -78,13 +97,15 @@ export const POLICIES: Record<string, Policy> = {
         "Subject matter: provision of the practice-management service. Duration: the term of your subscription. Categories of data subjects: your clients, prospective clients, and opposing parties. Categories of data: contact details, matter information, documents, and billing records.",
       ]},
       { heading: "Security & subprocessors", body: [
-        "We implement appropriate technical and organizational measures (encryption, access control, audit logging). We use vetted subprocessors under equivalent data-protection terms and maintain a current subprocessor list available on request.",
+        "We implement appropriate technical and organizational measures (encryption in transit and at rest, role-based access control, tenant isolation, and audit logging).",
+        `We use the following subprocessors, each under equivalent data-protection terms: ${SUBPROCESSORS.map((s) => `${s.name} — ${s.purpose} (${s.location})`).join("; ")}. Our AI subprocessors do not retain your prompts to train shared models. We will give you advance notice before adding or replacing a subprocessor, and you may object on reasonable data-protection grounds.`,
       ]},
       { heading: "Data-subject requests & breach", body: [
-        "We assist you in responding to data-subject requests and provide export/erasure tooling in-app. We notify you without undue delay after becoming aware of a personal-data breach.",
+        "We assist you in responding to data-subject requests and provide export/erasure tooling in-app.",
+        "We notify you of a personal-data breach affecting your data without undue delay, and in any event within 72 hours of confirming the incident, with the information reasonably available to you at that time.",
       ]},
       { heading: "International transfers & deletion", body: [
-        "Where data is transferred across borders, we rely on appropriate safeguards (e.g. Standard Contractual Clauses). On termination we delete or return personal data as instructed.",
+        "Where data is transferred across borders, we rely on appropriate safeguards (e.g. Standard Contractual Clauses). On termination we return or delete personal data as instructed, and in any case delete or de-identify it within 60 days of the end of your subscription, except where retention is required by law.",
       ]},
     ],
   },

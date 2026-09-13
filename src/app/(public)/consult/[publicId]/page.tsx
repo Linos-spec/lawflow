@@ -396,6 +396,9 @@ export default function ConsultIntakePage() {
                 <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 3 }} />
                 <span>I consent to being contacted by the firm about my inquiry.</span>
               </label>
+              <p style={{ marginTop: "0.85rem", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+                Submitting this form does not create an attorney-client relationship, and nothing here is legal advice. The firm will decide whether it can represent you after reviewing your inquiry. Please do not send confidential or time-sensitive details until the firm confirms it can help.
+              </p>
             </div>
           </div>
         )}

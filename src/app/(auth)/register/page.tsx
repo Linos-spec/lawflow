@@ -26,7 +26,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, firmName, password }),
+        body: JSON.stringify({ name, email, firmName, password, acceptedTerms: acceptTerms }),
       });
 
       const data = await res.json();
@@ -210,7 +210,8 @@ export default function RegisterPage() {
               />
               <span>
                 I agree to the{" "}
-                <Link href="/legal/terms" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Terms of Service</Link>{" "}
+                <Link href="/legal/terms" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Terms of Service</Link>,{" "}
+                <Link href="/legal/privacy" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Privacy Policy</Link>,{" "}
                 and{" "}
                 <Link href="/legal/dpa" target="_blank" style={{ color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Data Processing Addendum</Link>.
               </span>

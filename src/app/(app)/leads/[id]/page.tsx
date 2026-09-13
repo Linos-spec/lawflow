@@ -199,7 +199,7 @@ export default function LeadDetailPage() {
                 </div>
               </div>
               {lead.retainerRationale && <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", lineHeight: 1.6 }}>{lead.retainerRationale}</p>}
-              <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontStyle: "italic" }}>Advisory only — the attorney sets final fee terms.</p>
+              <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", fontStyle: "italic" }}>Advisory only — the attorney sets final fee terms. Confirm the fee structure is permitted for this matter in your jurisdiction (e.g., contingency fees are prohibited in some matter types) before sending.</p>
               <button onClick={draftEngagementLetter} disabled={busy} className="lf-btn lf-btn-outline" style={{ padding: "0.55rem 1rem", alignSelf: "flex-start" }}>
                 <FileText style={{ width: 16, height: 16 }} /> Draft engagement letter
               </button>
@@ -212,6 +212,9 @@ export default function LeadDetailPage() {
           <h3 style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontFamily: "var(--font-heading)", fontSize: "1.05rem", fontWeight: 700, color: "var(--navy)", marginBottom: "1rem" }}>
             <cb.Icon style={{ width: 18, height: 18, color: cb.text }} /> Conflict Check
           </h3>
+          <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "0.75rem", lineHeight: 1.5 }}>
+            Automated screening aid — not a legal conclusion. You remain responsible for clearing conflicts under your professional-responsibility rules (e.g., Rules 1.7/1.9).
+          </p>
           {!latestCheck || latestCheck.matchCount === 0 ? (
             <p style={{ color: "var(--success, #2e7d5b)", fontSize: "0.875rem" }}>
               No conflicts found. Searched: {latestCheck?.searchedNames.join(", ") || lead.name}.
