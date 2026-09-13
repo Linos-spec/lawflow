@@ -14,11 +14,13 @@ export async function GET() {
 
   const firm = await prisma.firm.findFirst({
     where: { id: ctx.firmId },
-    select: { id: true, name: true, email: true, phone: true, website: true, address: true, calendlyUrl: true, aiModeEnabled: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true,
+    select: { id: true, name: true, email: true, phone: true, website: true, address: true, calendlyUrl: true, calendlyName: true, calendlyToken: true, aiModeEnabled: true, aiAutoCreateMatter: true, aiAutoGenerateTasks: true, aiAutoEngagementLetter: true,
       deliveryConnected: true, deliveryApiEmail: true, deliveryPickupLine1: true, deliveryPickupLine2: true, deliveryPickupCity: true, deliveryPickupState: true, deliveryPickupPostal: true },
   });
   if (!firm) return errorResponse("Firm not found", 404);
-  return successResponse(firm);
+  // Never expose the Calendly token — surface only whether an account is connected.
+  const { calendlyToken, ...safe } = firm;
+  return successResponse({ ...safe, calendlyConnected: !!calendlyToken });
 }
 
 const updateSchema = z.object({

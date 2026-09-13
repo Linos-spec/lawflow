@@ -76,6 +76,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ toke
     firmEmail: matter.firm.email,
     firmPhone: matter.firm.phone,
     calendlyUrl: matter.firm.calendlyUrl ?? null,
+    matterId: matter.id,
     clientName: matter.client.name,
     matterTitle: matter.title,
     matterNumber: matter.caseNumber,

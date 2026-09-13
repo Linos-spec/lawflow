@@ -96,6 +96,35 @@ export default function SettingsPage() {
     } finally { setSavingCal(false); }
   }
 
+  // Calendly account connection (auto-syncs booked events into the calendar).
+  const [calToken, setCalToken] = useState("");
+  const [connectingCal, setConnectingCal] = useState(false);
+  async function connectCalendly() {
+    if (!isAdmin || connectingCal || !calToken.trim()) return;
+    setConnectingCal(true);
+    try {
+      const res = await fetch("/api/v1/firm/calendly-connection", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: calToken.trim() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(json.error || "Couldn't connect Calendly"); return; }
+      setCalToken("");
+      await refresh();
+      toast.success(`Calendly connected${json.data?.name ? ` — ${json.data.name}` : ""}`);
+    } finally { setConnectingCal(false); }
+  }
+  async function disconnectCalendly() {
+    if (!isAdmin || connectingCal) return;
+    setConnectingCal(true);
+    try {
+      const res = await fetch("/api/v1/firm/calendly-connection", { method: "DELETE" });
+      if (!res.ok) { toast.error("Couldn't disconnect"); return; }
+      await refresh();
+      toast.success("Calendly disconnected");
+    } finally { setConnectingCal(false); }
+  }
+
   // Notification toggles
   const [notifs, setNotifs] = useState({
     deadlines: true,
@@ -274,6 +303,53 @@ export default function SettingsPage() {
                 </a>
               )}
               {!isAdmin && <p className="text-xs" style={{ color: "var(--text-muted)", marginTop: 8 }}>Only an admin can change the scheduling link.</p>}
+
+              {/* Two-way sync: connect the Calendly account so booked events appear on the calendar */}
+              <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px dashed var(--border-default)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                  <div>
+                    <p style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.9rem" }}>Auto-sync booked meetings</p>
+                    <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+                      Connect your Calendly account and confirmed bookings appear on your matter calendar automatically — cancellations remove them.
+                    </p>
+                  </div>
+                  {firm?.calendlyConnected && (
+                    <span className="lf-badge lf-badge-green" style={{ whiteSpace: "nowrap" }}>
+                      <Check style={{ width: 13, height: 13 }} /> Connected{firm.calendlyName ? ` · ${firm.calendlyName}` : ""}
+                    </span>
+                  )}
+                </div>
+
+                {firm?.calendlyConnected ? (
+                  <button className="lf-btn lf-btn-outline" type="button" onClick={disconnectCalendly} disabled={!isAdmin || connectingCal} style={{ marginTop: 12 }}>
+                    {connectingCal ? "Disconnecting…" : "Disconnect Calendly"}
+                  </button>
+                ) : (
+                  <div style={{ marginTop: 12 }}>
+                    <label className="lf-label">Calendly personal access token</label>
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      <input
+                        type="password"
+                        className="lf-input"
+                        style={{ flex: 1, minWidth: 240 }}
+                        placeholder="Paste your Calendly PAT"
+                        value={calToken}
+                        onChange={(e) => setCalToken(e.target.value)}
+                        disabled={!isAdmin}
+                        autoComplete="off"
+                      />
+                      <button className="lf-btn lf-btn-gold" type="button" onClick={connectCalendly} disabled={!isAdmin || connectingCal || !calToken.trim()}>
+                        {connectingCal ? "Connecting…" : "Connect"}
+                      </button>
+                    </div>
+                    <p className="text-xs" style={{ color: "var(--text-muted)", marginTop: 8, lineHeight: 1.5 }}>
+                      Create a token at{" "}
+                      <a href="https://calendly.com/integrations/api_webhooks" target="_blank" rel="noreferrer" style={{ color: "var(--gold)", fontWeight: 600 }}>calendly.com → Integrations → API &amp; webhooks</a>.
+                      We store it securely and use it only to register a booking webhook. You can disconnect anytime.
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

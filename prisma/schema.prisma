@@ -313,6 +313,14 @@ model Firm {
   // Calendly scheduling link — when set, clients can self-book from the portal and
   // the firm can send the booking link in response to a detected meeting request.
   calendlyUrl          String?
+  // ── Calendly account connection (optional) — closes the loop so a booked event
+  //    auto-creates an in-app CLIENT_MEETING. Token is server-only, never returned. ──
+  calendlyToken        String?   // Calendly personal access token (Bearer)
+  calendlyUserUri      String?   // https://api.calendly.com/users/…
+  calendlyOrgUri       String?   // current organization URI
+  calendlyName         String?   // display name of the connected account
+  calendlyWebhookUri   String?   // webhook_subscription URI (to delete on disconnect)
+  calendlySigningKey   String?   // HMAC key Calendly signs webhook payloads with
 
   // ── Terms/DPA click-through acceptance (recorded at signup for enforceability) ──
   termsAcceptedAt      DateTime?   // when the admin accepted the Terms + DPA
@@ -611,6 +619,9 @@ model Deadline {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
+  // Set when this entry came from a booked Calendly event (dedupe + cancel handling).
+  calendlyEventUri String?
+
   firmId String
   firm   Firm   @relation(fields: [firmId], references: [id], onDelete: Cascade)
 
@@ -621,6 +632,7 @@ model Deadline {
   @@index([caseId])
   @@index([dueDate])
   @@index([status])
+  @@index([calendlyEventUri])
 }
 
 model BillingRecord {

@@ -16,6 +16,16 @@ const fmt = (iso: string) =>
 const fmtMeeting = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
+// Tag a Calendly link with the matter id so a booking maps back to this matter.
+function withMatterTracking(url: string, caseId: string): string {
+  try {
+    const u = new URL(url);
+    u.searchParams.set("utm_content", caseId);
+    u.searchParams.set("utm_source", "linoscore-portal");
+    return u.toString();
+  } catch { return url; }
+}
+
 /** Firm-side portal message thread for a matter (client ⇄ firm). */
 export function PortalMessages({ caseId }: { caseId: string }) {
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -68,7 +78,7 @@ export function PortalMessages({ caseId }: { caseId: string }) {
     if (!calendlyUrl) return;
     setScheduling(m.id);
     try {
-      const body = `You can pick a time that works for you here: ${calendlyUrl}`;
+      const body = `You can pick a time that works for you here: ${withMatterTracking(calendlyUrl, caseId)}`;
       const res = await fetch(`/api/v1/cases/${caseId}/portal/messages`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: body }),
       });

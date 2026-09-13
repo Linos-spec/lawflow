@@ -8,13 +8,24 @@ interface Stage { key: string; label: string; done: boolean; current: boolean }
 interface Doc { id: string; title: string; documentType: string; signatureStatus: string; uploadedByClient?: boolean }
 interface Msg { id: string; fromClient: boolean; authorName?: string | null; body: string; createdAt: string }
 interface Portal {
-  firmName: string; firmEmail: string | null; firmPhone: string | null; calendlyUrl?: string | null;
+  firmName: string; firmEmail: string | null; firmPhone: string | null; calendlyUrl?: string | null; matterId?: string;
   clientName: string; matterTitle: string; matterNumber: string;
   progress: Stage[]; currentLabel: string; closed: boolean;
   outstandingBalance: number; documents: Doc[]; messages: Msg[];
 }
 
 type Gate = "loading" | "pin" | "expired" | "inactive" | "ready";
+
+// Tag the firm's Calendly link with the matter id so a booking maps back to it.
+function bookingUrl(url: string, matterId?: string): string {
+  if (!matterId) return url;
+  try {
+    const u = new URL(url);
+    u.searchParams.set("utm_content", matterId);
+    u.searchParams.set("utm_source", "linoscore-portal");
+    return u.toString();
+  } catch { return url; }
+}
 
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 const fmt = (iso: string) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
@@ -247,7 +258,7 @@ export default function ClientPortalPage() {
           {data.firmPhone && <a href={`tel:${data.firmPhone}`} style={{ display: "inline-flex", alignItems: "center", gap: 5, color: "var(--brand)", fontSize: "0.88rem", textDecoration: "none" }}><Phone style={{ width: 15, height: 15 }} />{data.firmPhone}</a>}
           {!data.firmEmail && !data.firmPhone && !data.calendlyUrl && <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Use the messages above and your firm will be glad to help.</span>}
           {data.calendlyUrl && (
-            <a href={data.calendlyUrl} target="_blank" rel="noreferrer" className="lf-btn lf-btn-gold" style={{ marginLeft: "auto", padding: "0.5rem 0.9rem", fontSize: "0.85rem", textDecoration: "none" }}>
+            <a href={bookingUrl(data.calendlyUrl, data.matterId)} target="_blank" rel="noreferrer" className="lf-btn lf-btn-gold" style={{ marginLeft: "auto", padding: "0.5rem 0.9rem", fontSize: "0.85rem", textDecoration: "none" }}>
               <CalendarClock style={{ width: 15, height: 15 }} /> Schedule a meeting
             </a>
           )}
