@@ -111,7 +111,12 @@ export default function SettingsPage() {
       if (!res.ok) { toast.error(json.error || "Couldn't connect Calendly"); return; }
       setCalToken("");
       await refresh();
-      toast.success(`Calendly connected${json.data?.name ? ` — ${json.data.name}` : ""}`);
+      if (json.data?.linkOnly) {
+        // Valid token, but the plan can't use webhooks — booking link still works.
+        toast.info(json.data.message || "Booking link set. Auto-sync needs a Calendly Standard plan.", { duration: 9000 });
+      } else {
+        toast.success(`Calendly connected${json.data?.name ? ` — ${json.data.name}` : ""}`);
+      }
     } finally { setConnectingCal(false); }
   }
   async function disconnectCalendly() {
@@ -346,6 +351,8 @@ export default function SettingsPage() {
                       Create a token at{" "}
                       <a href="https://calendly.com/integrations/api_webhooks" target="_blank" rel="noreferrer" style={{ color: "var(--gold)", fontWeight: 600 }}>calendly.com → Integrations → API &amp; webhooks</a>.
                       We store it securely and use it only to register a booking webhook. You can disconnect anytime.
+                      <br />
+                      <b>Note:</b> auto-syncing booked meetings requires a Calendly <b>Standard</b> plan or higher (webhooks aren&apos;t available on the free plan). Sending and self-serve booking links work on any plan.
                     </p>
                   </div>
                 )}

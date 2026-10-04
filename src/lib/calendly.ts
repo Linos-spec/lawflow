@@ -60,11 +60,23 @@ async function deleteWebhook(token: string, webhookUri: string): Promise<void> {
   }).catch(() => {});
 }
 
+/** True when a webhook error is Calendly's paid-plan gate (free plans can't use webhooks). */
+function isPlanLimit(err: unknown): boolean {
+  const m = err instanceof Error ? err.message : String(err);
+  return /→ 403:/.test(m) || /upgrade/i.test(m) || /permission denied/i.test(m);
+}
+
+export type CalendlyConnectResult =
+  | { mode: "full"; name: string; schedulingUrl: string }
+  | { mode: "link-only"; name: string; schedulingUrl: string };
+
 /**
  * Connect a firm's Calendly account: validate the token, register the webhook,
- * and persist the connection. Returns the connected account's display info.
+ * and persist the connection. If the account's plan doesn't allow webhooks
+ * (Calendly requires Standard+), fall back to "link-only": we still adopt the
+ * public booking link so clients can self-book, but auto-sync stays off.
  */
-export async function connectCalendly(firmId: string, token: string, callbackBase: string): Promise<{ name: string; schedulingUrl: string }> {
+export async function connectCalendly(firmId: string, token: string, callbackBase: string): Promise<CalendlyConnectResult> {
   const me = await calendlyMe(token);
 
   // Clean up any prior subscription so we don't leak duplicates.
@@ -73,12 +85,28 @@ export async function connectCalendly(firmId: string, token: string, callbackBas
     await deleteWebhook(existing.calendlyToken, existing.calendlyWebhookUri);
   }
 
-  const signingKey = crypto.randomBytes(24).toString("hex");
-  const url = `${callbackBase.replace(/\/$/, "")}/api/webhooks/calendly/${firmId}`;
-  const webhookUri = await createWebhook(token, { url, org: me.organization, user: me.uri, signingKey });
-
   // If the firm hasn't set a public booking link yet, adopt their Calendly one.
   const adoptBookingUrl = !existing?.calendlyUrl && me.schedulingUrl ? me.schedulingUrl : undefined;
+
+  const signingKey = crypto.randomBytes(24).toString("hex");
+  const url = `${callbackBase.replace(/\/$/, "")}/api/webhooks/calendly/${firmId}`;
+
+  let webhookUri: string;
+  try {
+    webhookUri = await createWebhook(token, { url, org: me.organization, user: me.uri, signingKey });
+  } catch (err) {
+    if (!isPlanLimit(err)) throw err;
+    // Free plan: enable booking links only, keep no server credentials/webhook.
+    await prisma.firm.update({
+      where: { id: firmId },
+      data: {
+        calendlyToken: null, calendlyUserUri: null, calendlyOrgUri: null,
+        calendlyName: null, calendlyWebhookUri: null, calendlySigningKey: null,
+        ...(adoptBookingUrl ? { calendlyUrl: adoptBookingUrl } : {}),
+      },
+    });
+    return { mode: "link-only", name: me.name, schedulingUrl: me.schedulingUrl };
+  }
 
   await prisma.firm.update({
     where: { id: firmId },
@@ -93,7 +121,7 @@ export async function connectCalendly(firmId: string, token: string, callbackBas
     },
   });
 
-  return { name: me.name, schedulingUrl: me.schedulingUrl };
+  return { mode: "full", name: me.name, schedulingUrl: me.schedulingUrl };
 }
 
 /** Disconnect: remove the webhook and clear stored credentials. */

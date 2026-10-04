@@ -20,12 +20,22 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await connectCalendly(ctx.firmId, token, publicBaseUrl(req));
+    if (result.mode === "link-only") {
+      // Token was valid, but the account's Calendly plan can't use webhooks.
+      await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "firm.update", category: "config", entity: "Firm", entityId: ctx.firmId, entityLabel: "Calendly", details: `Calendly booking link set (${result.name}); auto-sync unavailable on current plan` });
+      return successResponse({
+        connected: false,
+        linkOnly: true,
+        name: result.name,
+        message: "Your Calendly booking link is set, so clients can self-book. Auto-syncing booked meetings into your calendar needs a Calendly Standard plan or higher — upgrade, then reconnect to turn it on.",
+      });
+    }
     await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "firm.update", category: "config", entity: "Firm", entityId: ctx.firmId, entityLabel: "Calendly", details: `Connected Calendly account (${result.name})` });
     return successResponse({ connected: true, name: result.name });
   } catch (err) {
     console.error("Calendly connect failed:", err);
-    // Most failures are a bad/expired token or insufficient scope.
-    return errorResponse("Couldn't connect to Calendly. Check that the token is a valid personal access token with webhook permissions.", 400);
+    // Reaching here means the token itself was rejected (validation call failed).
+    return errorResponse("Couldn't connect to Calendly. Check that this is a valid Calendly personal access token and try again.", 400);
   }
 }
 
