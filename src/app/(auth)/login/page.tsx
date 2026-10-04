@@ -160,7 +160,10 @@ function LoginForm() {
                 </div>
                 {/* Password */}
                 <div>
-                  <label htmlFor="password" className="lf-label">Password</label>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                    <label htmlFor="password" className="lf-label">Password</label>
+                    <Link href="/forgot-password" style={{ fontSize: "0.8rem", color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>Forgot password?</Link>
+                  </div>
                   <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="lf-input" placeholder="Enter your password" required />
                 </div>
               </>

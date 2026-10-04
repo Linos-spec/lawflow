@@ -5,6 +5,8 @@ const publicRoutes = [
   "/login",
   "/register",
   "/signup",
+  "/forgot-password",
+  "/reset-password",
   "/pricing",
   "/features",
   // Prospective-client intake funnel, shared by a firm via its public link.
