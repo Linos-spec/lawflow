@@ -254,6 +254,8 @@ model User {
   email          String   @unique
   hashedPassword String
   role           UserRole @default(ASSOCIATE)
+  phone          String?  // contact number (editable in Settings → Profile)
+  barNumber      String?  // attorney bar number
   // Two-factor authentication (TOTP)
   mfaEnabled     Boolean  @default(false)
   mfaSecret      String?  // base32 TOTP secret (pending until mfaEnabled)

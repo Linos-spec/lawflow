@@ -29,7 +29,7 @@ const faqSections = [
       },
       {
         q: "Can I import existing data?",
-        a: "Bulk data import is coming soon. For now, you can add cases and clients one at a time through the respective forms.",
+        a: "Yes — you can bulk-import matters from a CSV file. Go to Cases and choose Import, then map your columns and confirm. Clients can be added individually from the Clients section (bulk client import is on the way).",
       },
     ],
   },

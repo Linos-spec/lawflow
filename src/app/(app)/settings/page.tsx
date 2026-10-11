@@ -138,6 +138,61 @@ export default function SettingsPage() {
     weeklyDigest: true,
   });
 
+  // Deep-link to a specific tab via ?tab= (e.g. dashboard "View all" → audit).
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab");
+    if (t && tabs.some((x) => x.id === t) && (!ADMIN_TABS.includes(t) || isAdmin)) setActiveTab(t as TabId);
+  }, [isAdmin]);
+
+  // ── Profile (current user) ──
+  const [profile, setProfile] = useState({ name: "", email: "", phone: "", barNumber: "" });
+  const [savingProfile, setSavingProfile] = useState(false);
+  useEffect(() => {
+    fetch("/api/v1/me").then((r) => r.json()).then((j) => {
+      if (j.success) setProfile({ name: j.data.name || "", email: j.data.email || "", phone: j.data.phone || "", barNumber: j.data.barNumber || "" });
+    }).catch(() => {});
+  }, []);
+  async function saveProfile() {
+    if (savingProfile) return;
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/v1/me", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: profile.name, phone: profile.phone, barNumber: profile.barNumber }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(j.error || "Couldn't save your profile"); return; }
+      toast.success("Profile saved");
+    } finally { setSavingProfile(false); }
+  }
+
+  // ── Firm details (admin) ──
+  const [firmForm, setFirmForm] = useState({ name: "", email: "", address: "", phone: "", website: "" });
+  const [savingFirm, setSavingFirm] = useState(false);
+  useEffect(() => {
+    if (firm) setFirmForm({ name: firm.name || "", email: firm.email || "", address: firm.address || "", phone: firm.phone || "", website: firm.website || "" });
+  }, [firm]);
+  async function saveFirm() {
+    if (!isAdmin || savingFirm) return;
+    setSavingFirm(true);
+    try {
+      const res = await fetch("/api/v1/firm", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: firmForm.name.trim(),
+          email: firmForm.email.trim() || null,   // API requires a valid email or null
+          phone: firmForm.phone.trim() || null,
+          address: firmForm.address.trim() || null,
+          website: firmForm.website.trim() || null,
+        }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(j.error || "Couldn't save firm details"); return; }
+      await refresh();
+      toast.success("Firm details saved");
+    } finally { setSavingFirm(false); }
+  }
+
   return (
     <div className="space-y-6">
       {/* Page header */}
@@ -202,44 +257,30 @@ export default function SettingsPage() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
                 <label className="lf-label">Full Name</label>
-                <input
-                  type="text"
-                  className="lf-input"
-                  defaultValue={session?.user?.name || ""}
-                  placeholder="Your full name"
-                />
+                <input type="text" className="lf-input" value={profile.name}
+                  onChange={(e) => setProfile((p) => ({ ...p, name: e.target.value }))} placeholder="Your full name" />
               </div>
               <div>
                 <label className="lf-label">Email Address</label>
-                <input
-                  type="email"
-                  className="lf-input"
-                  defaultValue={session?.user?.email || ""}
-                  placeholder="you@firm.com"
-                />
+                <input type="email" className="lf-input" value={profile.email} disabled readOnly placeholder="you@firm.com" style={{ opacity: 0.7 }} />
+                <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 4 }}>Your sign-in email. Contact support to change it.</p>
               </div>
               <div>
                 <label className="lf-label">Phone Number</label>
-                <input
-                  type="tel"
-                  className="lf-input"
-                  placeholder="(555) 123-4567"
-                />
+                <input type="tel" className="lf-input" value={profile.phone}
+                  onChange={(e) => setProfile((p) => ({ ...p, phone: e.target.value }))} placeholder="(555) 123-4567" />
               </div>
               <div>
                 <label className="lf-label">Bar Number</label>
-                <input
-                  type="text"
-                  className="lf-input"
-                  placeholder="e.g. 12345678"
-                />
+                <input type="text" className="lf-input" value={profile.barNumber}
+                  onChange={(e) => setProfile((p) => ({ ...p, barNumber: e.target.value }))} placeholder="e.g. 12345678" />
               </div>
             </div>
 
             <div className="flex justify-end pt-2">
-              <button className="lf-btn lf-btn-gold" type="button">
+              <button className="lf-btn lf-btn-gold" type="button" onClick={saveProfile} disabled={savingProfile || !profile.name.trim()}>
                 <Check style={{ width: 16, height: 16 }} />
-                Save Changes
+                {savingProfile ? "Saving…" : "Save Changes"}
               </button>
             </div>
           </div>
@@ -248,34 +289,42 @@ export default function SettingsPage() {
         {/* ── Firm Details ── */}
         {activeTab === "firm" && (
           <div className="lf-card max-w-2xl space-y-6">
+            {!isAdmin && <p className="text-sm" style={{ color: "var(--text-muted)" }}>Only an admin can edit firm details.</p>}
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2">
                 <label className="lf-label">Firm Name</label>
-                <input type="text" className="lf-input" placeholder="e.g. Mitchell & Associates" />
+                <input type="text" className="lf-input" placeholder="e.g. Mitchell & Associates" disabled={!isAdmin}
+                  value={firmForm.name} onChange={(e) => setFirmForm((f) => ({ ...f, name: e.target.value }))} />
               </div>
               <div>
-                <label className="lf-label">Primary Address</label>
-                <input type="text" className="lf-input" placeholder="123 Legal Ave, Suite 400" />
-              </div>
-              <div>
-                <label className="lf-label">City, State, ZIP</label>
-                <input type="text" className="lf-input" placeholder="New York, NY 10001" />
+                <label className="lf-label">Firm Email</label>
+                <input type="email" className="lf-input" placeholder="contact@yourfirm.com" disabled={!isAdmin}
+                  value={firmForm.email} onChange={(e) => setFirmForm((f) => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
                 <label className="lf-label">Firm Phone</label>
-                <input type="tel" className="lf-input" placeholder="(555) 000-0000" />
+                <input type="tel" className="lf-input" placeholder="(555) 000-0000" disabled={!isAdmin}
+                  value={firmForm.phone} onChange={(e) => setFirmForm((f) => ({ ...f, phone: e.target.value }))} />
               </div>
-              <div>
+              <div className="sm:col-span-2">
+                <label className="lf-label">Address</label>
+                <input type="text" className="lf-input" placeholder="123 Legal Ave, Suite 400, New York, NY 10001" disabled={!isAdmin}
+                  value={firmForm.address} onChange={(e) => setFirmForm((f) => ({ ...f, address: e.target.value }))} />
+              </div>
+              <div className="sm:col-span-2">
                 <label className="lf-label">Firm Website</label>
-                <input type="url" className="lf-input" placeholder="https://yourfirm.com" />
+                <input type="url" className="lf-input" placeholder="https://yourfirm.com" disabled={!isAdmin}
+                  value={firmForm.website} onChange={(e) => setFirmForm((f) => ({ ...f, website: e.target.value }))} />
               </div>
             </div>
-            <div className="flex justify-end pt-2">
-              <button className="lf-btn lf-btn-gold" type="button">
-                <Check style={{ width: 16, height: 16 }} />
-                Save Changes
-              </button>
-            </div>
+            {isAdmin && (
+              <div className="flex justify-end pt-2">
+                <button className="lf-btn lf-btn-gold" type="button" onClick={saveFirm} disabled={savingFirm || !firmForm.name.trim()}>
+                  <Check style={{ width: 16, height: 16 }} />
+                  {savingFirm ? "Saving…" : "Save Changes"}
+                </button>
+              </div>
+            )}
 
             {/* Client scheduling (Calendly) — functional */}
             <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "1.25rem" }}>

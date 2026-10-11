@@ -22,6 +22,36 @@ import {
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/utils";
 
+interface ActivityRecord {
+  id: string;
+  action: string;
+  entity: string;
+  entityLabel: string | null;
+  details: string | null;
+  actorName: string | null;
+  createdAt: string;
+}
+
+function activityVerb(action: string): string {
+  // "case.create" → "created", "deadline.delete" → "deleted", fallback: humanize
+  const v = action.split(".")[1] || action;
+  const map: Record<string, string> = {
+    create: "created", update: "updated", delete: "deleted", remove: "removed",
+    convert: "converted", login: "signed in", login_failed: "failed sign-in",
+    role_change: "changed role", profile_update: "updated profile", password_reset: "reset password",
+  };
+  return map[v] || v.replace(/_/g, " ");
+}
+
+function timeAgo(iso: string): string {
+  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 interface CaseRecord {
   id: string;
   status: string;
@@ -104,6 +134,7 @@ export default function DashboardPage() {
   const [deadlines, setDeadlines] = useState<DeadlineRecord[]>([]);
   const [billingRecords, setBillingRecords] = useState<BillingRecord[]>([]);
   const [pendingSigCount, setPendingSigCount] = useState(0);
+  const [activity, setActivity] = useState<ActivityRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Hydration-safe: set greeting and date only on client
@@ -127,24 +158,27 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [casesRes, deadlinesRes, billingRes, sigRes] = await Promise.all([
+        const [casesRes, deadlinesRes, billingRes, sigRes, activityRes] = await Promise.all([
           fetch("/api/v1/cases?limit=100"),
           fetch("/api/v1/deadlines?limit=100"),
           fetch("/api/v1/billing?limit=100"),
           fetch("/api/v1/documents?signature=PENDING"),
+          fetch("/api/v1/audit-logs?limit=6"),
         ]);
 
-        const [casesJson, deadlinesJson, billingJson, sigJson] = await Promise.all([
+        const [casesJson, deadlinesJson, billingJson, sigJson, activityJson] = await Promise.all([
           casesRes.json(),
           deadlinesRes.json(),
           billingRes.json(),
           sigRes.json(),
+          activityRes.json(),
         ]);
 
         if (casesJson.success) setCases(casesJson.data);
         if (deadlinesJson.success) setDeadlines(deadlinesJson.data);
         if (billingJson.success) setBillingRecords(billingJson.data);
         if (sigJson.success) setPendingSigCount(Array.isArray(sigJson.data) ? sigJson.data.length : 0);
+        if (activityJson.success) setActivity(activityJson.data.logs || []);
       } catch {
         toast.error("Failed to load dashboard data");
       } finally {
@@ -550,7 +584,6 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Activity */}
-        {/* TODO: Replace with real audit log API */}
         <div className="lf-card">
           <div className="flex items-center justify-between mb-4">
             <h2
@@ -562,10 +595,28 @@ export default function DashboardPage() {
             >
               Recent Activity
             </h2>
+            {activity.length > 0 && (
+              <Link href="/settings?tab=audit" style={{ fontSize: "0.8rem", color: "var(--gold)", fontWeight: 600, textDecoration: "none" }}>View all</Link>
+            )}
           </div>
-          <div className="py-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
-            No recent activity yet. Actions across your matters will show up here.
-          </div>
+          {activity.length === 0 ? (
+            <div className="py-8 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+              No recent activity yet. Actions across your matters will show up here.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {activity.map((a) => (
+                <div key={a.id} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, padding: "0.5rem 0", borderBottom: "1px solid var(--border-default)" }}>
+                  <span style={{ fontSize: "0.85rem", color: "var(--text-secondary)", lineHeight: 1.4 }}>
+                    <b style={{ color: "var(--navy)" }}>{a.actorName || "Someone"}</b> {activityVerb(a.action)}{" "}
+                    {a.entityLabel ? <b style={{ color: "var(--navy)" }}>{a.entityLabel}</b> : <span style={{ color: "var(--text-muted)" }}>{a.entity.toLowerCase()}</span>}
+                    {a.details ? <span style={{ color: "var(--text-muted)" }}> · {a.details}</span> : null}
+                  </span>
+                  <span style={{ fontSize: "0.72rem", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{timeAgo(a.createdAt)}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
