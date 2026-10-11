@@ -16,13 +16,6 @@ const ROLE_HELP: Record<Role, string> = {
   PARALEGAL: "Support matters and documents; most limited.",
 };
 
-function makePassword() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-  const arr = new Uint32Array(14);
-  crypto.getRandomValues(arr);
-  return Array.from(arr, (n) => chars[n % chars.length]).join("");
-}
-
 export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,9 +23,9 @@ export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
 
   // Add-user form
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", role: "ASSOCIATE" as Role, password: "" });
+  const [form, setForm] = useState({ name: "", email: "", role: "ASSOCIATE" as Role });
   const [adding, setAdding] = useState(false);
-  const [created, setCreated] = useState<{ name: string; email: string; password: string } | null>(null);
+  const [created, setCreated] = useState<{ name: string; email: string; inviteSent: boolean; inviteLink?: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const load = useCallback(async () => {
@@ -70,7 +63,7 @@ export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
   };
 
   const openAdd = () => {
-    setForm({ name: "", email: "", role: "ASSOCIATE", password: makePassword() });
+    setForm({ name: "", email: "", role: "ASSOCIATE" });
     setCreated(null);
     setShowAdd(true);
   };
@@ -83,15 +76,15 @@ export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.success) { toast.error(j.error || "Could not add user"); return; }
       setMembers((prev) => [...prev, j.data].sort((a, b) => a.name.localeCompare(b.name)));
-      setCreated({ name: form.name, email: form.email, password: form.password });
+      setCreated({ name: form.name, email: form.email, inviteSent: !!j.data.inviteSent, inviteLink: j.data.inviteLink });
       setShowAdd(false);
-      toast.success(`${form.name} added — share their temporary password`);
+      toast.success(j.data.inviteSent ? `Invite emailed to ${form.email}` : `${form.name} added — share the invite link`);
     } finally { setAdding(false); }
   };
 
   const copyCreds = () => {
-    if (!created) return;
-    navigator.clipboard.writeText(`Linoscore Legal sign-in\nEmail: ${created.email}\nTemporary password: ${created.password}\nSign in at https://legal.linoscore.com/login and change your password.`);
+    if (!created?.inviteLink) return;
+    navigator.clipboard.writeText(`You've been invited to Linoscore Legal. Set your password here: ${created.inviteLink}`);
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
@@ -115,20 +108,30 @@ export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
         Each team member is a seat on your plan. Roles control who can perform sensitive actions; every change is recorded in the audit log.
       </p>
 
-      {/* Temp-password handoff after creating a user */}
+      {/* Invite confirmation after creating a user */}
       {created && (
         <div style={{ marginBottom: "1rem", padding: "0.85rem 1rem", borderRadius: 10, border: "1px solid var(--gold)", background: "var(--gold-bg, #fef3e2)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--navy)" }}>Share these sign-in details with {created.name}</p>
+            <p style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--navy)" }}>
+              {created.inviteSent ? `Invite emailed to ${created.name}` : `${created.name} added — share the invite link`}
+            </p>
             <button onClick={() => setCreated(null)} className="lf-btn lf-btn-ghost" style={{ padding: "0.2rem" }} aria-label="Dismiss"><X style={{ width: 15, height: 15 }} /></button>
           </div>
-          <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: 4, fontFamily: "var(--font-mono, monospace)" }}>
-            {created.email} · <b style={{ color: "var(--navy)" }}>{created.password}</b>
-          </div>
-          <button onClick={copyCreds} className="lf-btn lf-btn-outline" style={{ padding: "0.35rem 0.7rem", marginTop: "0.6rem" }}>
-            {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />} {copied ? "Copied" : "Copy sign-in details"}
-          </button>
-          <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>They can change this password after signing in. We only show it once.</p>
+          {created.inviteSent ? (
+            <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: 4 }}>
+              We sent <b style={{ color: "var(--navy)" }}>{created.email}</b> a link to set their password and sign in. The link is valid for 7 days.
+            </p>
+          ) : (
+            <>
+              <p style={{ fontSize: "0.8rem", color: "var(--text-secondary)", marginTop: 4 }}>
+                Email couldn&apos;t be sent automatically. Send <b style={{ color: "var(--navy)" }}>{created.email}</b> this link so they can set their password (valid 7 days):
+              </p>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: 6, wordBreak: "break-all", fontFamily: "var(--font-mono, monospace)" }}>{created.inviteLink}</div>
+              <button onClick={copyCreds} className="lf-btn lf-btn-outline" style={{ padding: "0.35rem 0.7rem", marginTop: "0.6rem" }}>
+                {copied ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />} {copied ? "Copied" : "Copy invite link"}
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -141,15 +144,14 @@ export function TeamRoles({ currentUserId }: { currentUserId?: string }) {
             <select className="lf-input" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as Role })}>
               {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
             </select>
-            <div style={{ display: "flex", gap: 6 }}>
-              <input className="lf-input" style={{ flex: 1, fontFamily: "var(--font-mono, monospace)" }} placeholder="Temporary password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-              <button type="button" onClick={() => setForm({ ...form, password: makePassword() })} className="lf-btn lf-btn-outline" style={{ padding: "0.4rem 0.6rem" }} title="Generate">↻</button>
-            </div>
           </div>
+          <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.6rem" }}>
+            We&apos;ll email them an invite to set their own password and sign in. Each member is a seat on your plan.
+          </p>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: "0.75rem" }}>
             <button onClick={() => setShowAdd(false)} className="lf-btn lf-btn-ghost" style={{ padding: "0.45rem 0.85rem" }}>Cancel</button>
             <button onClick={addUser} disabled={adding} className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.85rem" }}>
-              {adding ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <UserPlus style={{ width: 15, height: 15 }} />} Add user
+              {adding ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <UserPlus style={{ width: 15, height: 15 }} />} Send invite
             </button>
           </div>
         </div>
