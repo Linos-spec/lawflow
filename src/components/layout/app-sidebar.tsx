@@ -29,6 +29,7 @@ import {
   X,
   PanelLeftClose,
   PanelLeft,
+  ShieldCheck,
 } from "lucide-react";
 
 interface NavItem {
@@ -88,6 +89,16 @@ export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  // Platform-owner link is server-gated — only show it when the API confirms.
+  useEffect(() => {
+    let active = true;
+    fetch("/api/v1/me").then((r) => r.json()).then((j) => {
+      if (active && j?.success && j.data.isPlatformAdmin) setIsPlatformAdmin(true);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
 
   // Restore the persisted collapse preference (after mount → no hydration skew).
   useEffect(() => {
@@ -310,8 +321,22 @@ export function AppSidebar() {
           ))}
         </nav>
 
-        {/* Footer: settings + help */}
+        {/* Footer: platform console (owner only) + settings + help */}
         <div className="lf-sidebar-foot">
+          {isPlatformAdmin && (
+            <Link
+              href="/admin"
+              className={`lf-nav-link ${pathname.startsWith("/admin") ? "is-active" : ""} ${compact ? "is-collapsed" : ""}`}
+              aria-current={pathname.startsWith("/admin") ? "page" : undefined}
+              aria-label={compact ? "Platform Console" : undefined}
+              title={compact ? "Platform Console" : undefined}
+              onClick={() => setMobileOpen(false)}
+              style={{ color: "var(--gold-light)" }}
+            >
+              <ShieldCheck className="lf-nav-icon" style={{ width: 18, height: 18, flexShrink: 0 }} aria-hidden />
+              {!compact && <span className="flex-1 truncate">Platform Console</span>}
+            </Link>
+          )}
           {[
             { href: "/settings", label: "Settings", icon: Settings },
             { href: "/help", label: "Help & Support", icon: HelpCircle },

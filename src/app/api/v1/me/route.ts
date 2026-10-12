@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getOrgFirmIds, unauthorizedResponse } from "@/lib/auth-guard";
 import { successResponse, errorResponse } from "@/lib/api/response";
 import { logAudit } from "@/lib/audit";
+import { isPlatformAdminEmail } from "@/lib/platform-admin";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ export async function GET() {
     select: { id: true, name: true, email: true, phone: true, barNumber: true, role: true },
   });
   if (!user) return errorResponse("User not found", 404);
-  return successResponse(user);
+  return successResponse({ ...user, isPlatformAdmin: isPlatformAdminEmail(user.email) });
 }
 
 const schema = z.object({
