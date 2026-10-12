@@ -27,7 +27,7 @@ const plan = {
 const faqs = [
   {
     q: "Is there a free trial?",
-    a: "Yes! Every plan includes a 14-day free trial with full access to all features. No credit card required to get started.",
+    a: "Yes — once your firm is approved, you get a 14-day free trial with full access to every feature. No credit card required. New firms start by requesting access so we can get you set up right.",
   },
   {
     q: "Can I add or remove users?",
@@ -204,10 +204,10 @@ export default function PricingPage() {
           </ul>
 
           <Link href="/register" className="lf-btn lf-btn-gold" style={{ width: "100%", padding: "0.75rem 1rem", fontSize: "0.9375rem", justifyContent: "center" }}>
-            Start free trial
+            Request access
           </Link>
           <p style={{ textAlign: "center", fontFamily: "var(--font-body)", fontSize: "0.8125rem", color: "var(--text-muted)", marginTop: "0.75rem" }}>
-            14 days free · no credit card required
+14-day free trial after approval · no credit card required
           </p>
         </div>
 

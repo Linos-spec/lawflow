@@ -134,7 +134,7 @@ export function MarketingNavbar() {
               padding: "0.5rem 1.25rem",
             }}
           >
-            Start Free Trial
+            Request access
           </Link>
         </div>
 
@@ -247,7 +247,7 @@ export function MarketingNavbar() {
                 justifyContent: "center",
               }}
             >
-              Start Free Trial
+              Request access
             </Link>
           </div>
         </div>

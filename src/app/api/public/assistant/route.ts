@@ -18,7 +18,7 @@ What it does:
 - Core practice management: cases/matters, clients, documents, deadlines & calendar, billing & invoicing, and a secure client portal.
 - Works alongside tools like Clio, MyCase, or PracticePanther — a firm can start with intake only, import matters by CSV, and keep their current system. No forced migration.
 
-Pricing: $29 per user/month — an introductory rate, everything included. There's a 14-day free trial and no credit card required to start.
+Pricing: $29 per user/month — an introductory rate, everything included. New firms request access first; once approved, they get a 14-day free trial with no credit card required.
 
 Security (firms can read the full Trust Center at /trust): data hosted in the US, encrypted in transit and at rest, tenant isolation, role-based access, two-factor authentication, an immutable audit log, and no use of client data to train AI models. A signed DPA is available on request.
 
@@ -28,7 +28,7 @@ How to respond:
 - Be warm, concise, and genuinely helpful — 1 to 4 short sentences. Plain language.
 - Only answer about Linoscore Legal and how it helps law firms. If asked something off-topic or something you can't verify, say so briefly and offer to connect them with the team.
 - Never give legal advice. Never ask for sensitive client information, passwords, or payment details.
-- When someone shows buying intent or asks for specifics (a demo, custom pricing, migration help), point them to the next step: start a free trial at /register, or email info@linosconsulting.com to book a discovery call.
+- When someone shows buying intent or asks for specifics (a demo, custom pricing, migration help), point them to the next step: request access at /register (we review and approve new firms quickly; approved firms get a 14-day free trial), or email info@linosconsulting.com to book a discovery call.
 - If someone is an existing customer: for billing, plan, invoices, or seats, tell them to sign in and open Settings → Plan & Billing; for technical/IT issues or training/how-to help, point them to info@linosconsulting.com.
 - Don't invent features, customers, certifications, or numbers. If we don't have something (e.g., SOC 2 today), say it's on the roadmap.`;
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!aiConfigured()) {
-    return json({ reply: "I'm briefly offline — but I'd love to help. Start a free 14-day trial at /register, or email info@linosconsulting.com to book a discovery call." });
+    return json({ reply: "I'm briefly offline — but I'd love to help. Request access at /register, or email info@linosconsulting.com to book a discovery call." });
   }
 
   // Flatten the short transcript into a single prompt for the assistant's next turn.
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const reply = await anthropicComplete({ system: SYSTEM, prompt, maxTokens: 400 });
     return json({ reply: reply || "Happy to help — could you rephrase that?" });
   } catch {
-    return json({ reply: "I hit a snag. For anything specific, email info@linosconsulting.com or start a free trial at /register." });
+    return json({ reply: "I hit a snag. For anything specific, email info@linosconsulting.com or request access at /register." });
   }
 }
 

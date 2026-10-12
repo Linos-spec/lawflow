@@ -24,15 +24,15 @@ const SUPPORT_MENU: Chip[] = [
 const EXPLORE_MENU: Chip[] = [
   { label: "What can the AI do?", prompt: "What can Linoscore Legal's AI actually do for my firm?" },
   { label: "See pricing", prompt: "How much does Linoscore Legal cost?" },
-  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Prefer to try it first? Start a free 14-day trial, no credit card required." },
-  { label: "Start free trial", link: "/register", primary: true },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Prefer to explore first? Request access, and once your firm is approved you get a 14-day free trial, no credit card required." },
+  { label: "Request access", link: "/register", primary: true },
   { label: "← Back", back: true },
 ];
 
 const ROOT_MENU: Chip[] = [
   { label: "I'm a customer (billing, IT & training)", next: SUPPORT_MENU, intro: "Happy to help — what do you need a hand with?" },
   { label: "I'm exploring Linoscore Legal", next: EXPLORE_MENU, intro: "Great — what would you like to know?" },
-  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Or start a free 14-day trial (no credit card) to explore on your own." },
+  { label: "Speak to a sales representative", reply: "I'd be glad to connect you. Email info@linosconsulting.com to book a discovery call — a rep usually replies within one business day. Or request access to explore on your own — approved firms get a 14-day free trial, no credit card." },
 ];
 
 export function SalesAssistant() {
@@ -60,7 +60,7 @@ export function SalesAssistant() {
       const j = await res.json().catch(() => ({}));
       setMessages((m) => [...m, { role: "assistant", content: j.reply || "Sorry, could you try again?" }]);
     } catch {
-      setMessages((m) => [...m, { role: "assistant", content: "I hit a snag. Email info@linosconsulting.com or start a free trial." }]);
+      setMessages((m) => [...m, { role: "assistant", content: "I hit a snag. Email info@linosconsulting.com or request access at /register." }]);
     } finally { setBusy(false); }
   };
 

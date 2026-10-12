@@ -892,8 +892,8 @@ export default function FeaturesPage() {
               marginBottom: "2rem",
             }}
           >
-            Start with intake in minutes — no migration, no credit card, and
-            keep the tools you already use.
+            Request access and start with intake — no migration, no credit card,
+            and keep the tools you already use.
           </p>
           <Link
             href="/register"
@@ -904,7 +904,7 @@ export default function FeaturesPage() {
               padding: "0.875rem 2rem",
             }}
           >
-            Start Free Trial
+            Request access
             <ArrowRight style={{ width: 18, height: 18 }} />
           </Link>
         </div>

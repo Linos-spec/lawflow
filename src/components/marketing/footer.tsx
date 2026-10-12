@@ -7,7 +7,7 @@ const productLinks = [
   { label: "Features", href: "/features" },
   { label: "Pricing", href: "/pricing" },
   { label: "Login", href: "/login" },
-  { label: "Register", href: "/register" },
+  { label: "Request access", href: "/register" },
 ];
 
 const legalLinks = [

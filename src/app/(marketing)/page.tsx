@@ -63,8 +63,8 @@ const features = [
 const steps = [
   {
     num: 1,
-    title: "Sign up in 60 seconds",
-    desc: "Create your firm account — no credit card, no setup call.",
+    title: "Request access",
+    desc: "Tell us about your firm — no credit card, no setup call. We review and approve new firms quickly.",
   },
   {
     num: 2,
@@ -393,7 +393,7 @@ export default function LandingPage() {
                   padding: "0.75rem 1.75rem",
                 }}
               >
-                Start Free Trial
+                Request access
                 <ArrowRight style={{ width: 16, height: 16 }} />
               </Link>
               <Link
@@ -719,7 +719,7 @@ export default function LandingPage() {
               padding: "0.875rem 2rem",
             }}
           >
-            Start Free Trial
+            Request access
             <ArrowRight style={{ width: 18, height: 18 }} />
           </Link>
         </div>
