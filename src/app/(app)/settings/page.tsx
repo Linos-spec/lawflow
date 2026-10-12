@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useFirm } from "@/components/providers/firm-provider";
@@ -23,11 +23,16 @@ import {
   ScrollText,
   CalendarClock,
   ExternalLink,
+  MonitorSmartphone,
+  Copy,
+  Power,
+  Loader2,
 } from "lucide-react";
 
 const tabs = [
   { id: "profile", label: "Profile", icon: User },
   { id: "firm", label: "Firm Details", icon: Building2 },
+  { id: "portal", label: "Client Portal", icon: MonitorSmartphone },
   { id: "ai", label: "AI Employee", icon: Bot },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "security", label: "Security", icon: Shield },
@@ -94,6 +99,38 @@ export default function SettingsPage() {
       await refresh();
       toast.success(calendly.trim() ? "Scheduling link saved" : "Scheduling link removed");
     } finally { setSavingCal(false); }
+  }
+
+  // ── Client portal control center ──
+  interface PortalEntry { caseId: string; caseNumber: string; title: string; clientName: string | null; url: string | null; hasPin: boolean; expiresAt: string | null }
+  const [portal, setPortal] = useState<{ settings: { portalEnabled: boolean; defaultRequirePin: boolean; defaultExpiryDays: number | null }; portals: PortalEntry[] } | null>(null);
+  const [portalBusy, setPortalBusy] = useState(false);
+  const [copiedPortal, setCopiedPortal] = useState<string | null>(null);
+  const loadPortal = useCallback(async () => {
+    const res = await fetch("/api/v1/firm/portal");
+    const j = await res.json().catch(() => ({}));
+    if (j.success) setPortal({ settings: j.data.settings, portals: j.data.portals });
+  }, []);
+  useEffect(() => { if (activeTab === "portal") loadPortal(); }, [activeTab, loadPortal]);
+  async function savePortalSettings(patch: Record<string, unknown>, msg: string) {
+    if (!isAdmin || portalBusy) return;
+    setPortalBusy(true);
+    try {
+      const res = await fetch("/api/v1/firm/portal", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+      if (!res.ok) { const j = await res.json().catch(() => ({})); toast.error(j.error || "Couldn't save"); return; }
+      await loadPortal();
+      toast.success(msg);
+    } finally { setPortalBusy(false); }
+  }
+  async function disableMatterPortal(p: PortalEntry) {
+    if (!confirm(`Turn off the client portal for ${p.caseNumber}? The client's link will stop working.`)) return;
+    setPortalBusy(true);
+    try {
+      const res = await fetch(`/api/v1/cases/${p.caseId}/portal`, { method: "DELETE" });
+      if (!res.ok) { toast.error("Couldn't disable"); return; }
+      await loadPortal();
+      toast.success(`Portal disabled for ${p.caseNumber}`);
+    } finally { setPortalBusy(false); }
   }
 
   // Calendly account connection (auto-syncs booked events into the calendar).
@@ -407,6 +444,86 @@ export default function SettingsPage() {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── Client Portal ── */}
+        {activeTab === "portal" && (
+          <div className="lf-card max-w-2xl space-y-6">
+            {!portal ? (
+              <div style={{ padding: "1.5rem", textAlign: "center" }}><Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite", color: "var(--gold)" }} /></div>
+            ) : (
+              <>
+                {/* Master switch */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "var(--navy)", fontSize: "0.95rem" }}>Client portal</h3>
+                    <p className="text-sm" style={{ color: "var(--text-secondary)", marginTop: 2 }}>
+                      Clients track their matter, message you, upload documents, and (with Calendly) book meetings. Turning this off firm-wide immediately stops <b>all</b> client links from working.
+                    </p>
+                  </div>
+                  <Toggle active={portal.settings.portalEnabled} onToggle={() => savePortalSettings({ portalEnabled: !portal.settings.portalEnabled }, portal.settings.portalEnabled ? "Client portal turned off firm-wide" : "Client portal enabled firm-wide")} />
+                </div>
+                {!portal.settings.portalEnabled && (
+                  <div style={{ padding: "0.75rem 1rem", borderRadius: 8, background: "var(--warning-bg)", color: "#92610e", fontSize: "0.82rem" }}>
+                    The portal is off firm-wide — existing client links show as inactive until you turn it back on.
+                  </div>
+                )}
+
+                {/* Defaults */}
+                <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "1.1rem" }}>
+                  <h4 style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.88rem", marginBottom: 8 }}>Defaults for new matter portals</h4>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+                    <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Suggest requiring a PIN when sharing a portal link</span>
+                    <Toggle active={portal.settings.defaultRequirePin} onToggle={() => savePortalSettings({ defaultRequirePin: !portal.settings.defaultRequirePin }, "Default saved")} />
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <span className="text-sm" style={{ color: "var(--text-secondary)" }}>Auto-expire new portal links after</span>
+                    <input
+                      type="number" min={0} max={3650} className="lf-input" style={{ width: 90 }}
+                      defaultValue={portal.settings.defaultExpiryDays ?? ""}
+                      placeholder="never"
+                      disabled={!isAdmin}
+                      onBlur={(e) => { const v = e.target.value.trim(); savePortalSettings({ defaultExpiryDays: v ? parseInt(v, 10) : null }, "Default expiry saved"); }}
+                    />
+                    <span className="text-sm" style={{ color: "var(--text-muted)" }}>days (blank = never)</span>
+                  </div>
+                </div>
+
+                {/* Active portals */}
+                <div style={{ borderTop: "1px solid var(--border-default)", paddingTop: "1.1rem" }}>
+                  <h4 style={{ fontWeight: 700, color: "var(--navy)", fontSize: "0.88rem", marginBottom: 8 }}>Active portals ({portal.portals.length})</h4>
+                  {portal.portals.length === 0 ? (
+                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>No matter portals are active. Enable a portal from inside a case.</p>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {portal.portals.map((p) => (
+                        <div key={p.caseId} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "0.6rem 0.75rem", borderRadius: 8, background: "var(--bg-base)", flexWrap: "wrap" }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--navy)" }}>{p.clientName || p.title} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>· {p.caseNumber}</span></div>
+                            <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                              {p.hasPin ? "🔒 PIN" : "No PIN"}{p.expiresAt ? ` · expires ${new Date(p.expiresAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : " · no expiry"}
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            {p.url && (
+                              <button onClick={() => { navigator.clipboard.writeText(p.url!); setCopiedPortal(p.caseId); setTimeout(() => setCopiedPortal(null), 1500); }} className="lf-btn lf-btn-outline" style={{ padding: "0.3rem 0.6rem", fontSize: "0.78rem" }}>
+                                {copiedPortal === p.caseId ? <Check style={{ width: 13, height: 13 }} /> : <Copy style={{ width: 13, height: 13 }} />} Link
+                              </button>
+                            )}
+                            <a href={`/cases/${p.caseId}`} className="lf-btn lf-btn-ghost" style={{ padding: "0.3rem 0.6rem", fontSize: "0.78rem", textDecoration: "none" }}>Open</a>
+                            <button onClick={() => disableMatterPortal(p)} disabled={portalBusy} className="lf-btn lf-btn-ghost" style={{ padding: "0.3rem 0.5rem", color: "var(--danger)" }} title="Turn off this portal">
+                              <Power style={{ width: 14, height: 14 }} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {!isAdmin && <p className="text-xs" style={{ color: "var(--text-muted)" }}>Only an admin can change firm-wide portal settings.</p>}
+              </>
+            )}
           </div>
         )}
 

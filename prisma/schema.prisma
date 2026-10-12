@@ -344,6 +344,11 @@ model Firm {
   // Require all firm users to set up two-factor authentication.
   mfaRequired          Boolean @default(false)
 
+  // ── Client-portal firm controls (managed in Settings → Client Portal) ──
+  portalEnabled           Boolean @default(true)  // firm-wide master switch; off = all client links stop working
+  portalDefaultRequirePin Boolean @default(false) // suggest a PIN when enabling a matter portal
+  portalDefaultExpiryDays Int?                     // auto-expire new matter portal links after N days
+
   // Calendly scheduling link — when set, clients can self-book from the portal and
   // the firm can send the booking link in response to a detected meeting request.
   calendlyUrl          String?

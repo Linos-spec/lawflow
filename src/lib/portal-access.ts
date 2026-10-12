@@ -29,7 +29,8 @@ export type PortalAccess =
  */
 export async function resolvePortalAccess(token: string, pin: string | null): Promise<PortalAccess> {
   const matter = await prisma.case.findFirst({
-    where: { portalToken: token, portalEnabled: true },
+    // Firm-wide master switch must also be on (firm.portalEnabled).
+    where: { portalToken: token, portalEnabled: true, firm: { portalEnabled: true } },
     select: { id: true, firmId: true, title: true, caseNumber: true, portalPinHash: true, portalExpiresAt: true },
   });
   if (!matter) return { ok: false, reason: "not_found" };

@@ -71,11 +71,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ cas
   const ctx = await getOrgFirmIds();
   if (!ctx || !ctx.firmId) return unauthorizedResponse();
   const { caseId } = await params;
-  const c = await prisma.case.findFirst({ where: { id: caseId, firmId: ctx.firmId }, select: { portalToken: true, title: true, caseNumber: true } });
+  const c = await prisma.case.findFirst({ where: { id: caseId, firmId: ctx.firmId }, select: { portalToken: true, title: true, caseNumber: true, portalExpiresAt: true } });
   if (!c) return errorResponse("Matter not found", 404);
 
+  // Apply the firm's default link expiry on first enable (if configured, none set yet).
+  const firm = await prisma.firm.findUnique({ where: { id: ctx.firmId }, select: { portalDefaultExpiryDays: true } });
+  const defaultExpiry = firm?.portalDefaultExpiryDays && !c.portalExpiresAt
+    ? new Date(Date.now() + firm.portalDefaultExpiryDays * 86_400_000)
+    : undefined;
+
   const token = c.portalToken || randomUUID();
-  await prisma.case.update({ where: { id: caseId }, data: { portalEnabled: true, portalToken: token } });
+  await prisma.case.update({ where: { id: caseId }, data: { portalEnabled: true, portalToken: token, ...(defaultExpiry ? { portalExpiresAt: defaultExpiry } : {}) } });
   await logAudit({ firmId: ctx.firmId, userId: ctx.userId, action: "portal.enable", category: "access", entity: "Case", entityId: caseId, entityLabel: `${c.caseNumber} · ${c.title}`, details: "Client portal enabled — matter data exposed via shareable link" });
   return successResponse({ portalEnabled: true, portalUrl: portalUrl(req, token) });
 }
