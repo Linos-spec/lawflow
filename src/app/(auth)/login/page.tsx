@@ -214,7 +214,7 @@ function LoginForm() {
                 textDecoration: "none",
               }}
             >
-              Start free trial
+              Request access
             </Link>
           </p>
         </div>

@@ -280,6 +280,24 @@ model User {
   @@index([email])
 }
 
+/** A prospect's request to join (gated signup). The operator approves in /admin. */
+model AccessRequest {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  firmName   String
+  phone      String?
+  message    String?
+  status     String   @default("PENDING")  // PENDING | APPROVED | DECLINED
+  createdAt  DateTime @default(now())
+  reviewedAt DateTime?
+  reviewedBy String?   // platform-admin email who actioned it
+  firmId     String?   // the firm created on approval
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
 /** Single-use, hashed, expiring token backing the self-serve password reset. */
 model PasswordResetToken {
   id        String   @id @default(cuid())

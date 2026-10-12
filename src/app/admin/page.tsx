@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Loader2, Building2, Users, DollarSign, TrendingUp, AlertTriangle, Search, Clock, ShieldAlert } from "lucide-react";
+import { Loader2, Building2, Users, DollarSign, TrendingUp, AlertTriangle, Search, Clock, ShieldAlert, Inbox, Check, X, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface FirmRow {
@@ -14,6 +14,10 @@ interface Summary {
   totalFirms: number; byStatus: Record<string, number>; activePaying: number; trialing: number;
   pastDue: number; mrr: number; totalUsers: number; totalMatters: number; newLast30d: number;
   trialsEndingSoon: number; seatPrice: number;
+}
+interface AccessReq {
+  id: string; name: string; email: string; firmName: string; phone: string | null; message: string | null;
+  status: string; createdAt: string; reviewedAt: string | null; reviewedBy: string | null; firmId: string | null;
 }
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -44,16 +48,40 @@ export default function AdminPage() {
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [tab, setTab] = useState<"firms" | "inbox">("firms");
+  const [requests, setRequests] = useState<AccessReq[]>([]);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [actingId, setActingId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/firms");
-      if (res.status === 403) { setForbidden(true); return; }
-      const j = await res.json();
-      if (j.success) { setSummary(j.data.summary); setFirms(j.data.firms); }
+      const [firmsRes, reqRes] = await Promise.all([fetch("/api/admin/firms"), fetch("/api/admin/access-requests")]);
+      if (firmsRes.status === 403) { setForbidden(true); return; }
+      const fj = await firmsRes.json();
+      if (fj.success) { setSummary(fj.data.summary); setFirms(fj.data.firms); }
+      const rj = await reqRes.json().catch(() => ({}));
+      if (rj.success) { setRequests(rj.data.requests); setPendingCount(rj.data.pendingCount); }
     } finally { setLoading(false); }
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  const actOnRequest = async (r: AccessReq, action: "approve" | "decline") => {
+    if (action === "approve" && !confirm(`Approve ${r.firmName}? This creates their firm and emails ${r.email} an invite.`)) return;
+    setActingId(r.id);
+    try {
+      const res = await fetch(`/api/admin/access-requests/${r.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j.success) { toast.error(j.error || "Action failed"); return; }
+      if (action === "approve") {
+        toast.success(j.data.inviteSent ? `${r.firmName} approved — invite emailed to ${r.email}` : `${r.firmName} approved — invite link: ${j.data.inviteLink}`);
+      } else {
+        toast.success(`${r.firmName} declined`);
+      }
+      await load();
+    } finally { setActingId(null); }
+  };
 
   const extendTrial = async (f: FirmRow) => {
     const input = window.prompt(`Extend ${f.name}'s trial by how many days?`, "14");
@@ -96,14 +124,33 @@ export default function AdminPage() {
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)", padding: "1.5rem" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ marginBottom: "1.25rem" }}>
+        <div style={{ marginBottom: "1rem" }}>
           <h1 style={{ fontFamily: "var(--font-heading)", fontSize: "1.6rem", fontWeight: 800, color: "var(--navy)" }}>Platform Console</h1>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>Every firm on Linoscore Legal — monitor and manage your customers.</p>
         </div>
 
+        {!loading && (
+          <div style={{ display: "flex", gap: 6, marginBottom: "1.1rem", borderBottom: "1px solid var(--border-default)" }}>
+            {([["firms", "Firms"], ["inbox", "Access Requests"]] as const).map(([k, label]) => (
+              <button key={k} onClick={() => setTab(k)} style={{
+                padding: "0.5rem 0.9rem", border: "none", background: "transparent", cursor: "pointer",
+                fontSize: "0.9rem", fontWeight: 700, color: tab === k ? "var(--navy)" : "var(--text-muted)",
+                borderBottom: tab === k ? "2px solid var(--gold)" : "2px solid transparent", marginBottom: -1,
+                display: "inline-flex", alignItems: "center", gap: 6,
+              }}>
+                {k === "inbox" && <Inbox style={{ width: 15, height: 15 }} />}
+                {label}
+                {k === "inbox" && pendingCount > 0 && (
+                  <span className="lf-badge" style={{ background: "var(--gold)", color: "#fff", fontSize: "0.68rem", padding: "0.05rem 0.4rem" }}>{pendingCount}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
         {loading ? (
           <div style={{ padding: "4rem", textAlign: "center" }}><Loader2 style={{ width: 26, height: 26, animation: "spin 1s linear infinite", color: "var(--gold)" }} /></div>
-        ) : (
+        ) : tab === "firms" ? (
           <>
             {/* Summary cards */}
             {summary && (
@@ -177,6 +224,50 @@ export default function AdminPage() {
               MRR assumes {summary ? money(summary.seatPrice) : "$29"}/seat on active plans. Trial figures reflect the 14-day free trial.
             </p>
           </>
+        ) : (
+          /* ── Access Requests inbox ── */
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {requests.length === 0 ? (
+              <div className="lf-card" style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>
+                <Inbox style={{ width: 30, height: 30, margin: "0 auto 0.5rem", opacity: 0.5 }} />
+                No access requests yet. New sign-up requests will land here.
+              </div>
+            ) : (
+              requests.map((r) => {
+                const pending = r.status === "PENDING";
+                const s = r.status === "APPROVED" ? { bg: "#dcf5e8", fg: "#1a7a4c" } : r.status === "DECLINED" ? { bg: "#fde2e1", fg: "#b42318" } : { bg: "#fdecc8", fg: "#92610e" };
+                return (
+                  <div key={r.id} className="lf-card" style={{ padding: "1rem 1.1rem", borderLeft: pending ? "3px solid var(--gold)" : undefined }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 700, color: "var(--navy)", fontSize: "1rem" }}>{r.firmName}</span>
+                          <span className="lf-badge" style={{ background: s.bg, color: s.fg, fontSize: "0.7rem" }}>{r.status.toLowerCase()}</span>
+                        </div>
+                        <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginTop: 3 }}>
+                          {r.name} · <a href={`mailto:${r.email}`} style={{ color: "var(--gold)", textDecoration: "none" }}><Mail style={{ width: 12, height: 12, display: "inline", marginRight: 2 }} />{r.email}</a>{r.phone ? ` · ${r.phone}` : ""}
+                        </div>
+                        {r.message && <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", marginTop: 6, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{r.message}</p>}
+                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: 6 }}>
+                          Requested {fmtDate(r.createdAt)}{r.reviewedBy ? ` · ${r.status.toLowerCase()} by ${r.reviewedBy}` : ""}
+                        </div>
+                      </div>
+                      {pending && (
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                          <button onClick={() => actOnRequest(r, "approve")} disabled={actingId === r.id} className="lf-btn lf-btn-gold" style={{ padding: "0.4rem 0.8rem", fontSize: "0.82rem" }}>
+                            {actingId === r.id ? <Loader2 style={{ width: 14, height: 14, animation: "spin 1s linear infinite" }} /> : <Check style={{ width: 14, height: 14 }} />} Approve
+                          </button>
+                          <button onClick={() => actOnRequest(r, "decline")} disabled={actingId === r.id} className="lf-btn lf-btn-outline" style={{ padding: "0.4rem 0.8rem", fontSize: "0.82rem" }}>
+                            <X style={{ width: 14, height: 14 }} /> Decline
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         )}
       </div>
     </div>
