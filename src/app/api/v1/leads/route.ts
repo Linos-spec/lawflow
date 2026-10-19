@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
+      include: { assignedTo: { select: { name: true } } },
     }),
     prisma.lead.count({ where }),
     prisma.firm.findUnique({ where: { id: ctx.firmId }, select: { publicId: true } }),
