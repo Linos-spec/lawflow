@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Scale, Menu, X } from "lucide-react";
+import { Scale, Menu, X, ChevronDown, ArrowRight } from "lucide-react";
+import { PRACTICE_AREAS, FIRM_SIZES, ROLES, type Segment } from "@/lib/solutions";
 
 const navLinks = [
   { label: "Features", href: "/features" },
@@ -12,6 +13,10 @@ const navLinks = [
 export function MarketingNavbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [solOpen, setSolOpen] = useState(false);
+  const solTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const openSol = () => { if (solTimer.current) clearTimeout(solTimer.current); setSolOpen(true); };
+  const closeSol = () => { solTimer.current = setTimeout(() => setSolOpen(false), 140); };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,6 +86,16 @@ export function MarketingNavbar() {
 
         {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-8">
+          <button
+            type="button"
+            onMouseEnter={openSol}
+            onMouseLeave={closeSol}
+            onClick={() => setSolOpen((o) => !o)}
+            className="text-sm font-medium transition-colors duration-200"
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-body)", color: scrolled ? "var(--text-secondary)" : "rgba(255,255,255,0.85)", letterSpacing: "0.01em" }}
+          >
+            Solutions <ChevronDown style={{ width: 14, height: 14, transform: solOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+          </button>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -166,11 +181,35 @@ export function MarketingNavbar() {
         </button>
       </nav>
 
+      {/* Desktop Solutions mega-menu */}
+      {solOpen && (
+        <div
+          className="hidden md:block"
+          onMouseEnter={openSol}
+          onMouseLeave={closeSol}
+          style={{ position: "absolute", top: 72, left: 0, right: 0, background: "#fff", borderTop: "1px solid var(--border-light)", borderBottom: "1px solid var(--border-light)", boxShadow: "0 12px 30px rgba(15,27,51,0.12)" }}
+        >
+          <div style={{ maxWidth: 1100, margin: "0 auto", padding: "1.75rem 2rem", display: "grid", gridTemplateColumns: "1.3fr 1fr 1fr", gap: "2rem" }}>
+            <MegaCol title="By practice area" href="/solutions#practice-areas" items={PRACTICE_AREAS.slice(0, 8)} two onNavigate={() => setSolOpen(false)} />
+            <MegaCol title="By firm size" href="/solutions#firm-size" items={FIRM_SIZES} onNavigate={() => setSolOpen(false)} />
+            <MegaCol title="By role" href="/solutions#roles" items={ROLES} onNavigate={() => setSolOpen(false)} />
+          </div>
+          <div style={{ borderTop: "1px solid var(--border-light)", background: "var(--bg-base)" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0.75rem 2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>One shared client &amp; matter record — inquiry to invoice.</span>
+              <Link href="/solutions" onClick={() => setSolOpen(false)} style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--gold)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                See all solutions <ArrowRight style={{ width: 14, height: 14 }} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile menu panel */}
       <div
         className="md:hidden overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          maxHeight: mobileOpen ? 320 : 0,
+          maxHeight: mobileOpen ? 380 : 0,
           opacity: mobileOpen ? 1 : 0,
           background: scrolled ? "rgba(255, 255, 255, 0.98)" : "rgba(15, 27, 51, 0.95)",
           backdropFilter: "blur(16px)",
@@ -183,6 +222,14 @@ export function MarketingNavbar() {
         }}
       >
         <div className="px-6 py-5 flex flex-col gap-1">
+          <Link
+            href="/solutions"
+            onClick={() => setMobileOpen(false)}
+            className="block rounded-lg px-4 py-3 text-sm font-medium"
+            style={{ color: scrolled ? "var(--text-primary)" : "rgba(255,255,255,0.9)", textDecoration: "none", fontFamily: "var(--font-body)" }}
+          >
+            Solutions
+          </Link>
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -253,5 +300,22 @@ export function MarketingNavbar() {
         </div>
       </div>
     </header>
+  );
+}
+
+function MegaCol({ title, href, items, two, onNavigate }: { title: string; href: string; items: Segment[]; two?: boolean; onNavigate: () => void }) {
+  return (
+    <div>
+      <Link href={href} onClick={onNavigate} style={{ fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--text-muted)", textDecoration: "none" }}>{title}</Link>
+      <div style={{ display: "grid", gridTemplateColumns: two ? "1fr 1fr" : "1fr", gap: "0.1rem 1.25rem", marginTop: "0.75rem" }}>
+        {items.map((s) => (
+          <Link key={s.slug} href={`/register?for=${s.slug}`} onClick={onNavigate}
+            style={{ display: "block", padding: "0.3rem 0", fontSize: "0.9rem", color: "var(--navy)", textDecoration: "none", fontWeight: 500 }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "var(--navy)")}
+          >{s.label}</Link>
+        ))}
+      </div>
+    </div>
   );
 }

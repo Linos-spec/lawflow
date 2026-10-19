@@ -9,6 +9,7 @@ const publicRoutes = [
   "/reset-password",
   "/pricing",
   "/features",
+  "/solutions",
   // Prospective-client intake funnel, shared by a firm via its public link.
   // Distinct from the authenticated internal /intake pages.
   "/consult",

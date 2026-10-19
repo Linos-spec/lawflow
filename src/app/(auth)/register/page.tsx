@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Scale, Loader2, CheckCircle2 } from "lucide-react";
+import { solutionLabel } from "@/lib/solutions";
 
 export default function RequestAccessPage() {
   const [form, setForm] = useState({ name: "", email: "", firmName: "", phone: "", message: "" });
+  const [focus, setFocus] = useState<string | null>(null);
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  // Personalize from the Solutions menu (?for=immigration, ?for=solo, …).
+  useEffect(() => {
+    const label = solutionLabel(new URLSearchParams(window.location.search).get("for"));
+    if (label) {
+      setFocus(label);
+      setForm((f) => ({ ...f, message: f.message || `Interested in Linoscore Legal for ${label}.` }));
+    }
+  }, []);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
@@ -55,9 +66,14 @@ export default function RequestAccessPage() {
             </div>
           ) : (
             <>
-              <p style={{ textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: "1.5rem" }}>
+              <p style={{ textAlign: "center", fontSize: "0.875rem", color: "var(--text-secondary)", marginBottom: focus ? "1rem" : "1.5rem" }}>
                 Tell us about your firm and we&apos;ll get you set up. New firms get a 14-day free trial — no credit card required.
               </p>
+              {focus && (
+                <div style={{ marginBottom: "1.25rem", padding: "0.6rem 0.85rem", borderRadius: 8, background: "var(--gold-bg, #fef3e2)", border: "1px solid var(--gold)", fontSize: "0.82rem", color: "var(--navy)" }}>
+                  Tailoring your setup for <b>{focus}</b>. We&apos;ll have the right intake, templates, and workflows ready.
+                </div>
+              )}
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
                 {error && (
                   <div style={{ background: "var(--danger-bg)", color: "var(--danger)", padding: "0.75rem 1rem", borderRadius: "var(--radius-sm)", fontSize: "0.875rem", fontWeight: 500 }}>{error}</div>
