@@ -7,6 +7,7 @@ import { SimilarMatters } from "@/components/case/similar-matters";
 import { CaseDeliveries } from "@/components/delivery/case-deliveries";
 import { CasePortal } from "@/components/case/case-portal";
 import { CaseSummary } from "@/components/ai/case-summary";
+import { TimeEntries } from "@/components/case/time-entries";
 import { CASE_TYPE_LABELS, CASE_STATUS_LABELS } from "@/lib/constants";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -184,7 +185,7 @@ export default function CaseWorkspace() {
         <button onClick={() => { setTab("tasks"); setShowTaskForm(true); }} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CheckSquare style={{ width: 15, height: 15 }} /> Add task</button>
         <button onClick={() => fileInput.current?.click()} disabled={uploading} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>{uploading ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <Upload style={{ width: 15, height: 15 }} />} Upload document</button>
         <Link href={`/deadlines/new?case=${id}`} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><CalendarClock style={{ width: 15, height: 15 }} /> Add deadline</Link>
-        <button disabled title="Time tracking — coming soon" className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem", opacity: 0.5, cursor: "not-allowed" }}><Timer style={{ width: 15, height: 15 }} /> Record time <span style={{ fontSize: "0.68rem", color: "var(--text-muted)" }}>· soon</span></button>
+        <button onClick={() => setTab("billing")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><Timer style={{ width: 15, height: 15 }} /> Record time</button>
         <button onClick={() => setTab("communications")} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}><MessageSquare style={{ width: 15, height: 15 }} /> Send message</button>
       </div>
 
@@ -382,6 +383,7 @@ export default function CaseWorkspace() {
             {c.engagementLetterStatus && <Row label="Engagement letter" value={formatStatusLabel(c.engagementLetterStatus)} />}
             {c.trustAccount && <Row label="Trust account" value="Yes (IOLTA)" />}
           </Card>
+          <TimeEntries caseId={id} />
           <Card style={{ padding: c.billingRecords.length > 0 ? 0 : undefined, overflow: "hidden" }}>
             {c.billingRecords.length > 0 ? (
               <>
