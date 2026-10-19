@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { CASE_TYPE_LABELS } from "@/lib/constants";
 import { conflictBadge, SOURCE_LABELS, STAGE_LABELS } from "@/lib/lead-badges";
 import { IntakeInbox } from "@/components/intake/intake-inbox";
+import { LeadsAiPanel } from "@/components/leads/leads-ai-panel";
 
 interface LeadRow {
   id: string;
@@ -77,6 +78,7 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [showInbox, setShowInbox] = useState(false);
+  const [showAi, setShowAi] = useState(false);
   const [copied, setCopied] = useState<"link" | "email" | null>(null);
   const [tab, setTab] = useState("all");
   const [chip, setChip] = useState<string | null>(null);
@@ -170,7 +172,7 @@ export default function LeadsPage() {
           <p style={{ color: "var(--text-secondary)", marginTop: "0.2rem", fontSize: "0.9rem" }}>Inbound prospects, conflict-checked and AI-qualified on arrival.</p>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={() => router.push("/ai")} className="lf-btn" style={{ padding: "0.55rem 0.9rem", background: "var(--navy)", color: "#fff" }}>
+          <button onClick={() => setShowAi(true)} className="lf-btn" style={{ padding: "0.55rem 0.9rem", background: "var(--navy)", color: "#fff" }}>
             <Sparkles style={{ width: 16, height: 16 }} /> Ask Linoscore AI
           </button>
           <button onClick={exportCsv} className="lf-btn lf-btn-outline" style={{ padding: "0.55rem 0.9rem" }}>
@@ -314,6 +316,7 @@ export default function LeadsPage() {
       <p style={{ fontSize: "0.74rem", color: "var(--text-muted)", marginTop: "0.6rem" }}>Showing {filtered.length} of {leads.length} leads</p>
 
       {showAdd && <AddLeadModal onClose={() => setShowAdd(false)} onCreated={() => { setShowAdd(false); load(); }} />}
+      <LeadsAiPanel open={showAi} onClose={() => setShowAi(false)} />
     </div>
   );
 }
