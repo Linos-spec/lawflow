@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Timer, Plus, Loader2, Trash2, X } from "lucide-react";
+import { Timer, Plus, Loader2, Trash2, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface Entry { id: string; description: string; hours: number; rate: number; amount: number; date: string; billable: boolean; billed: boolean; user: string }
@@ -10,12 +10,13 @@ interface Totals { totalHours: number; billableHours: number; billableAmount: nu
 const money = (n: number) => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
-export function TimeEntries({ caseId, defaultRate }: { caseId: string; defaultRate?: number }) {
+export function TimeEntries({ caseId, defaultRate, onInvoiced }: { caseId: string; defaultRate?: number; onInvoiced?: () => void }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [totals, setTotals] = useState<Totals | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [invoicing, setInvoicing] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -25,6 +26,20 @@ export function TimeEntries({ caseId, defaultRate }: { caseId: string; defaultRa
     } finally { setLoading(false); }
   }, [caseId]);
   useEffect(() => { load(); }, [load]);
+
+  const createInvoice = async () => {
+    if (invoicing) return;
+    if (!confirm("Create an invoice from all unbilled billable time on this matter? Those entries will be marked billed.")) return;
+    setInvoicing(true);
+    try {
+      const res = await fetch(`/api/v1/cases/${caseId}/invoice`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j.success) { toast.error(j.error || "Couldn't create invoice"); return; }
+      toast.success(`Invoice ${j.data.invoiceNumber} created — ${money(j.data.totalAmount)}`);
+      await load();
+      onInvoiced?.();
+    } finally { setInvoicing(false); }
+  };
 
   const del = async (e: Entry) => {
     if (!confirm(`Delete this ${e.hours}h entry?`)) return;
@@ -43,9 +58,16 @@ export function TimeEntries({ caseId, defaultRate }: { caseId: string; defaultRa
         <h3 style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-heading)", fontSize: "1.05rem", fontWeight: 700, color: "var(--navy)" }}>
           <Timer style={{ width: 18, height: 18, color: "var(--gold)" }} /> Time &amp; fees
         </h3>
-        <button onClick={() => setShowAdd(true)} className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>
-          <Plus style={{ width: 15, height: 15 }} /> Record time
-        </button>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {totals && totals.unbilledAmount > 0 && (
+            <button onClick={createInvoice} disabled={invoicing} className="lf-btn lf-btn-outline" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>
+              {invoicing ? <Loader2 style={{ width: 15, height: 15, animation: "spin 1s linear infinite" }} /> : <FileText style={{ width: 15, height: 15 }} />} Invoice {money(totals.unbilledAmount)}
+            </button>
+          )}
+          <button onClick={() => setShowAdd(true)} className="lf-btn lf-btn-gold" style={{ padding: "0.45rem 0.85rem", fontSize: "0.83rem" }}>
+            <Plus style={{ width: 15, height: 15 }} /> Record time
+          </button>
+        </div>
       </div>
 
       {totals && (

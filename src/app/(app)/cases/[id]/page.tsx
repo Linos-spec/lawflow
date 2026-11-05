@@ -383,7 +383,7 @@ export default function CaseWorkspace() {
             {c.engagementLetterStatus && <Row label="Engagement letter" value={formatStatusLabel(c.engagementLetterStatus)} />}
             {c.trustAccount && <Row label="Trust account" value="Yes (IOLTA)" />}
           </Card>
-          <TimeEntries caseId={id} />
+          <TimeEntries caseId={id} onInvoiced={loadCase} />
           <Card style={{ padding: c.billingRecords.length > 0 ? 0 : undefined, overflow: "hidden" }}>
             {c.billingRecords.length > 0 ? (
               <>
